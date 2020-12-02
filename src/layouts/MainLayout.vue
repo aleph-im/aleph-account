@@ -109,7 +109,7 @@ export default {
       display_onboarding: false,
       links1: [
         { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
-        { text: 'Stake', link: { name: 'stake' }, exact: false },
+        { text: 'Nodes and Staking', link: { name: 'stake' }, exact: false },
         { text: 'Swap', link: { name: 'swap' }, exact: false }
         // { icon: 'far fa-newspaper', text:'My Feed' },
         // { icon: 'photo', text: 'Photos' },
@@ -141,19 +141,19 @@ export default {
         walletconnect: {
           package: WalletConnectProvider, // required
           options: {
-            infuraId: '' // required
+            infuraId: '4890a5bd89854916b128088119d76b50' // required
           }
         },
         portis: {
           package: Portis, // required
           options: {
-            id: '' // required
+            id: '9e6ad33b-ef5c-49a1-b39c-e664dfc862d1' // required
           }
         },
         mewconnect: {
           package: MewConnect, // required
           options: {
-            infuraId: '' // required
+            infuraId: '4890a5bd89854916b128088119d76b50' // required
           }
         }
       }
