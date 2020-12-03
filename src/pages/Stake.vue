@@ -21,14 +21,23 @@
             Node-ID: {{ props.row.id }}<br />
             {{ props.row.name }}
           </q-td>
-          <q-td key="staked" :props="props">
+          <q-td key="staked" :props="props" width="200">
             <div class="row justify-between">
               <span>
                 {{ (props.row.staked/1000).toFixed(0) }}k
               </span>
               <span style="text-transform: capitalize;">{{ props.row.status }}</span>
             </div>
-            <q-linear-progress rounded size="5px" :color="props.row.status === 'active' ? 'positive': 'inactivegradient'" :value="props.row.staked > 500000 ? 1.0 : props.row.staked/500000" />
+            <q-linear-progress rounded size="5px"
+            :color="props.row.status === 'active' ? 'positive': 'inactive'"
+            :value="props.row.staked > 500000 ? 1.0 : props.row.staked/500000"
+            class="q-my-sm">
+            </q-linear-progress>
+            <div class="posbadge" :style="`margin-left: calc(${(props.row.staked > 500000 ? 1.0 : props.row.staked/500000)*100}% - 28px - 16px)`">
+              <q-badge :color="props.row.status === 'active' ? 'positive': 'inactive'"
+                       text-color="white"
+                       :label="(props.row.staked > 500000 ? '+' : '') + ((props.row.staked - 500000)/1000).toFixed(0) + 'k'" />
+            </div>
           </q-td>
           <q-td key="uptime" :props="props">
             {{ props.row.uptime }} %
@@ -120,3 +129,22 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.posbadge {
+  position: absolute;
+  z-index: 10;
+  margin-top: -17px;
+
+  .q-badge {
+    display: block;
+    width: 28px;
+    text-align: center;
+    z-index: 10;
+    border-radius: 2px;
+    line-height: 10px;
+    font-size: 9px;
+    padding: 2px;
+  }
+}
+</style>
