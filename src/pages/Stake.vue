@@ -66,7 +66,7 @@ export default {
           required: true,
           label: 'Name',
           align: 'left',
-          field: 'nodeName',
+          field: props => props.id + ' ' + props.name,
           sortable: true
         },
         {
