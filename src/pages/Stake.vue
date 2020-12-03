@@ -22,7 +22,7 @@
             {{ props.row.name }}
           </q-td>
           <q-td key="staked" :props="props">
-            <div class="flex-row justify-between">
+            <div class="row justify-between">
               <span>
                 {{ (props.row.staked/1000).toFixed(0) }}k
               </span>
