@@ -18,7 +18,7 @@
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td key="name" :props="props">
-            Node-ID: {{ props.row.id }}<br />
+            <span class="text-grey">Node-ID:</span> {{ props.row.id }}<br />
             {{ props.row.name }}
           </q-td>
           <q-td key="staked" :props="props" width="200">
