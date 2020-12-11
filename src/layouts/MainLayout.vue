@@ -29,6 +29,7 @@
         <p class="q-pa-md">
           <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="32">
           <img v-else src="~/assets/logo-white.svg" height="32">
+          Testnet
         </p>
         <q-list padding class="menu">
           <q-item v-for="link of links1"
@@ -89,7 +90,8 @@ export default {
   computed: mapState({
     account: state => state.account,
     balance_info: state => state.balance_info,
-    api_server: state => state.api_server
+    api_server: state => state.api_server,
+    infura_key: state => state.infura_key
   }),
   watch: {
     async account () {
@@ -141,7 +143,7 @@ export default {
         walletconnect: {
           package: WalletConnectProvider, // required
           options: {
-            infuraId: '4890a5bd89854916b128088119d76b50' // required
+            infuraId: this.infura_key // required
           }
         },
         portis: {
@@ -153,13 +155,13 @@ export default {
         mewconnect: {
           package: MewConnect, // required
           options: {
-            infuraId: '4890a5bd89854916b128088119d76b50' // required
+            infuraId: this.infura_key // required
           }
         }
       }
 
       const web3Modal = new Web3Modal({
-        network: 'mainnet', // optional
+        network: 'rinkeby', // optional
         cacheProvider: false, // optional
         providerOptions // required
       })
@@ -168,10 +170,14 @@ export default {
 
       let account = await ethereum.from_provider(provider)
       // let accounts = await this.w3.eth.getAccounts()
+      console.log(account)
       if (account) {
         this.$store.commit('set_account', account)
       }
     }
+  },
+  created () {
+    this.$store.dispatch('connect_provider')
   }
 }
 </script>

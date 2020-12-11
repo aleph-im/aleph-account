@@ -1,5 +1,8 @@
 <template>
   <q-page class="q-pa-md">
+    <q-dialog v-model="createNode">
+      <CreateNode />
+    </q-dialog>
     <q-table
       title="Nodes"
       :data="values"
@@ -9,11 +12,18 @@
       class="bg-transparent"
     >
       <template v-slot:top-right>
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="search nodes">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
+        <span class="row">
+          <q-input borderless dense debounce="300" v-model="filter" placeholder="search nodes">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn v-if="account && (balance_info.ALEPH >= 200000)"
+            color="aleph-radial" text-color="white"
+            class="q-ml-sm" icon="add" size="sm" @click="createNode = true" rounded>
+            Create node
+          </q-btn>
+        </span>
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -59,16 +69,21 @@
 
 <script>
 import { mapState } from 'vuex'
+import CreateNode from '../components/CreateNode'
 export default {
-  name: 'PageIndex',
+  name: 'StakePage',
   computed: mapState({
     account: state => state.account,
     balance_info: state => state.balance_info,
     api_server: state => state.api_server
   }),
+  components: {
+    CreateNode
+  },
   data () {
     return {
       filter: '',
+      createNode: false,
       columns: [
         {
           name: 'name',
