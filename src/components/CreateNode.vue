@@ -19,17 +19,24 @@
             icon="settings"
             :done="step > 1"
         >
-            Your node name should be short and meaningful, you can edit it later.
+            <p>Your node name should be short and meaningful.</p>
+            <q-input outlined v-model="name" label="Node name (optional)" />
+            <p>The node name is directly set on your address as you can have only one node active.</p>
+            <p>You can change it later as well as set a picture and description</p>
         </q-step>
         <q-step
             :name="2"
-            title="Select campaign settings"
+            title="Node multiaddress"
             icon="settings"
             :done="step > 1"
         >
-            For each ad campaign that you create, you can control how much you're willing to
-            spend on clicks and conversions, which networks and geographical locations you want
-            your ads to show on, and more.
+            <p>The multiaddress is the way the network will find your node.</p>
+            <q-input outlined v-model="multiaddress" label="Multiaddress (optional)" />
+            <p>
+              You need to have a node active and a multiaddress set by Jan 11th 2021
+              if you want to continue received rewards on that date.
+              Until then, it is optional.
+            </p>
         </q-step>
 
         <template v-slot:navigation>
@@ -48,7 +55,8 @@ export default {
   name: 'create-node',
   data () {
     return {
-      step: 1
+      step: 1,
+      name: ''
     }
   }
 }
