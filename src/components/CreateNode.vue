@@ -41,7 +41,7 @@
 
         <template v-slot:navigation>
           <q-stepper-navigation>
-            <q-btn @click="$refs.stepper.next()" color="primary" :label="step === 2 ? 'Finish' : 'Continue'" />
+            <q-btn @click="advance" color="primary" :label="step === 2 ? 'Finish' : 'Continue'" />
             <q-btn v-if="step > 1" flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm" />
           </q-stepper-navigation>
         </template>
@@ -51,12 +51,59 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { aggregates, posts } from 'aleph-js'
+// import { aggregates } from 'aleph-js'
+
 export default {
   name: 'create-node',
+  computed: mapState([
+    'account',
+    'channel',
+    'api_server',
+    'tags',
+    'node_post_type'
+  ]),
   data () {
     return {
       step: 1,
-      name: ''
+      name: '',
+      multiaddress: ''
+    }
+  },
+  methods: {
+    async advance () {
+      if (this.step < 2) {
+        this.$refs.stepper.next()
+      } else {
+        await this.finish()
+      }
+    },
+    async finish () {
+      let result = await posts.submit(this.account.address, this.node_post_type,
+        {
+          tags: ['create-node', ...this.tags],
+          action: 'create-node',
+          details: {
+            name: this.name,
+            multiaddress: this.multiaddress
+          }
+        },
+        {
+          api_server: this.api_server,
+          account: this.account,
+          channel: this.channel
+        })
+      await aggregates.submit(this.account.address, 'node', {
+        name: this.name,
+        multiaddress: this.multiaddress,
+        hash: result.item_hash
+      }, {
+        api_server: this.api_server,
+        account: this.account,
+        channel: this.channel
+      })
+      this.$emit('done', result)
     }
   }
 }

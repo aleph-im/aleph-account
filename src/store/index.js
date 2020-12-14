@@ -43,7 +43,10 @@ export default function (/* { ssrContext } */) {
       channel: 'TEST',
       ethereum_network: 'rinkeby',
       infura_key: '4890a5bd89854916b128088119d76b50',
-      ethereum_provider: null
+      ethereum_provider: null,
+      tags: ['testnet', 'rinkeby'],
+      node_post_type: 'corechan-operation',
+      staker_post_type: 'corechan-delegation'
     },
     mutations: {
       set_account (state, account) {
