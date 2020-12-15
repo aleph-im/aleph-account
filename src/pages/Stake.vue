@@ -3,7 +3,6 @@
     <q-dialog v-model="createNode">
       <CreateNode @done="creation_done" />
     </q-dialog>
-    {{values}}
     <q-table
       title="Nodes"
       :data="values"
@@ -60,9 +59,15 @@
 
           </q-td>
           <q-td key="actions" :props="props">
-            <q-btn size="sm" color="warning" text-color="black" v-if="account&&user_node&&(user_node.hash == props.row.hash)" @click="drop_node(props.row.hash)">drop node</q-btn>
-            <q-btn size="sm" color="warning" text-color="black" v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)" @click="unstake(props.row.hash)">unstake</q-btn>
-            <q-btn size="sm" color="aleph-radial" text-color="white" v-else :disabled="!(account&&(balance_info.ALEPH >= 10000))" @click="stake(props.row.hash)">stake</q-btn>
+            <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
+            v-if="account&&user_node&&(user_node.hash == props.row.hash)"
+            @click="drop_node(props.row.hash)">drop node</q-btn>
+            <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
+            v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)"
+            @click="unstake(props.row.hash)">unstake</q-btn>
+            <q-btn size="sm" :loading="loading==props.row.hash" color="aleph-radial" text-color="white"
+            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000))"
+            @click="stake(props.row.hash)">stake</q-btn>
           </q-td>
         </q-tr>
       </template>
@@ -133,6 +138,7 @@ export default {
     return {
       filter: '',
       createNode: false,
+      loading: null,
       columns: [
         {
           name: 'name',
@@ -194,25 +200,42 @@ export default {
   methods: {
     async creation_done () {
       this.createNode = false
+      this.loading = true
       await sleep(2000)
       await this.update()
+      this.loading = null
     },
     async update () {
       await this.$store.dispatch('update_nodes')
     },
     async stake (node_hash) {
-      await node_action('stake', node_hash)
-      await this.update()
+      this.loading = node_hash
+      try {
+        await node_action('stake', node_hash)
+        await this.update()
+      } finally {
+        this.loading = null
+      }
     },
     async unstake (node_hash) {
-      await node_action('unstake', node_hash)
-      console.log('updating')
-      await this.update()
+      this.loading = node_hash
+      try {
+        await node_action('unstake', node_hash)
+        console.log('updating')
+        await this.update()
+      } finally {
+        this.loading = null
+      }
     },
     async drop_node (node_hash) {
-      await node_action('drop-node', node_hash)
-      console.log('updating')
-      await this.update()
+      this.loading = node_hash
+      try {
+        await node_action('drop-node', node_hash)
+        console.log('updating')
+        await this.update()
+      } finally {
+        this.loading = null
+      }
     }
   },
   async created () {
