@@ -1,5 +1,8 @@
 <template>
   <q-page class="q-pa-md">
+    <q-inner-loading :showing="loading === true">
+      <q-spinner-gears size="50px" color="primary" />
+    </q-inner-loading>
     <q-dialog v-model="createNode">
       <CreateNode @done="creation_done" />
     </q-dialog>
@@ -201,7 +204,7 @@ export default {
     async creation_done () {
       this.createNode = false
       this.loading = true
-      await sleep(2000)
+      await sleep(3000)
       await this.update()
       this.loading = null
     },
