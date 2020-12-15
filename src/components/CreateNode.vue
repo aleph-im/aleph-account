@@ -21,7 +21,6 @@
         >
             <p>Your node name should be short and meaningful.</p>
             <q-input outlined v-model="name" label="Node name (optional)" />
-            <p>The node name is directly set on your address as you can have only one node active.</p>
             <p>You can change it later as well as set a picture and description</p>
         </q-step>
         <q-step
@@ -52,7 +51,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { aggregates, posts } from 'aleph-js'
+import { posts } from 'aleph-js'
 // import { aggregates } from 'aleph-js'
 
 export default {
@@ -94,15 +93,15 @@ export default {
           account: this.account,
           channel: this.channel
         })
-      await aggregates.submit(this.account.address, 'node', {
-        name: this.name,
-        multiaddress: this.multiaddress,
-        hash: result.item_hash
-      }, {
-        api_server: this.api_server,
-        account: this.account,
-        channel: this.channel
-      })
+      // await aggregates.submit(this.account.address, 'node', {
+      //   name: this.name,
+      //   multiaddress: this.multiaddress,
+      //   hash: result.item_hash
+      // }, {
+      //   api_server: this.api_server,
+      //   account: this.account,
+      //   channel: this.channel
+      // })
       this.$emit('done', result)
     }
   }
