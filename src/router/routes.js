@@ -4,19 +4,19 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      {
-        name: 'dashboard',
-        path: '',
-        component: () => import('pages/Index.vue')
-      },
-      {
-        name: 'swap',
-        path: 'swap',
-        component: () => import('pages/Swap.vue')
-      },
+      // {
+      //   name: 'dashboard',
+      //   path: '',
+      //   component: () => import('pages/Index.vue')
+      // },
+      // {
+      //   name: 'swap',
+      //   path: 'swap',
+      //   component: () => import('pages/Swap.vue')
+      // },
       {
         name: 'stake',
-        path: 'stake',
+        path: '',
         component: () => import('pages/Stake.vue')
       }
     ]

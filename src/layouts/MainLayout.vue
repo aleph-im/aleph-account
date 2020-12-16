@@ -110,9 +110,9 @@ export default {
       lbidx: 0, // default: 0,
       display_onboarding: false,
       links1: [
-        { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
-        { text: 'Nodes and Staking', link: { name: 'stake' }, exact: false },
-        { text: 'Swap', link: { name: 'swap' }, exact: false }
+        // { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
+        { text: 'Nodes and Staking', link: { name: 'stake' }, exact: false }
+        // { text: 'Swap', link: { name: 'swap' }, exact: false }
         // { icon: 'far fa-newspaper', text:'My Feed' },
         // { icon: 'photo', text: 'Photos' },
         // { icon: 'people', text: 'Contacts' }
