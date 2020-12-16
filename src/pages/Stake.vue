@@ -69,7 +69,7 @@
             v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)"
             @click="unstake(props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="aleph-radial" text-color="white"
-            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000))"
+            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node))"
             @click="stake(props.row.hash)">stake</q-btn>
           </q-td>
         </q-tr>
