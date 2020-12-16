@@ -8,7 +8,7 @@
     </q-dialog>
     <nodes-table
       v-if="my_nodes.length"
-      title="My Staking"
+      title="My Nodes"
       :values="my_nodes"
       :loading="loading"
       :user_node="user_node"
@@ -18,7 +18,7 @@
       class="q-mb-xl">
     </nodes-table>
     <nodes-table
-      title="Nodes"
+      title="All Nodes"
       :values="values"
       :loading="loading"
       :user_node="user_node"
