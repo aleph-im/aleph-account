@@ -6,84 +6,38 @@
     <q-dialog v-model="createNode">
       <CreateNode @done="creation_done" />
     </q-dialog>
-    <q-table
+    <nodes-table
+      v-if="my_nodes.length"
+      title="My Staking"
+      :values="my_nodes"
+      :loading="loading"
+      :user_node="user_node"
+      :user_stake="user_stake"
+      @node-action="node_emit_action"
+      @create-node="createNode = true"
+      class="q-mb-xl">
+    </nodes-table>
+    <nodes-table
       title="Nodes"
-      :data="values"
-      :columns="columns"
-      :filter="filter"
-      :rows-per-page-options="[15,30,60,0]"
-      flat
-      class="bg-transparent"
-    >
-      <template v-slot:top-right>
-        <span class="row">
-          <q-input borderless dense debounce="300" v-model="filter" placeholder="search nodes">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))"
-            color="aleph-radial" text-color="white"
-            class="q-ml-sm" icon="add" size="sm" @click="createNode = true" rounded>
-            Create node
-          </q-btn>
-        </span>
-      </template>
-      <template v-slot:body="props">
-        <q-tr :props="props">
-          <q-td key="name" :props="props">
-            <span class="text-grey">Node-ID:</span> {{ props.row.hash.slice(-10) }}<br />
-            {{ props.row.name }}
-          </q-td>
-          <q-td key="total_staked" :props="props" width="200">
-            <div class="row justify-between">
-              <span>
-                {{ (props.row.total_staked/1000).toFixed(0) }}k
-              </span>
-              <span style="text-transform: capitalize;">{{ props.row.status }}</span>
-            </div>
-            <q-linear-progress rounded size="5px"
-            :color="props.row.status === 'active' ? 'positive': 'inactive'"
-            :value="props.row.total_staked > 500000 ? 1.0 : props.row.total_staked/500000"
-            class="q-my-sm">
-            </q-linear-progress>
-            <div class="posbadge" :style="`margin-left: calc(${(props.row.total_staked > 450000 ? 1.0 : props.row.total_staked/500000)*80}% - 16px)`">
-              <q-badge :color="props.row.status === 'active' ? 'positive': 'inactive'"
-                       text-color="white"
-                       :label="(props.row.total_staked > 500000 ? '+' : '') + ((props.row.total_staked - 500000)/1000).toFixed(0) + 'k'" />
-            </div>
-          </q-td>
-          <q-td key="uptime" :props="props">
-            {{ props.row.uptime }} %
-          </q-td>
-          <q-td key="time" :props="props">
-            {{ new Date(props.row.time*1000).toLocaleDateString() }}
-          </q-td>
-          <q-td key="stared" :props="props">
-
-          </q-td>
-          <q-td key="actions" :props="props">
-            <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-if="account&&user_node&&(user_node.hash == props.row.hash)"
-            @click="drop_node(props.row.hash)">drop node</q-btn>
-            <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)"
-            @click="unstake(props.row.hash)">unstake</q-btn>
-            <q-btn size="sm" :loading="loading==props.row.hash" color="aleph-radial" text-color="white"
-            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node))"
-            @click="stake(props.row.hash)">stake</q-btn>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
+      :values="values"
+      :loading="loading"
+      :user_node="user_node"
+      :user_stake="user_stake"
+      :show-header="true"
+      :show-footer="true"
+      @node-action="node_emit_action"
+      @create-node="createNode = true">
+    </nodes-table>
   </q-page>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import CreateNode from '../components/CreateNode'
+import NodesTable from '../components/NodesTable'
 import { posts } from 'aleph-js'
 import store from '../store'
+
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -111,7 +65,9 @@ export default {
     nodes: state => state.nodes,
     node_post_type: 'node_post_type',
     values (state) {
-      return state.nodes
+      return state.nodes.filter((node) => {
+        return (node !== this.user_node) && (node !== this.user_stake)
+      })
     },
     user_node (state) {
       if (state.account) {
@@ -133,52 +89,27 @@ export default {
         }
       }
       return null
+    },
+    my_nodes (state) {
+      let nodes = []
+      if (state.account) {
+        if (this.user_stake) {
+          nodes.push(this.user_stake)
+        } else if (this.user_node) {
+          nodes.push(this.user_node)
+        }
+      }
+      return nodes
     }
   }),
   components: {
-    CreateNode
+    CreateNode,
+    NodesTable
   },
   data () {
     return {
-      filter: '',
       createNode: false,
-      loading: null,
-      columns: [
-        {
-          name: 'name',
-          required: true,
-          label: 'Name',
-          align: 'left',
-          field: props => props.hash + ' ' + props.name,
-          sortable: true
-        },
-        {
-          name: 'total_staked',
-          label: 'Staked',
-          field: 'total_staked',
-          align: 'left'
-        },
-        {
-          name: 'uptime',
-          label: 'Up-Time',
-          field: 'uptime'
-        },
-        {
-          name: 'time',
-          label: 'Creation Date',
-          field: 'time'
-        },
-        {
-          name: 'stared',
-          label: '',
-          field: 'stared'
-        },
-        {
-          name: 'actions',
-          label: '',
-          align: 'right'
-        }
-      ]
+      loading: null
       // values: [
       //   {
       //     id: 'node-id-123456',
@@ -212,30 +143,10 @@ export default {
     async update () {
       await this.$store.dispatch('update_nodes')
     },
-    async stake (node_hash) {
+    async node_emit_action (action, node_hash) {
       this.loading = node_hash
       try {
-        await node_action('stake', node_hash)
-        await this.update()
-      } finally {
-        this.loading = null
-      }
-    },
-    async unstake (node_hash) {
-      this.loading = node_hash
-      try {
-        await node_action('unstake', node_hash)
-        console.log('updating')
-        await this.update()
-      } finally {
-        this.loading = null
-      }
-    },
-    async drop_node (node_hash) {
-      this.loading = node_hash
-      try {
-        await node_action('drop-node', node_hash)
-        console.log('updating')
+        await node_action(action, node_hash)
         await this.update()
       } finally {
         this.loading = null
