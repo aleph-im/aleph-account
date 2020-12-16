@@ -168,6 +168,15 @@ export default {
 
       const provider = await web3Modal.connect()
 
+      provider.on('accountsChanged', async (accounts) => {
+        let account = await ethereum.from_provider(provider)
+        // let accounts = await this.w3.eth.getAccounts()
+        console.log(account)
+        if (account) {
+          this.$store.commit('set_account', account)
+        }
+      })
+
       let account = await ethereum.from_provider(provider)
       // let accounts = await this.w3.eth.getAccounts()
       console.log(account)
