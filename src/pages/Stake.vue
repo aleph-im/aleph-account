@@ -11,6 +11,7 @@
       :data="values"
       :columns="columns"
       :filter="filter"
+      :rows-per-page-options="[15,30,60,0]"
       flat
       class="bg-transparent"
     >
