@@ -28,7 +28,9 @@
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td key="name" :props="props">
-            <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong><br />
+            <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
+            <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')"></span>
+            <br />
             {{ props.row.name.substring(0, 30) }}
           </q-td>
           <q-td key="total_staked" :props="props" width="200">
@@ -51,11 +53,11 @@
             :value="props.row.total_staked > 500000 ? 1.0 : props.row.total_staked/500000"
             class="q-my-sm">
             </q-linear-progress>
-            <div class="posbadge" :style="`margin-left: calc(${(props.row.total_staked > 450000 ? 1.0 : props.row.total_staked/500000)*80}% - 16px)`">
+            <!-- <div class="posbadge" :style="`margin-left: calc(${(props.row.total_staked > 450000 ? 1.0 : props.row.total_staked/500000)*80}% - 16px)`">
               <q-badge :color="props.row.status === 'active' ? 'positive': 'inactive'"
                         text-color="white"
                         :label="(props.row.total_staked > 500000 ? '+' : '') + ((props.row.total_staked - 500000)/1000).toFixed(0) + 'k'" />
-            </div>
+            </div> -->
           </q-td>
           <q-td key="uptime" :props="props">
             <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
@@ -76,7 +78,8 @@
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary"
             v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node))" outline
             @click="$emit('node-action', 'stake', props.row.hash)">stake</q-btn>
-            <q-btn size="sm" color="primary" outline class="q-ml-sm">Info</q-btn>
+            <q-btn size="sm" color="primary" outline class="q-ml-sm"
+            @click="$emit('node-info', props.row)">Info</q-btn>
           </q-td>
         </q-tr>
       </template>

@@ -71,6 +71,10 @@ body {
     background: #95C4FF;;
 }
 
+.radius-4 {
+  border-radius: 4px;
+}
+
 .text-inactive {
     color: #95C4FF;
 }
@@ -85,4 +89,16 @@ body {
 
 strong {
   font-weight: 700;
+}
+
+#WEB3_CONNECT_MODAL_ID {
+  z-index: 100;
+}
+
+.status-pill {
+  display: inline-block;
+  border-radius: 3px;
+  width: 8px;
+  height: 8px;
+  vertical-align: baseline;
 }

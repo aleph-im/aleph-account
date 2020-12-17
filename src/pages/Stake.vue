@@ -4,7 +4,11 @@
       <q-spinner-gears size="50px" color="primary" />
     </q-inner-loading>
     <q-dialog v-model="createNode">
-      <CreateNode @done="creation_done" />
+      <create-node @done="creation_done" />
+    </q-dialog>
+    <q-dialog v-model="showNode">
+      <node-info :node="displayed_node"
+      @close="showNode=false" />
     </q-dialog>
     <nodes-table
       v-if="my_nodes.length"
@@ -15,6 +19,7 @@
       :user_stake="user_stake"
       @node-action="node_emit_action"
       @create-node="createNode = true"
+      @node-info="(node) => {showNode=true; displayed_node=node}"
       class="q-mb-xl">
     </nodes-table>
     <nodes-table
@@ -26,7 +31,8 @@
       :show-header="true"
       :show-footer="true"
       @node-action="node_emit_action"
-      @create-node="createNode = true">
+      @create-node="createNode = true"
+      @node-info="(node) => {showNode=true; displayed_node=node}">
     </nodes-table>
   </q-page>
 </template>
@@ -35,6 +41,7 @@
 import { mapState } from 'vuex'
 import CreateNode from '../components/CreateNode'
 import NodesTable from '../components/NodesTable'
+import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
 import store from '../store'
 
@@ -104,12 +111,15 @@ export default {
   }),
   components: {
     CreateNode,
-    NodesTable
+    NodesTable,
+    NodeInfo
   },
   data () {
     return {
       createNode: false,
-      loading: null
+      showNode: false,
+      loading: null,
+      displayed_node: null
       // values: [
       //   {
       //     id: 'node-id-123456',
