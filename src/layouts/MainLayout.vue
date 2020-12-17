@@ -64,7 +64,7 @@
     </q-page-container>
 
     <q-footer :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm q-pt-lg'">
-      Copyright ©2020-present <a href="https://aleph.im/">aleph.im project</a>, all rights reserved.
+      <p style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.</p>
     </q-footer>
 
   </q-layout>

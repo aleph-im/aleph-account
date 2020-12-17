@@ -21,21 +21,24 @@
         >
             <p>Your node name should be short and meaningful.</p>
             <q-input outlined v-model="name" label="Node name (optional)" />
-            <p>You can change it later as well as set a picture and description</p>
+            <p style="padding-top: 8px; opacity:.8;">You can change it later if you want and even set a picture and description</p>
         </q-step>
         <q-step
             :name="2"
-            title="Node multiaddress"
+            title="Pair multiaddress"
             icon="settings"
             :done="step > 1"
         >
-            <p>The multiaddress is the way the network will find your node.</p>
+            <p>The multiaddress is a way for the network to find your node.</p>
             <q-input outlined v-model="multiaddress" label="Multiaddress (optional)" />
-            <p>
-              You need to have a node active and a multiaddress set by Jan 11th 2021
-              if you want to continue received rewards on that date.
-              Until then, it is optional.
+            <p style="padding-top: 8px; opacity:.8;">
+              Don't worry if you still didn't install your node (server).
+              You will receive a multiaddress during the installation of your node.
+              But be warned, you need to have a node active and a multiaddress set by <b>Jan 11th 2021</b>
+              if you want to continue to receive rewards after that date.
+              Until then, it is optional and you can finish for now and comback later to pair it.
             </p>
+            <p><a href="#link" :class="($q.dark.isActive?'text-white':'text-black')" target="_blank">How do I create a muliaddress</a>?</p>
         </q-step>
 
         <template v-slot:navigation>
