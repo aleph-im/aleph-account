@@ -29,7 +29,7 @@
         <q-tr :props="props">
           <q-td key="name" :props="props">
             <span class="text-grey">Node-ID:</span> {{ props.row.hash.slice(-10) }}<br />
-            {{ props.row.name }}
+            {{ props.row.name.substring(0, 30) }}
           </q-td>
           <q-td key="total_staked" :props="props" width="200">
             <div class="row justify-between">
