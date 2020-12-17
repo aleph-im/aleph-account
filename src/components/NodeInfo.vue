@@ -111,7 +111,6 @@ export default {
 .infocard {
   width: 900px !important;
   max-width: 80vw !important;
-  background: #1d262e;
 }
 
 .body--dark {
