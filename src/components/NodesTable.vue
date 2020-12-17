@@ -20,7 +20,7 @@
           </q-input>
           <q-btn :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))"
             color="aleph-radial" text-color="white"
-            class="q-ml-sm" icon="add" size="sm" @click="$emit('create-node')">
+            class="q-ml-sm font-weight-bold" icon="add" size="sm" @click="$emit('create-node')">
             Create node
           </q-btn>
         </span>
@@ -37,11 +37,14 @@
                 <span class="text-weight-bold">
                   {{ (props.row.total_staked/1000).toFixed(0) }}k
                 </span>
-                <span class="text-weight-medium text-grey">
+                <span class="text-weight-medium text-grey" v-if="props.row.total_staked < 500000">
                   of 500k
                 </span>
+                <span class="text-weight-medium text-grey" v-else>
+                  staked
+                </span>
               </span>
-              <span style="text-transform: capitalize;">{{ props.row.status }}</span>
+              <span style="text-transform: capitalize;" class="text-weight-medium">{{ props.row.status }}</span>
             </div>
             <q-linear-progress rounded size="5px"
             :color="props.row.status === 'active' ? 'positive': 'inactive'"
@@ -70,10 +73,10 @@
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
-            <q-btn size="sm" :loading="loading==props.row.hash"
+            <q-btn size="sm" :loading="loading==props.row.hash" color="primary"
             v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node))" outline
-            :class="'border-primary text-'+($q.dark.isActive?'white':'black')"
             @click="$emit('node-action', 'stake', props.row.hash)">stake</q-btn>
+            <q-btn size="sm" color="primary" outline class="q-ml-sm">Info</q-btn>
           </q-td>
         </q-tr>
       </template>
@@ -154,5 +157,15 @@ export default {
 .q-table tbody td {
   font-size: 12px;
   line-height: 28px;
+}
+
+.body--dark {
+  .q-table tbody td {
+    .q-btn.q-btn--outline {
+      .q-btn__content {
+        color: #fff;
+      }
+    }
+  }
 }
 </style>
