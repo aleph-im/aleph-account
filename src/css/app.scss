@@ -1,5 +1,64 @@
 // app global css in SCSS form
+/* public-sans-300 - latin */
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('fonts/public-sans-v4-latin-300.eot'); /* IE9 Compat Modes */
+  src: local(''),
+        url('fonts/public-sans-v4-latin-300.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('fonts/public-sans-v4-latin-300.woff2') format('woff2'), /* Super Modern Browsers */
+        url('fonts/public-sans-v4-latin-300.woff') format('woff'), /* Modern Browsers */
+        url('fonts/public-sans-v4-latin-300.ttf') format('truetype'), /* Safari, Android, iOS */
+        url('fonts/public-sans-v4-latin-300.svg#PublicSans') format('svg'); /* Legacy iOS */
+}
 
+/* public-sans-500 - latin */
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 500;
+  src: url('fonts/public-sans-v4-latin-500.eot'); /* IE9 Compat Modes */
+  src: local(''),
+        url('fonts/public-sans-v4-latin-500.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('fonts/public-sans-v4-latin-500.woff2') format('woff2'), /* Super Modern Browsers */
+        url('fonts/public-sans-v4-latin-500.woff') format('woff'), /* Modern Browsers */
+        url('fonts/public-sans-v4-latin-500.ttf') format('truetype'), /* Safari, Android, iOS */
+        url('fonts/public-sans-v4-latin-500.svg#PublicSans') format('svg'); /* Legacy iOS */
+}
+
+/* public-sans-regular - latin */
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/public-sans-v4-latin-regular.eot'); /* IE9 Compat Modes */
+  src: local(''),
+        url('fonts/public-sans-v4-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('fonts/public-sans-v4-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+        url('fonts/public-sans-v4-latin-regular.woff') format('woff'), /* Modern Browsers */
+        url('fonts/public-sans-v4-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+        url('fonts/public-sans-v4-latin-regular.svg#PublicSans') format('svg'); /* Legacy iOS */
+}
+
+/* public-sans-700 - latin */
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('fonts/public-sans-v4-latin-700.eot'); /* IE9 Compat Modes */
+  src: local(''),
+        url('fonts/public-sans-v4-latin-700.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('fonts/public-sans-v4-latin-700.woff2') format('woff2'), /* Super Modern Browsers */
+        url('fonts/public-sans-v4-latin-700.woff') format('woff'), /* Modern Browsers */
+        url('fonts/public-sans-v4-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
+        url('fonts/public-sans-v4-latin-700.svg#PublicSans') format('svg'); /* Legacy iOS */
+}
+
+body {
+  font-family: "Public Sans", "-apple-system", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+  
 .bg-aleph-radial {
     background: linear-gradient(83.49deg, #71C9FA -108.79%, #0054FF 76.92%);
 }
