@@ -1,7 +1,7 @@
 <template>
   <q-card class="infocard">
     <div class="row">
-      <div class="col-12 col-md-5 q-pa-md" style="border-right: 1px solid #2E363B;">
+      <div class="col-12 col-md-5 q-pa-md">
         <div class="text-weight-bold text-h5 q-mb-md">Node Info</div>
         <q-input v-model="name" label="Name"
         stack-label standout :readonly="!editing"
@@ -111,11 +111,21 @@ export default {
 .infocard {
   width: 900px !important;
   max-width: 80vw !important;
+  &>.row {
+    >:first-child {
+      border-right: 1px solid rgba(0,0,0,.1);
+    }
+  }
 }
 
 .body--dark {
   .infocard {
     background: #1d262e;
+    &>.row {
+      >:first-child {
+        border-right: 1px solid rgba(255,255,255,.1);
+      }
+    }
   }
 }
 </style>
