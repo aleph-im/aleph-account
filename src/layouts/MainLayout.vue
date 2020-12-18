@@ -29,7 +29,7 @@
         <p class="q-pa-md">
           <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="32">
           <img v-else src="~/assets/logo-white.svg" height="32">
-          Testnet
+
         </p>
         <q-list padding class="menu">
           <q-item v-for="link of links1"
@@ -161,7 +161,7 @@ export default {
       }
 
       const web3Modal = new Web3Modal({
-        network: 'rinkeby', // optional
+        // network: 'rinkeby', // optional
         cacheProvider: false, // optional
         providerOptions // required
       })

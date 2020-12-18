@@ -22,8 +22,8 @@ Vue.use(Vuex)
 // export default function (/* { ssrContext } */) {
 export default new Vuex.Store({
   state: {
-    erc20_address: '0x757F951a861b812F9fbD0646d9Fa73715F790E93',
-    monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2',
+    erc20_address: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
+    monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
     api_server: 'https://api2.aleph.im',
     ipfs_gateway: 'https://ipfs.io/ipfs/',
     account: null,
@@ -42,11 +42,11 @@ export default new Vuex.Store({
       ALEPH: 0
     },
     decimals: 18,
-    channel: 'TEST',
-    ethereum_network: 'rinkeby',
+    channel: 'FOUNDATION',
+    ethereum_network: 'homestead',
     infura_key: '4890a5bd89854916b128088119d76b50',
     ethereum_provider: null,
-    tags: ['testnet', 'rinkeby'],
+    tags: ['mainnet'],
     node_post_type: 'corechan-operation'
   },
   mutations: {
