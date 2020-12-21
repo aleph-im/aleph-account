@@ -71,6 +71,7 @@ body {
     background: #95C4FF;;
 }
 
+
 .radius-4 {
   border-radius: 4px;
 }
@@ -101,4 +102,26 @@ strong {
   width: 8px;
   height: 8px;
   vertical-align: baseline;
+}
+
+.body--dark {
+  .bg-card {
+    background: #2E363B;
+    border-color: #383838;
+  }
+}
+.bg-card {
+  background: #FAFAFA;
+  border-color: #FAFAFA;
+}
+
+.q-field--standout.q-field--dark .q-field__control {
+  background: #223038;
+}
+
+.q-card {
+  .text-h6 {
+    font-size: 25px;
+    font-weight: 700;
+  }
 }

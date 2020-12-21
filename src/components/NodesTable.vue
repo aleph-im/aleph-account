@@ -10,6 +10,7 @@
       flat
       class="bg-transparent"
       :hide-bottom="!showFooter"
+      :dense="$q.screen.lt.md"
     >
       <template v-slot:top-right>
         <span class="row" v-if="showHeader">

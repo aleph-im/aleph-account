@@ -10,6 +10,74 @@
       <node-info :node="displayed_node"
       @close="showNode=false" />
     </q-dialog>
+    <div class="row q-gutter-md">
+      <q-card flat class="bg-card">
+        <q-card-section>
+          <div class="text-bold">Nodes</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <vc-donut :sections="nodes_sections"
+          :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :size="70" unit="px" :thickness="30"
+          :total="nodes.length" has-legend legend-placement="right"></vc-donut>
+        </q-card-section>
+      </q-card>
+      <q-card flat class="bg-card">
+        <q-card-section>
+          <div class="text-bold">Staked</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <vc-donut :sections="staking_sections"
+          :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :size="70" unit="px" :thickness="30"
+          :total="staking_sections.reduce((prev, cur) => prev + cur.value, 0)"
+          has-legend legend-placement="right"></vc-donut>
+        </q-card-section>
+      </q-card>
+      <q-card flat class="bg-card">
+        <q-card-section>
+          <div class="text-bold">Staking reward calculator</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none row q-gutter-md">
+          <div class="q-pt-none">
+            <q-input v-model="calculator_staked" label="Amount staked"
+            standout />
+          </div>
+
+          <div>
+            <div class="row justify-between q-mb-sm q-gutter-lg">
+              <span>
+                Reward per day
+              </span>
+              <span style="text-transform: capitalize;">
+                {{(total_per_aleph_per_day * calculator_staked).toFixed(2)}} ALEPH
+              </span>
+            </div>
+            <div class="row justify-between q-mb-sm q-gutter-md">
+              <span>
+                Current APY
+              </span>
+              <span style="text-transform: capitalize;">
+                {{((((1+(total_per_aleph_per_day * calculator_staked)/calculator_staked)**365)-1)*100).toFixed(2)}}%
+              </span>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+      <q-card flat class="bg-card col">
+        <q-card-section>
+          <div class="text-bold">Node reward</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          With {{active_nodes}} active nodes, a node receives approximately <strong>{{(15000/active_nodes).toFixed(2)}} ALEPH</strong> per day
+          and <strong>{{(15000/active_nodes*30).toFixed(2)}} ALEPH</strong> per month on average.
+        </q-card-section>
+      </q-card>
+    </div>
     <nodes-table
       v-if="my_nodes.length"
       title="My Nodes"
@@ -107,6 +175,49 @@ export default {
         }
       }
       return nodes
+    },
+    active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
+    nodes_sections (state) {
+      const total_nodes = state.nodes.length
+      return [
+        {
+          label: `${total_nodes} nodes`,
+          value: total_nodes - this.active_nodes,
+          color: '#71C9FA'
+        },
+        {
+          label: `${this.active_nodes} active`,
+          value: this.active_nodes,
+          color: '#0054FF'
+        }
+      ]
+    },
+    total_staked: (state) => state.nodes.reduce(
+      (prev, cur) => prev + cur.total_staked, 0
+    ),
+    total_staked_in_active: (state) => state.nodes.reduce(
+      (prev, cur) => prev + (cur.status === 'active' ? cur.total_staked : 0), 0
+    ),
+    staking_sections (state) {
+      const total_by_operators = state.nodes.length * 200000
+      return [
+        {
+          label: `${(this.total_staked / 10 ** 6).toFixed(2)}M by stakers`,
+          value: this.total_staked,
+          color: '#71C9FA'
+        },
+        {
+          label: `${(total_by_operators / 10 ** 6).toFixed(2)}M by node operators`,
+          value: total_by_operators,
+          color: '#0054FF'
+        }
+      ]
+    },
+    total_per_day (state) {
+      return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
+    },
+    total_per_aleph_per_day (state) {
+      return this.total_per_day / this.total_staked_in_active
     }
   }),
   components: {
@@ -119,7 +230,8 @@ export default {
       createNode: false,
       showNode: false,
       loading: null,
-      displayed_node: null
+      displayed_node: null,
+      calculator_staked: 10000
       // values: [
       //   {
       //     id: 'node-id-123456',
@@ -184,6 +296,16 @@ export default {
     line-height: 10px;
     font-size: 9px;
     padding: 2px;
+  }
+}
+
+.cdc-legend-item {
+  font-size: 12px;
+  line-height: 14px;
+  .cdc-legend-item-color {
+    height: 8px;
+    width: 8px;
+    border-radius: 4px;
   }
 }
 </style>
