@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lhh lpR lff">
+  <q-layout view="lhh LpR lff">
     <q-header :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm'">
       <q-toolbar>
 
