@@ -61,7 +61,7 @@
                 Current APY
               </span>
               <span style="text-transform: capitalize;">
-                {{((((1+(total_per_aleph_per_day * calculator_staked)/calculator_staked)**365)-1)*100).toFixed(2)}}%
+                {{((((1+total_per_aleph_per_day)**365)-1)*100).toFixed(2)}}%
               </span>
             </div>
           </div>
@@ -273,10 +273,25 @@ export default {
       } finally {
         this.loading = null
       }
+    },
+    async update_calculator () {
+      if (this.account && this.balance_info && this.balance_info.ALEPH) {
+        this.calculator_staked = this.balance_info.ALEPH.toFixed(0)
+      } else {
+        this.calculator_staked = 10000
+      }
     }
   },
   async created () {
     await this.update()
+  },
+  watch: {
+    account (account) {
+      this.update_calculator()
+    },
+    balance_info (account) {
+      this.update_calculator()
+    }
   }
 }
 </script>
