@@ -8,7 +8,8 @@
     </q-dialog>
     <q-dialog v-model="showNode">
       <node-info :node="displayed_node"
-      @close="showNode=false" />
+      @close="showNode=false"
+      @done="edit_done" />
     </q-dialog>
     <div class="row q-gutter-md">
       <q-card flat class="bg-card">
@@ -256,6 +257,13 @@ export default {
   methods: {
     async creation_done () {
       this.createNode = false
+      this.loading = true
+      await sleep(3000)
+      await this.update()
+      this.loading = null
+    },
+    async edit_done () {
+      this.showNode = false
       this.loading = true
       await sleep(3000)
       await this.update()

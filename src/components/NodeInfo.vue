@@ -12,7 +12,7 @@
         <q-input v-model="description" label="Description" hint="optional"
         stack-label standout :readonly="!editing" type="textarea"
         class="q-my-sm" />
-        <q-btn color="primary" v-if="editing">Save</q-btn>
+        <q-btn color="primary" v-if="editing" @click="save">Save</q-btn>
       </div>
       <div class="col-12 col-md-7 q-pa-md">
         <div class="row justify-between">
@@ -63,7 +63,7 @@
 
 <script>
 import { mapState } from 'vuex'
-// import { posts } from 'aleph-js'
+import { posts } from 'aleph-js'
 // import { aggregates } from 'aleph-js'
 
 export default {
@@ -99,6 +99,25 @@ export default {
       this.name = this.node.name
       this.multiaddress = this.node.multiaddress
       this.description = this.node.description
+    },
+    async save () {
+      let result = await posts.submit(this.account.address, 'amend',
+        {
+          tags: ['create-node', ...this.tags],
+          action: 'create-node',
+          details: {
+            name: this.name,
+            multiaddress: this.multiaddress,
+            description: this.description
+          }
+        },
+        {
+          api_server: this.api_server,
+          account: this.account,
+          channel: this.channel,
+          ref: this.node.hash
+        })
+      this.$emit('done', result)
     }
   },
   watch: {
