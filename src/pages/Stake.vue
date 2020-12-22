@@ -97,7 +97,6 @@
       :user_node="user_node"
       :user_stake="user_stake"
       :show-header="true"
-      :show-footer="true"
       @node-action="node_emit_action"
       @create-node="createNode = true"
       @node-info="(node) => {showNode=true; displayed_node=node}">

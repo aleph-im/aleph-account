@@ -5,7 +5,7 @@
       :data="values"
       :columns="columns"
       :filter="filter"
-      :rows-per-page-options="[15,30,60,0]"
+      :rows-per-page-options="[0]"
       row-key="hash"
       flat
       class="bg-transparent"
