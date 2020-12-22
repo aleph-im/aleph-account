@@ -77,7 +77,7 @@
             v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary"
-            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(props.row.total_staked<1000000))" outline
+            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(props.row.total_staked<2000000))" outline
             @click="$emit('node-action', 'stake', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
@@ -163,7 +163,7 @@ export default {
         return 'You need at least 10000 ALEPH to stake'
       } else if (this.user_node) {
         return 'You can\'t stake while you operate a node'
-      } else if (node.total_staked >= 1000000) {
+      } else if (node.total_staked >= 2000000) {
         return 'Too many ALEPH staked on that node'
       } else {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
