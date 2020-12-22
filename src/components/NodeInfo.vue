@@ -9,9 +9,10 @@
         <q-input v-model="multiaddress" label="Multi-Address"
         stack-label standout :readonly="!editing"
         class="q-my-sm" />
-        <q-input v-model="desscription" label="Description" hint="optional"
+        <q-input v-model="description" label="Description" hint="optional"
         stack-label standout :readonly="!editing" type="textarea"
         class="q-my-sm" />
+        <q-btn color="primary" v-if="editing">Save</q-btn>
       </div>
       <div class="col-12 col-md-7 q-pa-md">
         <div class="row justify-between">
@@ -67,13 +68,18 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'node-info',
-  computed: mapState([
-    'account',
-    'channel',
-    'api_server',
-    'tags',
-    'node_post_type'
-  ]),
+  computed: {
+    editing () {
+      return (this.account && (this.node.owner === this.account.address))
+    },
+    ...mapState([
+      'account',
+      'channel',
+      'api_server',
+      'tags',
+      'node_post_type'
+    ])
+  },
   props: [
     'node'
   ],
@@ -81,8 +87,7 @@ export default {
     return {
       name: '',
       multiaddress: '',
-      description: '',
-      editing: false
+      description: ''
     }
   },
   methods: {
