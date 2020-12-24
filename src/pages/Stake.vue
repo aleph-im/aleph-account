@@ -32,7 +32,7 @@
           :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :size="70" unit="px" :thickness="30"
-          :total="staking_sections.reduce((prev, cur) => prev + cur.value, 0)"
+          :total="staking_sections.reduce((prev, cur) => prev + cur.value, 0)+1"
           has-legend legend-placement="right"></vc-donut>
         </q-card-section>
       </q-card>
@@ -97,7 +97,6 @@
       :user_node="user_node"
       :user_stake="user_stake"
       :show-header="true"
-      :show-footer="true"
       @node-action="node_emit_action"
       @create-node="createNode = true"
       @node-info="(node) => {showNode=true; displayed_node=node}">
