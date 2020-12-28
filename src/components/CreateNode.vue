@@ -38,7 +38,7 @@
               if you want to continue to receive rewards after that date.
               Until then, it is optional and you can finish for now and comback later to pair it.
             </p>
-            <p><a href="#link" :class="($q.dark.isActive?'text-white':'text-black')" target="_blank">How do I create a muliaddress</a>?</p>
+            <p><a href="https://bit.ly/3mw3GYK" :class="($q.dark.isActive?'text-white':'text-black')" target="_blank">How to create a node</a>!</p>
         </q-step>
 
         <template v-slot:navigation>
