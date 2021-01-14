@@ -85,7 +85,7 @@
       :values="my_nodes"
       :loading="loading"
       :user_node="user_node"
-      :user_stake="user_stake"
+      :user_stakes="user_stakes"
       @node-action="node_emit_action"
       @create-node="createNode = true"
       @node-info="(node) => {showNode=true; displayed_node=node}"
@@ -96,7 +96,7 @@
       :values="values"
       :loading="loading"
       :user_node="user_node"
-      :user_stake="user_stake"
+      :user_stakes="user_stakes"
       :show-header="true"
       @node-action="node_emit_action"
       @create-node="createNode = true"
@@ -141,7 +141,7 @@ export default {
     node_post_type: 'node_post_type',
     values (state) {
       return state.nodes.filter((node) => {
-        return (node !== this.user_node) && (node !== this.user_stake)
+        return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
       })
     },
     user_node (state) {
@@ -155,21 +155,22 @@ export default {
       }
       return null
     },
-    user_stake (state) {
+    user_stakes (state) {
+      let nodes = []
       if (state.account) {
         for (let node of state.nodes) {
           if (Object.keys(node.stakers).includes(state.account.address)) {
-            return node
+            nodes.push(node)
           }
         }
       }
-      return null
+      return nodes
     },
     my_nodes (state) {
       let nodes = []
       if (state.account) {
-        if (this.user_stake) {
-          nodes.push(this.user_stake)
+        if (this.user_stakes) {
+          nodes = nodes.concat(this.user_stakes)
         } else if (this.user_node) {
           nodes.push(this.user_node)
         }

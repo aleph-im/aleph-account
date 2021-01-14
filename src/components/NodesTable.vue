@@ -70,15 +70,20 @@
 
           </q-td>
           <q-td key="actions" :props="props">
+            <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
+              {{props.row.stakers[account.address].toFixed(2)}}
+              <img v-if="(!left)&&(!$q.dark.isActive)" src="~/assets/logo-blue.svg" height="18" class="vertical-middle q-pb-xs">
+              <img v-if="(!left)&&$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
+            </span>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-if="account&&user_node&&(user_node.hash == props.row.hash)"
             @click="$emit('node-action', 'drop-node', props.row.hash)">drop node</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-else-if="account&&user_stake&&(user_stake.hash == props.row.hash)"
+            v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary"
             v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(props.row.total_staked<2000000))" outline
-            @click="$emit('node-action', 'stake', props.row.hash)">
+            @click="$emit('node-action', 'stake-split', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
@@ -108,7 +113,7 @@ export default {
     'values',
     'title',
     'user_node',
-    'user_stake',
+    'user_stakes',
     'loading',
     'showHeader',
     'showFooter'
@@ -165,6 +170,8 @@ export default {
         return 'You can\'t stake while you operate a node'
       } else if (node.total_staked >= 2000000) {
         return 'Too many ALEPH staked on that node'
+      } else if (this.user_stakes.length) {
+        return 'Add this node to your staking (each node will have an equal part of your total balance staked)'
       } else {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
       }
