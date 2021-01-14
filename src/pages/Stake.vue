@@ -147,6 +147,7 @@ export default {
     user_node (state) {
       if (state.account) {
         for (let node of state.nodes) {
+          console.log(node.owner)
           if (state.account.address === node.owner) {
             console.log(node)
             return node
@@ -169,12 +170,13 @@ export default {
     my_nodes (state) {
       let nodes = []
       if (state.account) {
-        if (this.user_stakes) {
+        if (this.user_stakes.length) {
           nodes = nodes.concat(this.user_stakes)
         } else if (this.user_node) {
           nodes.push(this.user_node)
         }
       }
+      console.log(nodes)
       return nodes
     },
     active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
