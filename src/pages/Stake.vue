@@ -68,7 +68,7 @@
           </div>
         </q-card-section>
       </q-card>
-      <q-card flat class="bg-card col">
+      <q-card flat class="bg-card col" style="min-width: 25%">
         <q-card-section>
           <div class="text-bold">Node reward</div>
         </q-card-section>
@@ -142,7 +142,7 @@ export default {
     values (state) {
       return state.nodes.filter((node) => {
         return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
-      })
+      }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
     },
     user_node (state) {
       if (state.account) {
