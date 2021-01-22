@@ -28,6 +28,9 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td key="picture" :props="props" style="font-size: 2.5em; padding-right: 0;">
+            <q-icon v-if="props.row.picture" :name="`img:${api_server}/api/v0/storage/raw/${props.row.picture}`" class="rounded-borders" />
+          </q-td>
           <q-td key="name" :props="props">
             <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
             <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')"></span>
@@ -122,6 +125,9 @@ export default {
     return {
       filter: '',
       columns: [
+        {
+          name: 'picture'
+        },
         {
           name: 'name',
           required: true,
