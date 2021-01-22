@@ -20,31 +20,31 @@
       <div class="col-12 col-md-5 q-pa-md" v-if="!editing">
         <div class="text-weight-bold text-h5 q-mb-md">Node Info</div>
         <q-list>
-          <q-item class="bg-dark50 rounded-borders q-mb-sm">
+          <q-item class="standout">
             <q-item-section>
               <q-item-label caption>Name</q-item-label>
               <q-item-label>{{name}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="bg-dark50 rounded-borders q-mb-sm">
+          <q-item class="standout">
             <q-item-section>
               <q-item-label caption>Owner</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{node.owner}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item v-if="node.reward !== node.owner"  class="bg-dark50 rounded-borders q-mb-sm">
+          <q-item v-if="node.reward !== node.owner"  class="standout">
             <q-item-section>
               <q-item-label caption>Reward address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{node.reward}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="bg-dark50 rounded-borders q-mb-sm">
+          <q-item class="standout">
             <q-item-section>
               <q-item-label caption>Multi-Address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{multiaddress}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item v-if="description"  class="bg-dark50 rounded-borders q-mb-sm">
+          <q-item v-if="description"  class="standout">
             <q-item-section>
               <q-item-label caption>Description</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{description}}</q-item-label>
