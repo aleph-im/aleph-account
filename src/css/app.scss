@@ -104,10 +104,20 @@ strong {
   vertical-align: baseline;
 }
 
+.q-item.standout {
+  border-radius: $generic-border-radius;
+  background: #FAFAFA;
+  margin-bottom: 1em;
+}
+
 .body--dark {
   .bg-card {
     background: #2E363B;
     border-color: #383838;
+  }
+
+  .q-item.standout {
+    background-color: #223038;
   }
 }
 .bg-card {
