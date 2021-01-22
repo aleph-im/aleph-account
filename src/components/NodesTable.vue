@@ -11,6 +11,7 @@
       class="bg-transparent"
       :hide-bottom="!showFooter"
       :dense="$q.screen.lt.md"
+      :visible-columns="visible_columns"
     >
       <template v-slot:top-right>
         <span class="row" v-if="showHeader">
@@ -33,9 +34,20 @@
           </q-td>
           <q-td key="name" :props="props">
             <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
-            <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')"></span>
+            <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
             {{ props.row.name.substring(0, 30) }}
+            <div class="lt-sm">
+              <span class="text-weight-bold">
+                {{ (props.row.total_staked/1000).toFixed(0) }}k
+              </span>
+              <span class="text-weight-medium text-grey" v-if="props.row.total_staked < 500000">
+                of 500k
+              </span>
+              <span class="text-weight-medium text-grey" v-else>
+                staked
+              </span>
+            </div>
           </q-td>
           <q-td key="total_staked" :props="props" width="200">
             <div class="row justify-between">
@@ -104,14 +116,35 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'nodes-table',
-  computed: mapState([
-    'account',
-    'channel',
-    'api_server',
-    'tags',
-    'node_post_type',
-    'balance_info'
-  ]),
+  computed: {
+    visible_columns () {
+      if (this.$q.screen.lt.sm) {
+        return [
+          'picture',
+          'name',
+          'actions'
+        ]
+      } else {
+        return [
+          'picture',
+          'name',
+          'total_staked',
+          'uptime',
+          'time',
+          'stared',
+          'actions'
+        ]
+      }
+    },
+    ...mapState([
+      'account',
+      'channel',
+      'api_server',
+      'tags',
+      'node_post_type',
+      'balance_info'
+    ])
+  },
   props: [
     'values',
     'title',
