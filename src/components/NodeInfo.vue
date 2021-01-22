@@ -1,16 +1,80 @@
 <template>
   <q-card class="infocard">
+    <q-img
+      :src="`${api_server}/api/v0/storage/raw/${node.banner}`"
+      basic
+      :ratio="32/9"
+      v-if="node.banner"
+    >
+        <div class="absolute-bottom">
+          <div class="text-h6">
+            <q-icon v-if="node.picture" :name="`img:${api_server}/api/v0/storage/raw/${node.picture}`" class="rounded-borders" />
+            {{name}}
+          </div>
+          <p v-if="description" class="q-mb-none q-pt-sm">
+            {{description}}
+          </p>
+        </div>
+    </q-img>
     <div class="row">
-      <div class="col-12 col-md-5 q-pa-md">
+      <div class="col-12 col-md-5 q-pa-md" v-if="!editing">
+        <div class="text-weight-bold text-h5 q-mb-md">Node Info</div>
+        <q-list>
+          <q-item class="bg-dark50 rounded-borders q-mb-sm">
+            <q-item-section>
+              <q-item-label caption>Name</q-item-label>
+              <q-item-label>{{name}}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item class="bg-dark50 rounded-borders q-mb-sm">
+            <q-item-section>
+              <q-item-label caption>Owner</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{node.owner}}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item v-if="node.reward !== node.owner"  class="bg-dark50 rounded-borders q-mb-sm">
+            <q-item-section>
+              <q-item-label caption>Reward address</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{node.reward}}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item class="bg-dark50 rounded-borders q-mb-sm">
+            <q-item-section>
+              <q-item-label caption>Multi-Address</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{multiaddress}}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item v-if="description"  class="bg-dark50 rounded-borders q-mb-sm">
+            <q-item-section>
+              <q-item-label caption>Description</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{description}}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+      <div class="col-12 col-md-5 q-pa-md" v-if="editing">
         <div class="text-weight-bold text-h5 q-mb-md">Node Info</div>
         <q-input v-model="name" label="Name"
-        stack-label standout :readonly="!editing"
+        stack-label standout
+        class="q-my-sm" />
+        <q-input v-model="reward" label="Reward address"
+        stack-label standout
         class="q-my-sm" />
         <q-input v-model="multiaddress" label="Multi-Address"
-        stack-label standout :readonly="!editing"
+        stack-label standout
         class="q-my-sm" />
         <q-input v-model="description" label="Description" hint="optional"
-        stack-label standout :readonly="!editing" type="textarea"
+        stack-label standout type="textarea"
+        class="q-my-sm" />
+        <q-file v-model="picture" label="Icon"
+        stack-label standout :hint="'Max. 50kB, optional.' + (node.picture ? ' There is one already, replace it?' : '')"
+        accept=".jpg, image/*"
+        max-file-size="51200"
+        class="q-my-sm" />
+        <q-file v-model="banner" label="Banner"
+        stack-label standout
+        accept=".jpg, image/*" :hint="'Max. 1MB, optional.' + (node.banner ? ' There is one already, replace it?' : '')"
+        max-file-size="1048576"
         class="q-my-sm" />
         <q-btn color="primary" v-if="editing" @click="save">Save</q-btn>
       </div>
@@ -63,7 +127,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { posts } from 'aleph-js'
+import { posts, store } from 'aleph-js'
 // import { aggregates } from 'aleph-js'
 
 export default {
@@ -87,10 +151,25 @@ export default {
     return {
       name: '',
       multiaddress: '',
-      description: ''
+      description: '',
+      reward: '',
+      picture: null,
+      banner: null
     }
   },
   methods: {
+    async upload_file (fileobject) {
+      let message = await store.submit(
+        this.account.address,
+        {
+          fileobject: fileobject,
+          channel: this.channel,
+          api_server: this.api_server,
+          account: this.account
+        })
+
+      return message.content.item_hash
+    },
     async advance () {
     },
     async finish () {
@@ -99,8 +178,17 @@ export default {
       this.name = this.node.name
       this.multiaddress = this.node.multiaddress
       this.description = this.node.description
+      this.reward = this.node.reward
     },
     async save () {
+      let picture = this.node.picture
+      if (this.picture) {
+        picture = await this.upload_file(this.picture)
+      }
+      let banner = this.node.banner
+      if (this.banner) {
+        banner = await this.upload_file(this.banner)
+      }
       let result = await posts.submit(this.account.address, 'amend',
         {
           tags: ['create-node', ...this.tags],
@@ -108,7 +196,10 @@ export default {
           details: {
             name: this.name,
             multiaddress: this.multiaddress,
-            description: this.description
+            description: this.description,
+            reward: this.reward,
+            picture: picture,
+            banner: banner
           }
         },
         {
