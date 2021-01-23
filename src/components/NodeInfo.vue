@@ -3,7 +3,7 @@
     <q-img
       :src="`${api_server}/api/v0/storage/raw/${node.banner}`"
       basic
-      :ratio="32/9"
+      :ratio="$q.screen.lt.md ? 4/3 : 32/9"
       v-if="node.banner"
     >
         <div class="absolute-bottom">
