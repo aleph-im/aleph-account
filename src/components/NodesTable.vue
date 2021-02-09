@@ -36,6 +36,11 @@
             <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
             <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
+            <q-icon name="lock" v-if="props.row.locked">
+              <q-tooltip>
+                No staker can join this node.
+              </q-tooltip>
+            </q-icon>
             {{ props.row.name.substring(0, 30) }}
             <div class="lt-sm">
               <span class="text-weight-bold">
@@ -97,7 +102,7 @@
             v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary"
-            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(props.row.total_staked<2000000))" outline
+            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<1000000))" outline
             @click="$emit('node-action', 'stake-split', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
@@ -207,7 +212,9 @@ export default {
         return 'You need at least 10000 ALEPH to stake'
       } else if (this.user_node) {
         return 'You can\'t stake while you operate a node'
-      } else if (node.total_staked >= 2000000) {
+      } else if (node.locked) {
+        return 'This node is locked'
+      } else if (node.total_staked >= 1000000) {
         return 'Too many ALEPH staked on that node'
       } else if (this.user_stakes.length) {
         return 'Add this node to your staking (each node will have an equal part of your total balance staked)'

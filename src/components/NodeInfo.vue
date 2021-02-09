@@ -18,7 +18,14 @@
     </q-img>
     <div class="row">
       <div class="col-12 col-md-5 q-pa-md" v-if="!editing">
-        <div class="text-weight-bold text-h5 q-mb-md">Node Info</div>
+        <div class="text-weight-bold text-h5 q-mb-md">
+          <q-icon name="lock" v-if="locked" class="float-right">
+            <q-tooltip>
+              No staker can join this node.
+            </q-tooltip>
+          </q-icon>
+          Node Info
+        </div>
         <q-list>
           <q-item class="standout">
             <q-item-section>
@@ -53,7 +60,9 @@
         </q-list>
       </div>
       <div class="col-12 col-md-5 q-pa-md" v-if="editing">
-        <div class="text-weight-bold text-h5 q-mb-md">Node Info</div>
+        <div class="text-weight-bold text-h5 q-mb-md">
+          Node Info
+        </div>
         <q-input v-model="name" label="Name"
         stack-label standout
         class="q-my-sm" />
@@ -76,7 +85,21 @@
         accept=".jpg, image/*" :hint="'Max. 1MB, optional.' + (node.banner ? ' There is one already, replace it?' : '')"
         max-file-size="1048576"
         class="q-my-sm" />
-        <q-btn color="primary" v-if="editing" @click="save">Save</q-btn>
+        <div class="flex justify-between">
+          <q-btn color="primary" v-if="editing" @click="save">Save</q-btn>
+          <q-toggle
+            v-model="locked"
+            unchecked-icon="lock_open"
+            checked-icon="lock"
+            color="red"
+            :label="locked ? 'Locked' : 'Unlocked'"
+            left-label
+          >
+            <q-tooltip>
+              Prevent stakers from joining this node.
+            </q-tooltip>
+          </q-toggle>
+        </div>
       </div>
       <div class="col-12 col-md-7 q-pa-md">
         <div class="row justify-between">
@@ -154,7 +177,8 @@ export default {
       description: '',
       reward: '',
       picture: null,
-      banner: null
+      banner: null,
+      locked: false
     }
   },
   methods: {
@@ -179,6 +203,7 @@ export default {
       this.multiaddress = this.node.multiaddress
       this.description = this.node.description
       this.reward = this.node.reward
+      this.locked = this.node.locked
     },
     async save () {
       let picture = this.node.picture
@@ -199,7 +224,8 @@ export default {
             description: this.description,
             reward: this.reward,
             picture: picture,
-            banner: banner
+            banner: banner,
+            locked: this.locked
           }
         },
         {
