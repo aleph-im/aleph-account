@@ -70,12 +70,8 @@
   </q-layout>
 </template>
 <script>
-import Web3Modal from 'web3modal'
-import WalletConnectProvider from '@walletconnect/web3-provider'
-import Portis from '@portis/web3'
-import MewConnect from '@myetherwallet/mewconnect-web-client'
-
 import { ellipseAddress } from '../helpers/utilities'
+import { ethers } from 'ethers'
 
 import { mapState } from 'vuex'
 import {
@@ -109,6 +105,8 @@ export default {
       lbvisible: false,
       lbidx: 0, // default: 0,
       display_onboarding: false,
+      provider: null,
+      eth_chain_id: null,
       links1: [
         // { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
         { text: 'Nodes and Staking', link: { name: 'stake' }, exact: false }
@@ -137,52 +135,23 @@ export default {
     }
   },
   methods: {
+    async update_eth_account () {
+      let account = await ethereum.from_provider(window.ethereum)
+      this.$store.commit('set_account', account)
+    },
     async web3Connect () {
-      const providerOptions = {
-        /* See Provider Options Section */
-        walletconnect: {
-          package: WalletConnectProvider, // required
-          options: {
-            infuraId: this.infura_key // required
-          }
-        },
-        portis: {
-          package: Portis, // required
-          options: {
-            id: '9e6ad33b-ef5c-49a1-b39c-e664dfc862d1' // required
-          }
-        },
-        mewconnect: {
-          package: MewConnect, // required
-          options: {
-            infuraId: this.infura_key // required
-          }
-        }
-      }
+      await window.ethereum.enable()
 
-      const web3Modal = new Web3Modal({
-        // network: 'rinkeby', // optional
-        cacheProvider: false, // optional
-        providerOptions // required
+      let provider = new ethers.providers.Web3Provider(window.ethereum)
+
+      provider.on('network', async (newNetwork, oldNetwork) => {
+        this.eth_chain_id = newNetwork.chainId
+        await this.update_eth_account()
       })
 
-      const provider = await web3Modal.connect()
-
-      provider.on('accountsChanged', async (accounts) => {
-        let account = await ethereum.from_provider(provider)
-        // let accounts = await this.w3.eth.getAccounts()
-        console.log(account)
-        if (account) {
-          this.$store.commit('set_account', account)
-        }
+      window.ethereum.on('accountsChanged', async (account) => {
+        await this.update_eth_account()
       })
-
-      let account = await ethereum.from_provider(provider)
-      // let accounts = await this.w3.eth.getAccounts()
-      console.log(account)
-      if (account) {
-        this.$store.commit('set_account', account)
-      }
     }
   },
   created () {
