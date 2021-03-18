@@ -16,14 +16,15 @@
         <q-btn-group class="shadow-1 bg-aleph-radial">
           <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="web3Connect">Connect to a wallet</q-btn>
           <q-btn v-if="account" class="text-white">
-            {{balance_info['ALEPH'].toFixed(2)}} <img src="~/assets/logo-white.svg" style="height: 1.4em; margin: 0 0 .2em .4em;"/>
+            {{balance_info['ALEPH'].toFixed(2)}}
+            &nbsp;/ {{owed_rewards.toFixed(2)}} <img src="~/assets/logo-white.svg" style="height: 1.4em; margin: 0 0 .2em .4em;"/>
           </q-btn>
           <q-btn v-if="account" color="white" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
         </q-btn-group>
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="left" side="left" content-class="column justify-between" :width="200">
+    <q-drawer show-if-above v-model="left" side="left" content-class="column justify-between q-pa-md" :width="250">
       <!-- drawer content -->
       <div>
         <p class="q-pa-md">
@@ -32,7 +33,9 @@
 
         </p>
         <q-list padding class="menu">
-          <q-item v-for="link of links1"
+          <template v-for="item of links">
+            <q-item-label header v-if="item.title" :key="item.title">{{item.title}}</q-item-label>
+            <q-item v-for="link of item.items"
                     :key="link.text"
                     clickable v-ripple
                     :to="link.link" :exact="link.exact">
@@ -44,6 +47,7 @@
                 {{link.text}}
               </q-item-section>
             </q-item>
+          </template>
         </q-list>
       </div>
       <div>
@@ -54,6 +58,13 @@
             </q-item-section>
             <q-item-section avatar>
               <q-toggle :value="$q.dark.isActive" @input="$q.dark.set(!$q.dark.isActive)" />
+            </q-item-section>
+          </q-item>
+          <q-separator />
+          <q-item class="q-mt-sm">
+            <q-item-section>
+              <q-item-label caption>0 GB of {{(allowance/1000).toFixed(3)}} GB</q-item-label>
+              <q-linear-progress :value="storage" class="q-my-sm" rounded />
             </q-item-section>
           </q-item>
         </q-list>
@@ -127,9 +138,21 @@ export default {
       eth_chain_id: null,
       last_distribution: null,
       last_calculation: null,
-      links1: [
-        // { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
-        { text: 'Nodes and Staking', link: { name: 'stake' }, exact: false }
+      links: [
+        {
+          title: 'Earn',
+          items: [
+            { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
+            { text: 'Nodes and Staking', link: { name: 'stake' }, exact: true }
+          ]
+        },
+        {
+          title: 'Store',
+          items: [
+            { text: 'IPFS Pinning', link: { name: 'ipfs' }, exact: true }
+          ]
+        }
+
         // { text: 'Swap', link: { name: 'swap' }, exact: false }
         // { icon: 'far fa-newspaper', text:'My Feed' },
         // { icon: 'photo', text: 'Photos' },
