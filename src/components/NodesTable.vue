@@ -96,18 +96,18 @@
               <img v-if="(!left)&&$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
             </span>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-if="account&&user_node&&(user_node.hash == props.row.hash)"
+            v-if="account&&user_node&&(user_node.hash == props.row.hash)" type="a"
             @click="$emit('node-action', 'drop-node', props.row.hash)">drop node</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)"
+            v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)" type="a"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
-            <q-btn size="sm" :loading="loading==props.row.hash" color="primary"
+            <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
             v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<1000000))" outline
             @click="$emit('node-action', 'stake-split', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
-            <q-btn size="sm" color="primary" outline class="q-ml-sm"
+            <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">Info</q-btn>
           </q-td>
         </q-tr>
