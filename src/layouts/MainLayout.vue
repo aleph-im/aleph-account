@@ -18,6 +18,10 @@
           <q-btn v-if="account" class="text-white">
             {{balance_info['ALEPH'].toFixed(2)}}
             &nbsp;/ {{owed_rewards.toFixed(2)}} <img src="~/assets/logo-white.svg" style="height: 1.4em; margin: 0 0 .2em .4em;"/>
+            <q-tooltip>
+              <strong>Amount staked / pending rewards</strong><br />
+              Rewards are sent every few days when gas is low.
+            </q-tooltip>
           </q-btn>
           <q-btn v-if="account" color="white" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
         </q-btn-group>
@@ -102,6 +106,7 @@ export default {
     mb_per_aleph: state => state.mb_per_aleph,
     sender_address: state => state.sender_address,
     monitor_address: state => state.monitor_address,
+    ws_api_server: 'ws_api_server',
 
     allowance: function (state) {
       if ((this.balance_info !== null) && (this.balance_info.ALEPH !== undefined)) {
@@ -178,6 +183,40 @@ export default {
     }
   },
   methods: {
+    async prepare_distributions_feed () {
+      const statusSocket = new WebSocket(
+        `${this.ws_api_server}/api/ws0/messages?msgType=POST&contentTypes=staking-rewards-distribution&addresses=` +
+        `${this.sender_address},${this.monitor_address}`
+      )
+
+      statusSocket.onmessage = function (event) {
+        const data = JSON.parse(event.data)
+        console.log(data)
+        console.log(data.content.content.status)
+        if (data.content.content.status === 'distribution') {
+          for (let dist of data.content.content.targets) {
+            if (dist.success) {
+              this.last_distribution = data.content
+            }
+          }
+        } else if (data.content.content.status === 'calculation') {
+          console.log('setting value', data.content)
+          this.last_calculation = data.content
+        }
+      }.bind(this)
+
+      statusSocket.onclose = function (e) {
+        console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason)
+        setTimeout(function () {
+          this.prepare_distributions_feed()
+        }.bind(this), 1000)
+      }.bind(this)
+
+      statusSocket.onerror = function (err) {
+        console.error('Socket encountered error: ', err.message, 'Closing socket')
+        statusSocket.close()
+      }
+    },
     async update_distributions () {
       let result = await posts.get_posts(
         'staking-rewards-distribution',
@@ -188,7 +227,6 @@ export default {
           addresses: [this.sender_address]
         }
       )
-      console.log(result)
       let last_distribution = null
       for (let item of result.posts) {
         if ((last_distribution === null) && (item.content.status === 'distribution')) {
@@ -198,17 +236,6 @@ export default {
         }
       }
       this.last_distribution = last_distribution
-      result = await posts.get_posts(
-        'staking-rewards-distribution',
-        {
-          pagination: 1,
-          api_server: this.api_server,
-          tags: ['calculation'],
-          addresses: [this.monitor_address]
-        }
-      )
-      console.log(result)
-      this.last_calculation = result.posts[0]
     },
     async update_eth_account () {
       let account = await ethereum.from_provider(window.ethereum)
@@ -247,6 +274,7 @@ export default {
   created () {
     this.$store.dispatch('connect_provider')
     this.update_distributions()
+    this.prepare_distributions_feed()
   }
 }
 </script>

@@ -113,9 +113,9 @@ import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
 import store from '../store'
 
-function sleep (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+// function sleep (ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms))
+// }
 async function node_action (action, ref) {
   await posts.submit(store.state.account.address, store.state.node_post_type,
     {
@@ -128,7 +128,6 @@ async function node_action (action, ref) {
       channel: store.state.channel,
       ref: ref
     })
-  await sleep(3000)
 }
 
 export default {
@@ -139,6 +138,8 @@ export default {
     api_server: state => state.api_server,
     nodes: state => state.nodes,
     node_post_type: 'node_post_type',
+    ws_api_server: 'ws_api_server',
+    monitor_address: 'monitor_address',
     values (state) {
       return state.nodes.filter((node) => {
         return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
@@ -147,9 +148,7 @@ export default {
     user_node (state) {
       if (state.account) {
         for (let node of state.nodes) {
-          console.log(node.owner)
           if (state.account.address === node.owner) {
-            console.log(node)
             return node
           }
         }
@@ -258,18 +257,39 @@ export default {
     }
   },
   methods: {
+    async prepare_nodes_feed () {
+      this.statusSocket = new WebSocket(
+        `${this.ws_api_server}/api/ws0/messages?msgType=AGGREGATE&addresses=` +
+        `${this.monitor_address}`
+      )
+
+      this.statusSocket.onmessage = function (event) {
+        const data = JSON.parse(event.data)
+        if ((data.content.key === 'corechannel') && (data.content.content.nodes !== undefined)) {
+          this.$store.commit('set_nodes', data.content.content.nodes)
+        }
+      }.bind(this)
+
+      this.statusSocket.onclose = function (e) {
+        console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason)
+        setTimeout(function () {
+          this.prepare_nodes_feed()
+        }.bind(this), 1000)
+      }.bind(this)
+
+      this.statusSocket.onerror = function (err) {
+        console.error('Socket encountered error: ', err.message, 'Closing socket')
+        this.statusSocket.close()
+      }.bind(this)
+    },
     async creation_done () {
       this.createNode = false
       this.loading = true
-      await sleep(3000)
-      await this.update()
       this.loading = null
     },
     async edit_done () {
       this.showNode = false
       this.loading = true
-      await sleep(3000)
-      await this.update()
       this.loading = null
     },
     async update () {
@@ -279,7 +299,6 @@ export default {
       this.loading = node_hash
       try {
         await node_action(action, node_hash)
-        await this.update()
       } finally {
         this.loading = null
       }
@@ -292,8 +311,12 @@ export default {
       }
     }
   },
-  async created () {
+  async mounted () {
     await this.update()
+    await this.prepare_nodes_feed()
+  },
+  async unmounted () {
+    this.statusSocket.close()
   },
   watch: {
     account (account) {
