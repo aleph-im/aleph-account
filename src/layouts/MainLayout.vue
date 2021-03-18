@@ -33,17 +33,17 @@
         </p>
         <q-list padding class="menu">
           <q-item v-for="link of links1"
-                  :key="link.text"
-                  clickable v-ripple
-                  :to="link.link" :exact="link.exact">
-            <q-item-section avatar v-if="link.icon">
-              <q-icon :name="link.icon" />
-            </q-item-section>
+                    :key="link.text"
+                    clickable v-ripple
+                    :to="link.link" :exact="link.exact">
+              <q-item-section avatar v-if="link.icon">
+                <q-icon :name="link.icon" />
+              </q-item-section>
 
-            <q-item-section>
-              {{link.text}}
-            </q-item-section>
-          </q-item>
+              <q-item-section>
+                {{link.text}}
+              </q-item-section>
+            </q-item>
         </q-list>
       </div>
       <div>
@@ -75,7 +75,7 @@ import { ethers } from 'ethers'
 
 import { mapState } from 'vuex'
 import {
-  ethereum
+  ethereum, posts
 } from 'aleph-js'
 
 export default {
@@ -87,7 +87,25 @@ export default {
     account: state => state.account,
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
-    infura_key: state => state.infura_key
+    infura_key: state => state.infura_key,
+    mb_per_aleph: state => state.mb_per_aleph,
+    sender_address: state => state.sender_address,
+    monitor_address: state => state.monitor_address,
+
+    allowance: function (state) {
+      if ((this.balance_info !== null) && (this.balance_info.ALEPH !== undefined)) {
+        return this.balance_info.ALEPH * this.mb_per_aleph
+      }
+      return 0
+    },
+    owed_rewards: function (state) {
+      if ((this.last_calculation !== null) && (this.account !== null)) {
+        if (this.last_calculation.content.rewards[this.account.address]) {
+          return this.last_calculation.content.rewards[this.account.address]
+        }
+      }
+      return 0
+    }
   }),
   watch: {
     async account () {
@@ -107,6 +125,8 @@ export default {
       display_onboarding: false,
       provider: null,
       eth_chain_id: null,
+      last_distribution: null,
+      last_calculation: null,
       links1: [
         // { text: 'Dashboard', link: { name: 'dashboard' }, exact: true },
         { text: 'Nodes and Staking', link: { name: 'stake' }, exact: false }
@@ -135,27 +155,75 @@ export default {
     }
   },
   methods: {
+    async update_distributions () {
+      let result = await posts.get_posts(
+        'staking-rewards-distribution',
+        {
+          pagination: 10,
+          api_server: this.api_server,
+          tags: ['distribution'],
+          addresses: [this.sender_address]
+        }
+      )
+      console.log(result)
+      let last_distribution = null
+      for (let item of result.posts) {
+        if ((last_distribution === null) && (item.content.status === 'distribution')) {
+          for (let dist of item.content.targets) {
+            if (dist.success) { last_distribution = item }
+          }
+        }
+      }
+      this.last_distribution = last_distribution
+      result = await posts.get_posts(
+        'staking-rewards-distribution',
+        {
+          pagination: 1,
+          api_server: this.api_server,
+          tags: ['calculation'],
+          addresses: [this.monitor_address]
+        }
+      )
+      console.log(result)
+      this.last_calculation = result.posts[0]
+    },
     async update_eth_account () {
       let account = await ethereum.from_provider(window.ethereum)
       this.$store.commit('set_account', account)
     },
     async web3Connect () {
-      await window.ethereum.enable()
+      let provider = null
 
-      let provider = new ethers.providers.Web3Provider(window.ethereum)
+      if (window.ethereum) {
+        await window.ethereum.enable()
+
+        provider = new ethers.providers.Web3Provider(window.ethereum)
+      } else if (window.web3) {
+        provider = new ethers.providers.Web3Provider(window.web3.currentProvider)
+      } else {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Non-Ethereum browser detected. You should consider trying MetaMask!'
+        })
+        console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        return
+      }
 
       provider.on('network', async (newNetwork, oldNetwork) => {
         this.eth_chain_id = newNetwork.chainId
         await this.update_eth_account()
+        await this.update_distributions()
       })
 
       window.ethereum.on('accountsChanged', async (account) => {
         await this.update_eth_account()
+        await this.update_distributions()
       })
     }
   },
   created () {
     this.$store.dispatch('connect_provider')
+    this.update_distributions()
   }
 }
 </script>
@@ -171,6 +239,11 @@ export default {
 
 .q-drawer {
   background: $light-grey;
+
+  .q-separator.q-separator--horizontal {
+    width: auto;
+    margin: 0 16px;
+  }
 }
 
 .q-drawer--dark {
@@ -185,6 +258,13 @@ export default {
         color: #fff;
         opacity: 1.0;
       }
+    }
+
+    .q-item__label--header {
+      color: #FFF;
+      font-weight: 700;
+      padding-bottom: 0.5em;
+      padding-top: 1.5em;
     }
   }
 }
@@ -224,8 +304,8 @@ export default {
       padding-right: 10px;
       border-radius: 15px 0 0 15px;
 
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
 
       &:before, &:after{
         box-sizing: content-box;
