@@ -92,8 +92,8 @@
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
               {{props.row.stakers[account.address].toFixed(2)}}
-              <img v-if="(!left)&&(!$q.dark.isActive)" src="~/assets/logo-blue.svg" height="18" class="vertical-middle q-pb-xs">
-              <img v-if="(!left)&&$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
+              <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="18" class="vertical-middle q-pb-xs">
+              <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
             </span>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-if="account&&user_node&&(user_node.hash == props.row.hash)" type="a"
