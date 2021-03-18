@@ -68,8 +68,38 @@ body {
 }
 
 .bg-inactive {
-    background: #95C4FF;;
+    background: #95C4FF;
 }
+
+
+.expander-title {
+  background: #263944;
+}
+
+.bg-dark-60 {
+  background: #1D2A31;
+}
+
+.bg-dark-50 {
+  background: #223038;
+}
+
+.bg-dark-40 {
+  background: #263944;
+}
+
+.bg-dark-30 {
+  background: #565F64;
+}
+
+.bg-dark-20 {
+  background: #91989C;
+}
+
+.bg-dark-10 {
+  background: #C8CBCD;
+}
+
 
 
 .radius-4 {
@@ -116,6 +146,14 @@ strong {
     border-color: #383838;
   }
 
+  .bg-expand {
+    background: #263944;
+  }
+
+  .bg-card-expand {
+    background: #394b57;
+  }
+
   .q-item.standout {
     background-color: #223038;
   }
@@ -138,4 +176,9 @@ strong {
     font-size: 25px;
     font-weight: 700;
   }
+}
+
+hr.q-separator--dark {
+  background-color: #91989C;
+  opacity: .25;
 }
