@@ -112,7 +112,7 @@
       </div>
 
       <q-stepper-navigation>
-        <q-btn @click="() => { done2 = true; step = 3 }" color="primary" label="Continue" />
+        <q-btn @click="prepare_storage" color="primary" label="Continue" />
         <q-btn flat @click="step = 1" color="primary" label="Back" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -139,6 +139,60 @@
 import { mapState } from 'vuex'
 // import { aggregates } from 'aleph-js'
 import { get_erc721_tokenURI } from '../services/erc721'
+import { ipfsContentPath } from '../services/ipfs'
+const axios = require('axios')
+
+async function get_uri_info (ipfs, uri) {
+  let nft_uri_path = ipfsContentPath(uri)
+  if (nft_uri_path !== null) {
+    let stats = null
+    try {
+      stats = await ipfs.files.stat('/ipfs/' + nft_uri_path.split('/')[2], {
+        size: true,
+        timeout: 2000
+      })
+    } catch {
+
+    }
+    console.log(stats)
+    let httpres = await axios.get(uri.replace('ipfs://', 'https://ipfs.io/'), {
+      responseType: 'arraybuffer'
+    })
+    let content = httpres.data
+    return {
+      type: 'ipfs',
+      path: nft_uri_path,
+      original_uri: uri,
+      stats: stats,
+      content: content
+    }
+  } else {
+    let content = null
+    try {
+      let httpres = await axios.get(uri, {
+        responseType: 'arraybuffer'
+      })
+      console.log(httpres)
+      content = httpres.data
+    } catch {
+      let httpres = await axios.get(uri)
+      console.log(httpres)
+      content = JSON.stringify(httpres.data)
+    }
+    return {
+      type: 'http',
+      original_uri: uri,
+      stats: {
+        size: content.length
+      },
+      content: content
+    }
+    // let ipfsres = await ipfs.add({
+    //   content: httpres.data
+    // })
+    // ipfsres.cid.string
+  }
+}
 
 export default {
   name: 'nft-snapshot',
@@ -165,6 +219,7 @@ export default {
       nft_uri: null,
       nft_data: null,
       content_loading: false,
+      connected: false,
       media_fields: ['image', 'thumbnail', 'animation_url']
     }
   },
@@ -191,7 +246,7 @@ export default {
           })
         }
         console.log(token_uri)
-        this.nft_uri = token_uri
+        this.nft_uri = token_uri[0]
         let request_uri = token_uri[0]
         request_uri = request_uri.replace('ipfs://', 'https://ipfs.io/')
         let result = await this.$axios.get(request_uri)
@@ -234,6 +289,21 @@ export default {
           message: 'URL not supported, try entering contract data directly.'
         })
       }
+    },
+    async prepare_storage () {
+      let ipfs = await this.$ipfs
+      console.log(ipfs)
+      let to_store = []
+
+      // Try to get an IPFS path for the token uri
+      to_store.push(await get_uri_info(ipfs, this.nft_uri))
+
+      for (let field of this.media_fields) {
+        if (this.nft_data[field] !== undefined) {
+          to_store.push(await get_uri_info(ipfs, this.nft_data[field]))
+        }
+      }
+      console.log(to_store)
     }
   },
   watch: {
