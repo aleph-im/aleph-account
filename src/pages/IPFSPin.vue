@@ -1,58 +1,109 @@
 <template>
   <q-page class="q-pa-md">
-    <div v-if="account && connected" class="q-mb-md">
-      <!-- <p>ID: {{ id }}</p>
-      <p>Agent version: {{ agentVersion }}</p>
-      <q-uploader
-        max-total-size="10737418"
-        multiple
-        :factory="upload_files"
-        :color="$q.dark.isActive?'dark-40':'aleph-radial'"
-        flat :bordered="!$q.dark.isActive"
-      /> -->
+    <div v-if="account" class="q-mb-md">
+      <input type="file"
+             style="display: none"
+             ref="finput"
+             @change="do_upload"
+              />
+      <input type="file"
+             style="display: none"
+             ref="folinput"
+             @change="do_upload_folder"
+             webkitdirectory />
 
-      <q-btn-dropdown color="primary" label="Dropdown Button">
-        <q-list>
-          <q-item clickable v-close-popup @click="onItemClick">
-            <q-item-section>
-              <q-item-label>Photos</q-item-label>
-            </q-item-section>
-          </q-item>
+      <div class="row justify-between">
+        <q-tabs
+          v-model="tab"
+        >
+          <q-tab name="active" label="Active" />
+          <q-tab name="archived" label="Archived" />
+        </q-tabs>
 
-          <q-item clickable v-close-popup @click="onItemClick">
-            <q-item-section>
-              <q-item-label>Videos</q-item-label>
-            </q-item-section>
-          </q-item>
+        <q-btn-dropdown color="aleph-radial" label="Public upload" icon="cloud_upload" v-if="connected">
+          <q-list>
+            <q-item clickable v-close-popup @click="$refs.finput.click()">
+              <q-item-section side>
+                <q-icon name="upload_file" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>File</q-item-label>
+              </q-item-section>
+            </q-item>
 
-          <q-item clickable v-close-popup @click="onItemClick">
-            <q-item-section>
-              <q-item-label>Articles</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-    </div>
-    <div v-else-if="!connected">
-      <h3>{{ status }}</h3>
+            <q-item clickable v-close-popup @click="$refs.folinput.click()">
+              <q-item-section side>
+                <q-icon name="drive_folder_upload" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Folder</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-close-popup @click="pin_hash">
+              <q-item-section side>
+                <q-icon name="integration_instructions" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Pin IPFS CID (Hash)</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+        <div v-else>
+          <p>{{ status }}</p>
+        </div>
+      </div>
     </div>
     <div v-else>
       Please connect.
     </div>
-
     <div v-if="account">
       <q-expansion-item
-        class="overflow-hidden rounded-borders"
-        icon="explore"
-        label="Counter"
+        v-for="item of displayed_stores"
+        class="overflow-hidden rounded-borders q-mb-md"
+        :icon="item.content.content_type === 'directory' ? 'folder' : 'attachment'"
+        :key="item.hash"
+        :label="item.content.name ? item.content.name : item.content.item_hash"
         expand-icon-class="text-white"
         :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
         flat
       >
         <q-card class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
-          <q-card-section>
-            Counting: <q-badge color="secondary">{{ counter }}</q-badge>.
-            Will only count when opened, using the show/hide events to control count timer.
+          <q-card-section horizontal>
+            <q-list class="col q-my-sm">
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>CID</q-item-label>
+                  <q-item-label>
+                    {{item.content.item_hash}}
+                    <q-btn flat round icon="content_copy" size="sm" />
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Size</q-item-label>
+                  <q-item-label class="text-body2 overflow-hidden">
+                    {{humanStorageSize(item.content.size)}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Date pinned</q-item-label>
+                  <q-item-label class="text-body2 overflow-hidden">
+                    {{new Date(item.time*1000).toLocaleDateString()}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+
+            <q-separator vertical />
+
+            <q-card-actions vertical class="justify-start q-px-md">
+              <q-btn flat icon="link" label="Direct link" />
+            </q-card-actions>
           </q-card-section>
         </q-card>
       </q-expansion-item>
@@ -63,6 +114,9 @@
 <script>
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
+import { store } from 'aleph-js'
+import { format } from 'quasar'
+const { humanStorageSize } = format
 
 import IPFS from 'ipfs'
 
@@ -73,16 +127,29 @@ export default {
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
     nodes: state => state.nodes,
-    node_post_type: 'node_post_type',
-    total_per_day (state) {
-      return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
+    stored: 'stored',
+    allowance (state) {
+      if (state.account) {
+        if (state.balance_info.ALEPH !== undefined) {
+          return state.balance_info.ALEPH * state.mb_per_aleph
+        }
+      }
+      return 0
     },
-    total_per_aleph_per_day (state) {
-      return this.total_per_day / this.total_staked_in_active
+    total_used (state) {
+      let value = 0
+      for (let item of state.stored) {
+        value = value + item.content.size
+      }
+      return value / (1024 ** 2)
     },
-    dropzone_options: {
-      thumbnailWidth: 150,
-      maxFilesize: 100
+    displayed_stores (state) {
+      if (this.tab === 'active') {
+        return this.stored.filter(
+          item => item.content.item_type === 'ipfs'
+        )
+      }
+      return []
     }
   }),
   components: {
@@ -93,7 +160,10 @@ export default {
       connected: false,
       status: 'Connecting to IPFS...',
       id: '',
-      agentVersion: ''
+      agentVersion: '',
+      upload_type: 'file',
+      humanStorageSize: humanStorageSize,
+      tab: 'active'
     }
   },
   methods: {
@@ -115,8 +185,48 @@ export default {
         this.connected = false
       }
     },
-    async upload_files (a, b) {
-      console.log(a, b)
+    async do_upload (evt) {
+      const ipfs = await this.$ipfs
+      for (let file of evt.target.files) {
+        let res = await ipfs.add({
+          path: file.name,
+          content: file
+        })
+        await this.create_store(res)
+      }
+    },
+    async do_upload_folder (evt) {
+      const ipfs = await this.$ipfs
+      let content = []
+      let total_size = 0
+      for (let file of evt.target.files) {
+        content.push({
+          path: file.webkitRelativePath,
+          content: file
+        })
+        total_size = total_size + file.size
+      }
+      console.log(total_size)
+      let result = null
+      for await (result of ipfs.addAll(content)) {
+        console.log(result)
+      }
+      await this.create_store(result)
+    },
+    async create_store (result) {
+      if ((result.size / (1024 ** 2)) <= (this.allowance - this.total_used)) {
+        await store.submit(this.account.address, {
+          account: this.account,
+          api_server: this.api_server,
+          file_hash: result.cid.string,
+          storage_engine: 'ipfs',
+          extra_fields: {
+            name: result.path
+          }
+        })
+      } else {
+        console.warn('Not enough space available!')
+      }
     }
   },
   mounted: function () {
@@ -128,9 +238,10 @@ export default {
   },
   watch: {
     account (account) {
-
+      this.$store.dispatch('update_stored')
     },
     balance_info (account) {
+
     }
   }
 }
