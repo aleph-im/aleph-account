@@ -175,7 +175,6 @@ export default {
           nodes.push(this.user_node)
         }
       }
-      console.log(nodes)
       return nodes
     },
     active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,

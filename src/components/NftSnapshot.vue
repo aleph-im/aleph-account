@@ -4,7 +4,7 @@
         header-nav
         ref="stepper"
         color="primary"
-        class="shadow-2 infocard"
+        class="shadow-2 nftcard"
         animated
       >
     <q-step
@@ -37,7 +37,8 @@
       </div>
 
       <q-stepper-navigation>
-        <q-btn @click="fetch_info" color="primary" label="Fetch Details" />
+        <q-btn @click="fetch_info" color="primary" label="Fetch Details"
+               :disable="fetching" :loading="fetching" />
       </q-stepper-navigation>
     </q-step>
     <q-step
@@ -50,16 +51,16 @@
       <div class="row q-gutter-md" v-if="nft_data">
         <div class="col-4">
           <q-list>
-            <q-item v-if="nft_data.image"  class="standout">
+            <q-item v-if="nft_data.animation_url"  class="standout">
+              <q-item-section>
+                <q-item-label caption>Animation</q-item-label>
+                <video :src="nft_data.animation_url.replace('ipfs://', 'https://ipfs.io/')" class="full-width q-my-sm" controls autoplay loop />
+              </q-item-section>
+            </q-item>
+            <q-item v-else-if="nft_data.image"  class="standout">
               <q-item-section>
                 <q-item-label caption>Image</q-item-label>
                 <img :src="nft_data.image.replace('ipfs://', 'https://ipfs.io/')" class="full-width q-my-sm" />
-              </q-item-section>
-            </q-item>
-            <q-item v-else-if="nft_data.animation_url"  class="standout">
-              <q-item-section>
-                <q-item-label caption>Animation</q-item-label>
-                <video :src="nft_data.animation_url.replace('ipfs://', 'https://ipfs.io/')" class="full-width q-my-sm" />
               </q-item-section>
             </q-item>
           </q-list>
@@ -112,7 +113,8 @@
       </div>
 
       <q-stepper-navigation>
-        <q-btn @click="prepare_storage" color="primary" label="Continue" />
+        <q-btn @click="prepare_storage" color="primary" label="Continue"
+        :disable="preparing" :loading="preparing" />
         <q-btn flat @click="step = 1" color="primary" label="Back" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -123,9 +125,12 @@
       icon="create_new_folder"
       :header-nav="step > 3"
     >
-      Try out different ad text to see what brings in the most customers, and learn how to
-      enhance your ads using features like ad extensions. If you run into any problems with
-      your ads, find out how to tell if they're running and how to resolve approval issues.
+      To snapshot your NFT we will store these items (total size {{humanStorageSize(to_store_size)}}):
+      <q-table :data="to_store" class="full-width">
+      </q-table>
+      <q-list>
+
+      </q-list>
 
       <q-stepper-navigation>
         <q-btn color="primary" @click="done3 = true" label="Finish" />
@@ -140,13 +145,17 @@ import { mapState } from 'vuex'
 // import { aggregates } from 'aleph-js'
 import { get_erc721_tokenURI } from '../services/erc721'
 import { ipfsContentPath } from '../services/ipfs'
+import { format } from 'quasar'
+const { humanStorageSize } = format
 const axios = require('axios')
 
 async function get_uri_info (ipfs, uri) {
   let nft_uri_path = ipfsContentPath(uri)
   if (nft_uri_path !== null) {
     let stats = null
+    let cid = null
     try {
+      cid = nft_uri_path.split('/')[2]
       stats = await ipfs.files.stat('/ipfs/' + nft_uri_path.split('/')[2], {
         size: true,
         timeout: 2000
@@ -163,6 +172,8 @@ async function get_uri_info (ipfs, uri) {
       type: 'ipfs',
       path: nft_uri_path,
       original_uri: uri,
+      cid: cid,
+      size: ((stats !== null) && stats.cumulativeSize0) ? stats.cumulativeSize : content.byteLength,
       stats: stats,
       content: content
     }
@@ -182,8 +193,9 @@ async function get_uri_info (ipfs, uri) {
     return {
       type: 'http',
       original_uri: uri,
+      size: content.byteLength,
       stats: {
-        size: content.length
+        size: content.byteLength
       },
       content: content
     }
@@ -197,6 +209,38 @@ async function get_uri_info (ipfs, uri) {
 export default {
   name: 'nft-snapshot',
   computed: {
+    allowance (state) {
+      if (state.account) {
+        if (state.balance_info.ALEPH !== undefined) {
+          return state.balance_info.ALEPH * state.mb_per_aleph
+        }
+      }
+      return 0
+    },
+    total_used (state) {
+      let value = 0
+      for (let item of state.stored) {
+        value = value + item.content.size
+      }
+      return value / (1024 ** 2)
+    },
+    to_store_size () {
+      let size = 0
+      let current_cids = []
+      if (this.to_store) {
+        for (let item of this.to_store) {
+          if (item.cid) {
+            if (current_cids.includes(item.cid)) {
+              continue
+            } else {
+              current_cids.push(item.cid)
+            }
+          }
+          size = size + item.size
+        }
+      }
+      return size
+    },
     ...mapState([
       'account',
       'channel',
@@ -219,8 +263,12 @@ export default {
       nft_uri: null,
       nft_data: null,
       content_loading: false,
+      fetching: false,
+      preparing: false,
       connected: false,
-      media_fields: ['image', 'thumbnail', 'animation_url']
+      to_store: null,
+      media_fields: ['image', 'thumbnail', 'animation_url', 'pdf', 'cover'],
+      humanStorageSize: humanStorageSize
     }
   },
   methods: {
@@ -232,7 +280,7 @@ export default {
       }
     },
     async fetch_token () {
-      this.content_loading = true
+      this.fetching = true
       try {
         let token_uri = null
         try {
@@ -259,7 +307,7 @@ export default {
           message: 'Something went wrong while fetching data.'
         })
       }
-      this.content_loading = false
+      this.fetching = false
     },
     async parse_url () {
       const url = this.source_url
@@ -291,19 +339,30 @@ export default {
       }
     },
     async prepare_storage () {
-      let ipfs = await this.$ipfs
-      console.log(ipfs)
-      let to_store = []
+      this.preparing = true
+      try {
+        let ipfs = await this.$ipfs
+        console.log(ipfs)
+        let to_store = []
 
-      // Try to get an IPFS path for the token uri
-      to_store.push(await get_uri_info(ipfs, this.nft_uri))
+        // Try to get an IPFS path for the token uri
+        to_store.push(await get_uri_info(ipfs, this.nft_uri))
 
-      for (let field of this.media_fields) {
-        if (this.nft_data[field] !== undefined) {
-          to_store.push(await get_uri_info(ipfs, this.nft_data[field]))
+        for (let field of this.media_fields) {
+          if (this.nft_data[field] !== undefined) {
+            to_store.push(await get_uri_info(ipfs, this.nft_data[field]))
+          }
         }
+        console.log(to_store)
+        this.to_store = to_store
+      } catch {
+        this.$q.notify({
+          type: 'negative',
+          message: 'ERROR: Can\'t prepare NFT backup'
+        })
       }
-      console.log(to_store)
+      this.preparing = false
+      this.step = 3
     }
   },
   watch: {
@@ -314,7 +373,7 @@ export default {
 </script>
 
 <style lang="scss">
-.infocard {
+.nftcard {
   width: 900px !important;
   max-width: 80vw !important;
   // &>.row {
@@ -325,7 +384,7 @@ export default {
 }
 
 .body--dark {
-  .infocard {
+  .nftcard {
     background: #1d262e;
     border: none;
     // &>.row {
