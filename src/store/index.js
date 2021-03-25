@@ -273,7 +273,7 @@ export default new Vuex.Store({
           {
             message_type: 'STORE',
             addresses: [state.account.address],
-            pagination: 100,
+            pagination: 1000,
             api_server: state.api_server,
             channel: 'PINNING'
           })
