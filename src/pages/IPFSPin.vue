@@ -119,6 +119,9 @@ import { format } from 'quasar'
 const { humanStorageSize } = format
 
 import IPFS from 'ipfs'
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 export default {
   name: 'IPFSPinPage',
@@ -220,6 +223,7 @@ export default {
           api_server: this.api_server,
           file_hash: result.cid.string,
           storage_engine: 'ipfs',
+          channel: 'PINNING',
           extra_fields: {
             name: result.path
           }
@@ -227,6 +231,10 @@ export default {
       } else {
         console.warn('Not enough space available!')
       }
+      await sleep(1000)
+      this.$store.dispatch('update_stored')
+      await sleep(5000)
+      this.$store.dispatch('update_stored')
     }
   },
   mounted: function () {
