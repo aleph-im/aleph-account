@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-md">
     <q-dialog v-model="showNFTSnapshot">
-      <nft-snapshot @close="showNFTSnapshot=false" />
+      <nft-snapshot @finished="uploaded" />
     </q-dialog>
     <div v-if="account" class="q-mb-md">
       <div class="row justify-between">
@@ -22,6 +22,25 @@
       Please connect.
     </div>
     <div v-if="account">
+      <div class="row">
+        <div class="col-6 col-md-3 q-pa-sm" v-for="item of nfts" :key="item.item_hash">
+          <q-card>
+          <q-img :src="item.content.metadata.image.replace('ipfs://', 'https://ipfs.io/')" v-if="item.content.metadata.image" />
+          <q-video :src="item.content.metadata.animation_url.replace('ipfs://', 'https://ipfs.io/')" v-else-if="item.content.metadata.animation_url" />
+
+            <q-card-section v-if="item.content.metadata.name">
+              <div class="text-h6">{{item.content.metadata.name.substring(0, 100)}}</div>
+              <div class="text-subtitle2">
+                Snapshot from {{new Date(item.time*1000).toLocaleDateString()}}
+              </div>
+
+            <div class="text-caption text-grey" v-if="item.content.metadata.description">
+                {{ item.content.metadata.description.substring(0, 200) }}
+            </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
     </div>
   </q-page>
 </template>
@@ -30,11 +49,14 @@
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import { format } from 'quasar'
+import { posts } from 'aleph-js'
 const { humanStorageSize } = format
 
 import IPFS from 'ipfs'
 import NftSnapshot from 'src/components/NftSnapshot.vue'
-
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 export default {
   name: 'NFTStoragePage',
   computed: mapState({
@@ -80,10 +102,23 @@ export default {
       upload_type: 'file',
       humanStorageSize: humanStorageSize,
       tab: 'active',
-      showNFTSnapshot: false
+      showNFTSnapshot: false,
+      nfts: []
     }
   },
   methods: {
+    async uploaded () {
+      this.showNFTSnapshot = false
+      await sleep(1000)
+      await this.update()
+    },
+    async update () {
+      let result = await posts.get_posts('nft-snapshot', {
+        api_server: this.api_server,
+        addresses: [this.account.address]
+      })
+      this.nfts = result.posts
+    },
     async getIpfsNodeInfo () {
       try {
         // Await for ipfs node instance.
@@ -106,6 +141,7 @@ export default {
   mounted: function () {
     this.getIpfsNodeInfo()
     this.$store.dispatch('update_stored')
+    this.update()
   },
   async created () {
     this.node = await IPFS.create()
@@ -113,6 +149,7 @@ export default {
   watch: {
     account (account) {
       this.$store.dispatch('update_stored')
+      this.update()
     },
     balance_info (account) {
 
