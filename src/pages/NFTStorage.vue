@@ -25,8 +25,11 @@
       <div class="row">
         <div class="col-6 col-md-3 q-pa-sm" v-for="item of nfts" :key="item.item_hash">
           <q-card>
-          <q-img :src="item.content.metadata.image.replace('ipfs://', 'https://ipfs.io/')" v-if="item.content.metadata.image" />
-          <q-video :src="item.content.metadata.animation_url.replace('ipfs://', 'https://ipfs.io/')" v-else-if="item.content.metadata.animation_url" />
+          <q-img :src="item.content.metadata.image.replace('ipfs://', 'https://ipfs.io/')"
+                 v-if="item.content.metadata.image" />
+          <video :src="item.content.metadata.animation_url.replace('ipfs://', 'https://ipfs.io/')"
+                 class="full-width" controls autoplay loop
+                 v-else-if="item.content.metadata.animation_url" />
 
             <q-card-section v-if="item.content.metadata.name">
               <div class="text-h6">{{item.content.metadata.name.substring(0, 100)}}</div>
