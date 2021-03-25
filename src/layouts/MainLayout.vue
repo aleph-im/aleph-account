@@ -305,6 +305,20 @@ export default {
   }
 }
 
+.q-list.menu {
+  .q-item {
+      min-height: 36px;
+      padding-bottom: 0;
+      padding-top: 0;
+  }
+
+  .q-item__label--header {
+    font-weight: 700;
+    padding-bottom: 0.5em;
+    padding-top: 1.5em;
+  }
+}
+
 .q-drawer--dark {
   background: #172025;
 
@@ -312,9 +326,6 @@ export default {
     .q-item {
       opacity: 0.5;
       color: #F6F8FB;
-      min-height: 36px;
-      padding-bottom: 0;
-      padding-top: 0;
 
       &.q-router-link--active {
         color: #fff;
@@ -324,9 +335,6 @@ export default {
 
     .q-item__label--header {
       color: #FFF;
-      font-weight: 700;
-      padding-bottom: 0.5em;
-      padding-top: 1.5em;
     }
   }
 }
