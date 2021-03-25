@@ -133,7 +133,8 @@
       </q-list>
 
       <q-stepper-navigation>
-        <q-btn color="primary" @click="done3 = true" label="Finish" />
+        <q-btn color="primary" @click="do_storage" label="Finish"
+        :disable="storing" :loading="storing" />
         <q-btn flat @click="step = 2" color="primary" label="Back" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -142,14 +143,14 @@
 
 <script>
 import { mapState } from 'vuex'
-// import { aggregates } from 'aleph-js'
+import { store, posts } from 'aleph-js'
 import { get_erc721_tokenURI } from '../services/erc721'
 import { ipfsContentPath } from '../services/ipfs'
 import { format } from 'quasar'
 const { humanStorageSize } = format
 const axios = require('axios')
 
-async function get_uri_info (ipfs, uri) {
+async function get_uri_info (field, ipfs, uri) {
   let nft_uri_path = ipfsContentPath(uri)
   if (nft_uri_path !== null) {
     let stats = null
@@ -163,12 +164,17 @@ async function get_uri_info (ipfs, uri) {
     } catch {
 
     }
-    console.log(stats)
-    let httpres = await axios.get(uri.replace('ipfs://', 'https://ipfs.io/'), {
-      responseType: 'arraybuffer'
-    })
-    let content = httpres.data
+    let content = null
+    try {
+      let httpres = await axios.get(uri.replace('ipfs://', 'https://ipfs.io/'), {
+        responseType: 'arraybuffer'
+      })
+      content = httpres.data
+    } catch {
+      content = await ipfs.files.cat(nft_uri_path)
+    }
     return {
+      field: field,
       type: 'ipfs',
       path: nft_uri_path,
       original_uri: uri,
@@ -191,6 +197,7 @@ async function get_uri_info (ipfs, uri) {
       content = JSON.stringify(httpres.data)
     }
     return {
+      field: field,
       type: 'http',
       original_uri: uri,
       size: content.byteLength,
@@ -199,10 +206,6 @@ async function get_uri_info (ipfs, uri) {
       },
       content: content
     }
-    // let ipfsres = await ipfs.add({
-    //   content: httpres.data
-    // })
-    // ipfsres.cid.string
   }
 }
 
@@ -265,6 +268,7 @@ export default {
       content_loading: false,
       fetching: false,
       preparing: false,
+      storing: false,
       connected: false,
       to_store: null,
       media_fields: ['image', 'thumbnail', 'animation_url', 'pdf', 'cover'],
@@ -294,6 +298,14 @@ export default {
           })
         }
         console.log(token_uri)
+        if (token_uri === null) {
+          this.$q.notify({
+            type: 'negative',
+            message: 'This NFT token doesn\'t support standard metadata! ' +
+                     'If it\'s a lazy minted NFT you need to transfer it first.'
+          })
+          return
+        }
         this.nft_uri = token_uri[0]
         let request_uri = token_uri[0]
         request_uri = request_uri.replace('ipfs://', 'https://ipfs.io/')
@@ -306,8 +318,9 @@ export default {
           type: 'negative',
           message: 'Something went wrong while fetching data.'
         })
+      } finally {
+        this.fetching = false
       }
-      this.fetching = false
     },
     async parse_url () {
       const url = this.source_url
@@ -346,11 +359,18 @@ export default {
         let to_store = []
 
         // Try to get an IPFS path for the token uri
-        to_store.push(await get_uri_info(ipfs, this.nft_uri))
+        to_store.push(await get_uri_info('source', ipfs, this.nft_uri))
 
         for (let field of this.media_fields) {
-          if (this.nft_data[field] !== undefined) {
-            to_store.push(await get_uri_info(ipfs, this.nft_data[field]))
+          if ((this.nft_data[field] !== undefined) && (this.nft_data[field] !== null)) {
+            try {
+              to_store.push(await get_uri_info(field, ipfs, this.nft_data[field]))
+            } catch {
+              this.$q.notify({
+                type: 'warning',
+                message: `ERROR: Field ${field} can't be fetched`
+              })
+            }
           }
         }
         console.log(to_store)
@@ -363,6 +383,110 @@ export default {
       }
       this.preparing = false
       this.step = 3
+    },
+    async do_storage () {
+      this.storing = true
+      let current_cids = []
+      let new_items = []
+      let new_uris = {}
+      try {
+        let ipfs = await this.$ipfs
+        let name_prefix = `NFT ${this.nft_contract}/${this.nft_index}`
+        if (this.nft_data.name !== undefined) {
+          name_prefix = `NFT ${this.nft_data.name} (#${this.nft_index})`
+        }
+        for (let item of this.to_store) {
+          let new_item = {}
+          Object.assign(new_item, item)
+          let store_name = `${name_prefix} - ${new_item.field}`
+          let ipfs_cid = null
+
+          if ((new_item.type === 'ipfs') && (new_item.stats.cumulativeSize !== undefined)) {
+            ipfs_cid = new_item.cid
+            new_item.new_uri = `ipfs:/${new_item.path}`
+          } else {
+            let res = await ipfs.add({
+              content: new_item.content
+            })
+            ipfs_cid = res.cid.string
+            console.log('uploaded ', new_item.original_uri, 'as ', ipfs_cid)
+            new_item.cid = res.cid.string
+            new_item.path = `/ipfs/${ipfs_cid}`
+            new_item.new_uri = `ipfs:/${new_item.path}`
+          }
+
+          new_uris[new_item.field] = new_item.new_uri
+
+          // avoid double storage
+          if (current_cids.includes(ipfs_cid)) {
+            delete new_item.content
+            continue
+          } else {
+            current_cids.push(ipfs_cid)
+          }
+
+          // create store item for that field
+          let store_item = await store.submit(this.account.address, {
+            account: this.account,
+            api_server: this.api_server,
+            file_hash: ipfs_cid,
+            storage_engine: 'ipfs',
+            channel: 'PINNING',
+            extra_fields: {
+              ref: `${this.nft_contract}:${this.nft_index}`,
+              stored_field: item.field,
+              name: store_name,
+              nft: {
+                contract_address: this.nft_contract,
+                token_id: this.nft_index,
+                metadata_url: this.nft_uri,
+                source_url: this.source_url
+              }
+            }
+          })
+          new_item.store_hash = store_item.item_hash
+          delete new_item.content
+          new_items.push(new_item)
+        }
+        let tags = ['nft-snapshot', this.nft_contract, this.nft_index]
+
+        let new_data = {}
+        Object.assign(new_data, this.nft_data)
+
+        // Assign new cleaned uris
+        for (let field of Object.keys(new_uris)) {
+          if (field !== 'source') {
+            new_data[field] = new_uris[field]
+          }
+        }
+
+        if (this.source_url) { tags.push(this.source_url) }
+        await posts.submit(
+          this.account.address, 'nft-snapshot',
+          {
+            tags: tags,
+            contract: this.nft_contract,
+            token_id: this.nft_index,
+            metadata_original_uri: this.nft_uri,
+            metadata_new_uri: new_uris.metadata,
+            metadata: new_data,
+            stored_items: new_items
+          },
+          {
+            ref: `${this.nft_contract}:${this.nft_index}`,
+            account: this.account,
+            channel: 'PINNING',
+            api_server: 'https://api2.aleph.im'
+          })
+        this.$emit('finished')
+      } catch (err) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'ERROR: Something went wrong. \n' + err.message
+        })
+      } finally {
+        this.storing = false
+      }
     }
   },
   watch: {
