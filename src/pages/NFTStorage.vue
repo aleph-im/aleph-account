@@ -23,7 +23,7 @@
     </div>
     <div v-if="account">
       <div class="row">
-        <div class="col-6 col-md-3 q-pa-sm" v-for="item of nfts" :key="item.item_hash">
+        <div class="col-6 col-md-3 q-pa-sm" v-for="item of displayed_nfts" :key="item.item_hash">
           <q-card>
           <q-img :src="item.content.metadata.image.replace('ipfs://', 'https://ipfs.io/')"
                  v-if="item.content.metadata.image" />
@@ -41,6 +41,20 @@
                 {{ item.content.metadata.description.substring(0, 200) }}
             </div>
             </q-card-section>
+            <q-separator />
+
+            <q-card-actions align="between">
+              <q-btn flat icon="preview" label="Details"
+                     :to="{name: 'nft-view', params: {hash: item.item_hash}}" />
+              <q-btn flat icon="archive" v-if="(item.content.status === undefined) || (item.content.status === 'active')"
+                     @click="updateNFT(item, {status: 'archived'})">
+                <q-tooltip>Archive</q-tooltip>
+              </q-btn>
+              <q-btn flat icon="unarchive" v-else-if="item.content.status === 'archived'"
+                     @click="updateNFT(item, {status: 'active'})">
+                <q-tooltip>Recover</q-tooltip>
+              </q-btn>
+            </q-card-actions>
           </q-card>
         </div>
       </div>
@@ -53,6 +67,7 @@ import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import { format } from 'quasar'
 import { posts } from 'aleph-js'
+import { update_post } from '../services/posts'
 const { humanStorageSize } = format
 
 import IPFS from 'ipfs'
@@ -68,6 +83,18 @@ export default {
     api_server: state => state.api_server,
     nodes: state => state.nodes,
     stored: 'stored',
+    displayed_nfts (state) {
+      console.log(this.nfts)
+      if (this.tab === 'active') {
+        return this.nfts.filter(
+          item => ((item.content.status === undefined) || (item.content.status === 'active'))
+        )
+      } else if (this.tab === 'archived') {
+        return this.nfts.filter(
+          item => item.content.status === 'archived'
+        )
+      }
+    },
     allowance (state) {
       if (state.account) {
         if (state.balance_info.ALEPH !== undefined) {
@@ -82,14 +109,6 @@ export default {
         value = value + item.content.size
       }
       return value / (1024 ** 2)
-    },
-    displayed_stores (state) {
-      if (this.tab === 'active') {
-        return this.stored.filter(
-          item => item.content.item_type === 'ipfs'
-        )
-      }
-      return []
     }
   }),
   components: {
@@ -139,6 +158,12 @@ export default {
         this.status = `Error: ${err}`
         this.connected = false
       }
+    },
+    async updateNFT (nft_post, changes) {
+      let msg = await update_post(
+        nft_post, changes, this.account, this.api_server, 'PINNING'
+      )
+      nft_post.content = msg.content
     }
   },
   mounted: function () {

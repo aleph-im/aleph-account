@@ -77,7 +77,8 @@
                   <q-item-label caption>CID</q-item-label>
                   <q-item-label>
                     {{item.content.item_hash}}
-                    <q-btn flat round icon="content_copy" size="sm" />
+                    <q-btn flat round icon="content_copy" size="sm"
+                           @click="copyToClipboard(item.content.item_hash)" />
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -102,7 +103,8 @@
             <q-separator vertical />
 
             <q-card-actions vertical class="justify-start q-px-md">
-              <q-btn flat icon="link" label="Direct link" />
+              <q-btn flat icon="link" label="Direct link"
+                     @click="copyToClipboard(`https://ipfs.io/ipfs/${item.content.item_hash}`)" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -115,7 +117,7 @@
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import { store } from 'aleph-js'
-import { format } from 'quasar'
+import { format, copyToClipboard } from 'quasar'
 const { humanStorageSize } = format
 
 import IPFS from 'ipfs'
@@ -166,10 +168,14 @@ export default {
       agentVersion: '',
       upload_type: 'file',
       humanStorageSize: humanStorageSize,
+      copyToClipboard: copyToClipboard,
       tab: 'active'
     }
   },
   methods: {
+    async pin_hash () {
+
+    },
     async getIpfsNodeInfo () {
       try {
         // Await for ipfs node instance.
