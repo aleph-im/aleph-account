@@ -26,8 +26,14 @@ const routes = [
       },
       {
         name: 'nft-storage',
-        path: 'nft-storage',
+        path: 'nfts',
         component: () => import('pages/NFTStorage.vue')
+      },
+      {
+        name: 'nft-view',
+        path: 'nfts/:hash',
+        component: () => import('pages/NFTView.vue'),
+        props: true
       }
     ]
   },
