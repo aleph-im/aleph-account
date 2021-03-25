@@ -317,6 +317,9 @@ export default {
   async unmounted () {
     this.statusSocket.close()
   },
+  async destroyed () {
+    this.statusSocket.close()
+  },
   watch: {
     account (account) {
       this.update_calculator()
