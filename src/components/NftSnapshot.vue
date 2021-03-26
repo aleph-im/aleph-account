@@ -212,17 +212,17 @@ async function get_uri_info (field, ipfs, uri) {
 export default {
   name: 'nft-snapshot',
   computed: {
-    allowance (state) {
-      if (state.account) {
-        if (state.balance_info.ALEPH !== undefined) {
-          return state.balance_info.ALEPH * state.mb_per_aleph
+    allowance () {
+      if (this.account) {
+        if (this.balance_info.ALEPH !== undefined) {
+          return this.balance_info.ALEPH * this.mb_per_aleph
         }
       }
       return 0
     },
-    total_used (state) {
+    total_used () {
       let value = 0
-      for (let item of state.stored) {
+      for (let item of this.stored) {
         value = value + item.content.size
       }
       return value / (1024 ** 2)
@@ -250,7 +250,9 @@ export default {
       'api_server',
       'tags',
       'node_post_type',
-      'ethereum_provider'
+      'ethereum_provider',
+      'balance_info',
+      'stored'
     ])
   },
   props: [
