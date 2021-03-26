@@ -31,7 +31,7 @@
     <q-drawer show-if-above v-model="left" side="left" content-class="column justify-between q-pa-md" :width="250">
       <!-- drawer content -->
       <div>
-        <p class="q-pa-md">
+        <p class="q-px-md q-pb-md">
           <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="32">
           <img v-else src="~/assets/logo-white.svg" height="32">
 
