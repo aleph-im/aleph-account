@@ -317,7 +317,10 @@ export default {
           }
         })
       } else {
-        console.warn('Not enough space available!')
+        this.$q.notify({
+          type: 'negative',
+          message: 'ERROR: Not enough storage allowance, please replenish your ALEPH balance.'
+        })
       }
       await sleep(1000)
       this.$store.dispatch('update_stored')
