@@ -159,7 +159,7 @@ async function get_uri_info (field, ipfs, uri) {
       cid = nft_uri_path.split('/')[2]
       stats = await ipfs.files.stat('/ipfs/' + nft_uri_path.split('/')[2], {
         size: true,
-        timeout: 2000
+        timeout: 10000
       })
     } catch {
 
@@ -180,7 +180,7 @@ async function get_uri_info (field, ipfs, uri) {
       original_uri: uri,
       cid: cid,
       size: ((stats !== null) && stats.cumulativeSize0) ? stats.cumulativeSize : content.byteLength,
-      stats: stats,
+      stats: (stats !== null) ? stats : { size: content.byteLength },
       content: content
     }
   } else {
