@@ -8,7 +8,7 @@
         </div>
       </div>
       <div class="row q-gutter-md">
-        <div class="col-4">
+        <div class="col-sm-4">
           <q-list>
             <q-item v-if="metadata.animation_url"  class="standout">
               <q-item-section>
@@ -24,7 +24,7 @@
             </q-item>
           </q-list>
         </div>
-        <div class="col-7">
+        <div class="col-sm-7">
           <q-list>
             <q-item class="standout" v-if="metadata.name">
               <q-item-section>
