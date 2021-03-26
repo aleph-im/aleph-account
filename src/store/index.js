@@ -34,6 +34,7 @@ export default new Vuex.Store({
     categories: [ // categories are hard-coded for now...
     ],
     pages: {},
+    store_info: {},
     menu: [],
     notes: [],
     notebooks: {},
@@ -62,6 +63,9 @@ export default new Vuex.Store({
     },
     set_pages (state, pages) { // TODO: handle per-page mutation
       state.pages = pages
+    },
+    set_store_info (state, store_info) { // TODO: handle per-page mutation
+      state.store_info = store_info
     },
     set_files (state, files) { // TODO: handle per-files mutation
       state.files = files
@@ -255,6 +259,15 @@ export default new Vuex.Store({
         notebooks = {}
       }
       commit('set_notebooks', notebooks)
+    },
+    async update_store_info ({ state, commit }) {
+      let metadata = await aggregates.fetch_one(
+        state.account.address,
+        'stores', {
+          api_server: state.api_server
+        })
+      if (metadata === null) { metadata = {} }
+      commit('set_store_info', metadata)
     },
     async update_nodes ({ state, commit }) {
       let corechannel = await aggregates.fetch_one(

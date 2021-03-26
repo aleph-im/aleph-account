@@ -105,6 +105,11 @@
             <q-card-actions vertical class="justify-start q-px-md">
               <q-btn flat icon="link" label="Direct link"
                      @click="copyToClipboard(`https://ipfs.io/ipfs/${item.content.item_hash}`)" />
+
+              <q-btn flat icon="archive" label="Archive" v-if="tab === 'active'"
+                     @click="change_item_metadata(item, {status: 'archived'})" />
+              <q-btn flat icon="unarchive" label="Recover" v-if="tab === 'archived'"
+                     @click="change_item_metadata(item, {status: 'active'})" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -116,7 +121,7 @@
 <script>
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
-import { store } from 'aleph-js'
+import { store, aggregates } from 'aleph-js'
 import { format, copyToClipboard } from 'quasar'
 const { humanStorageSize } = format
 
@@ -132,6 +137,7 @@ export default {
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
     nodes: state => state.nodes,
+    store_info: 'store_info',
     stored: 'stored',
     allowance (state) {
       if (state.account) {
@@ -149,9 +155,23 @@ export default {
       return value / (1024 ** 2)
     },
     displayed_stores (state) {
+      let ipfs_stores = this.stored.filter(
+        item => item.content.item_type === 'ipfs'
+      )
       if (this.tab === 'active') {
-        return this.stored.filter(
-          item => item.content.item_type === 'ipfs'
+        return ipfs_stores.filter(
+          item => (
+            (state.store_info[item.item_hash] === undefined) ||
+            (state.store_info[item.item_hash].status === undefined) ||
+            (state.store_info[item.item_hash].status === 'active')
+          )
+        )
+      } else if (this.tab === 'archived') {
+        return ipfs_stores.filter(
+          item => (
+            (state.store_info[item.item_hash] !== undefined) &&
+            (state.store_info[item.item_hash].status === 'archived')
+          )
         )
       }
       return []
@@ -173,6 +193,26 @@ export default {
     }
   },
   methods: {
+    async change_item_metadata (item, updates) {
+      let curmetadata = {}
+      if (this.store_info[item.item_hash] !== undefined) {
+        Object.assign(curmetadata, this.store_info[item.item_hash])
+      }
+      Object.assign(curmetadata, updates)
+      let new_info = {}
+      Object.assign(new_info, this.store_info)
+      new_info[item.item_hash] = curmetadata
+
+      await aggregates.submit(
+        this.account.address,
+        'stores',
+        new_info,
+        {
+          account: this.account, channel: 'PINNING'
+        }
+      )
+      this.$store.commit('set_store_info', new_info)
+    },
     async pin_hash () {
 
     },
@@ -246,6 +286,7 @@ export default {
   mounted: function () {
     this.getIpfsNodeInfo()
     this.$store.dispatch('update_stored')
+    this.$store.dispatch('update_store_info')
   },
   async created () {
     this.node = await IPFS.create()
@@ -253,6 +294,7 @@ export default {
   watch: {
     account (account) {
       this.$store.dispatch('update_stored')
+      this.$store.dispatch('update_store_info')
     },
     balance_info (account) {
 
