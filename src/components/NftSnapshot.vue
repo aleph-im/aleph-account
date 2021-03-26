@@ -179,7 +179,7 @@ async function get_uri_info (field, ipfs, uri) {
       path: nft_uri_path,
       original_uri: uri,
       cid: cid,
-      size: ((stats !== null) && stats.cumulativeSize0) ? stats.cumulativeSize : content.byteLength,
+      size: ((stats !== null) && stats.cumulativeSize) ? stats.cumulativeSize : content.byteLength,
       stats: (stats !== null) ? stats : { size: content.byteLength },
       content: content
     }
