@@ -135,11 +135,15 @@ export default {
       await this.update()
     },
     async update () {
-      let result = await posts.get_posts('nft-snapshot', {
-        api_server: this.api_server,
-        addresses: [this.account.address]
-      })
-      this.nfts = result.posts
+      if (this.account !== null) {
+        let result = await posts.get_posts('nft-snapshot', {
+          api_server: this.api_server,
+          addresses: [this.account.address]
+        })
+        this.nfts = result.posts
+      } else {
+        this.nfts = []
+      }
     },
     async getIpfsNodeInfo () {
       try {
