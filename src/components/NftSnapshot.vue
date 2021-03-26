@@ -389,6 +389,13 @@ export default {
       let current_cids = []
       let new_items = []
       let new_uris = {}
+      if ((this.to_store_size / (1024 ** 2)) > (this.allowance - this.total_used)) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'ERROR: Not enough storage allowance, please replenish your ALEPH balance.'
+        })
+        return
+      }
       try {
         let ipfs = await this.$ipfs
         let name_prefix = `NFT ${this.nft_contract}/${this.nft_index}`
