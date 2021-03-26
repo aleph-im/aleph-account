@@ -1,5 +1,36 @@
 <template>
   <q-page class="q-pa-md">
+    <q-dialog v-model="cid_prompt">
+      <q-card style="min-width: 400px">
+        <q-inner-loading :showing="cid_loading">
+          <q-spinner size="50px" color="white" />
+        </q-inner-loading>
+        <q-card-section>
+          <div class="text-h6">Pin IPFS item</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input dense v-model="cid_name"
+                   label="Name (optional)"  />
+          <q-input dense v-model="cid_input"
+                   autofocus label="Content Hash (CID)" @keyup="fetch_cid_info"
+                   @keyup.enter="upload_cid"
+                   @change="fetch_cid_info" />
+        </q-card-section>
+
+        <q-card-section v-if="cid_info">
+          <b>Type:</b> {{cid_info.type}}<br />
+          <b>Size:</b> {{humanStorageSize(cid_info.cumulativeSize)}}
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn :disable="cid_info === null"
+          color="aleph-radial" label="Pin content" @click="upload_cid"
+          v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <div v-if="account" class="q-mb-md">
       <input type="file"
              style="display: none"
@@ -40,7 +71,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-close-popup @click="pin_hash">
+            <q-item clickable v-close-popup @click="display_cid_prompt">
               <q-item-section side>
                 <q-icon name="integration_instructions" />
               </q-item-section>
@@ -126,6 +157,8 @@ import { format, copyToClipboard } from 'quasar'
 const { humanStorageSize } = format
 
 import IPFS from 'ipfs'
+const isIPFS = require('is-ipfs')
+
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -181,6 +214,7 @@ export default {
   },
   data () {
     return {
+      ipfs: null,
       loading: null,
       connected: false,
       status: 'Connecting to IPFS...',
@@ -189,7 +223,12 @@ export default {
       upload_type: 'file',
       humanStorageSize: humanStorageSize,
       copyToClipboard: copyToClipboard,
-      tab: 'active'
+      tab: 'active',
+      cid_loading: false,
+      cid_prompt: false,
+      cid_input: '',
+      cid_info: null,
+      cid_name: ''
     }
   },
   methods: {
@@ -213,16 +252,19 @@ export default {
       )
       this.$store.commit('set_store_info', new_info)
     },
-    async pin_hash () {
-
+    async display_cid_prompt () {
+      this.cid_prompt = true
+      this.cid_info = null
+      this.cid_input = ''
+      this.cid_name = ''
     },
     async getIpfsNodeInfo () {
       try {
         // Await for ipfs node instance.
-        const ipfs = await this.$ipfs
+        this.ipfs = await this.$ipfs
         // Call ipfs `id` method.
         // Returns the identity of the Peer.
-        const { agentVersion, id } = await ipfs.id()
+        const { agentVersion, id } = await this.ipfs.id()
         this.agentVersion = agentVersion
         this.id = id
         // Set successful status text.
@@ -235,7 +277,7 @@ export default {
       }
     },
     async do_upload (evt) {
-      const ipfs = await this.$ipfs
+      const ipfs = this.ipfs
       for (let file of evt.target.files) {
         let res = await ipfs.add({
           path: file.name,
@@ -245,7 +287,7 @@ export default {
       }
     },
     async do_upload_folder (evt) {
-      const ipfs = await this.$ipfs
+      const ipfs = this.ipfs
       let content = []
       let total_size = 0
       for (let file of evt.target.files) {
@@ -281,6 +323,30 @@ export default {
       this.$store.dispatch('update_stored')
       await sleep(5000)
       this.$store.dispatch('update_stored')
+    },
+    async fetch_cid_info () {
+      if (!isIPFS.cid(this.cid_input)) { this.cid_info = null }
+      try {
+        this.cid_loading = true
+        this.cid_info = await this.ipfs.files.stat('/ipfs/' + this.cid_input, {
+          size: true,
+          timeout: 10000
+        })
+        console.log(this.cid_info)
+      } catch {
+        this.cid_info = null
+      } finally {
+        this.cid_loading = false
+      }
+    },
+    async upload_cid () {
+      if (this.cid_info !== null) {
+        await this.create_store({
+          cid: this.cid_info.cid,
+          size: this.cid_info.cumulativeSize,
+          path: this.cid_name
+        })
+      }
     }
   },
   mounted: function () {
