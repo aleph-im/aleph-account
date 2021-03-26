@@ -45,7 +45,7 @@
 
             <q-card-actions align="between">
               <q-btn flat icon="preview" label="Details"
-                     :to="{name: 'nft-view', params: {hash: item.item_hash}}" />
+                     :to="{name: 'nft-view', params: {hash: item.original_item_hash}}" />
               <q-btn flat icon="archive" v-if="(item.content.status === undefined) || (item.content.status === 'active')"
                      @click="updateNFT(item, {status: 'archived'})">
                 <q-tooltip>Archive</q-tooltip>
