@@ -43,6 +43,13 @@
              @change="do_upload_folder"
              webkitdirectory />
 
+      <div v-if="balance_info.ALEPH < 1" class="doc-note doc-note--warning">
+        <p>
+          <q-icon name="warning" size="md" />
+          You need ALEPH tokens to use this dApp section.
+        </p>
+      </div>
+
       <div class="row justify-between">
         <q-tabs
           v-model="tab"
@@ -86,7 +93,7 @@
         </div>
       </div>
     </div>
-    <div v-else>
+    <div v-else class="login-info">
       Please connect.
     </div>
     <div v-if="account">
