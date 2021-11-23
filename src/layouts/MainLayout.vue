@@ -162,7 +162,8 @@ export default {
           title: 'Store',
           items: [
             { text: 'IPFS Pinning', link: { name: 'ipfs' }, exact: true },
-            { text: 'NFT Storage', link: { name: 'nft-storage' }, exact: true }
+            { text: 'NFT Storage', link: { name: 'nft-storage' }, exact: true },
+            { text: 'My Programs', link: { name: 'programs' }, exact: true }
           ]
         }
 
