@@ -34,6 +34,12 @@ const routes = [
         path: 'nfts/:hash',
         component: () => import('pages/NFTView.vue'),
         props: true
+      },
+      {
+        name: 'programs',
+        path: 'programs',
+        component: () => import('pages/VMView.vue'),
+        props: true
       }
     ]
   },
