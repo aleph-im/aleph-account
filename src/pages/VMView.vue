@@ -101,7 +101,7 @@ export default {
     async getMessages () {
       // let items = await messages.get_messages({
       //   message_type: 'STORE',
-      //   addresses: ['0x101xd8D16372dBf5f1614adaE95Ee5CCE61998Fc9'],
+      //   addresses: ['0x101d8D16372dBf5f1614adaE95Ee5CCE61998Fc9'],
       //   pagination: 1000,
       //   api_server: this.api_server,
       //   channel: 'PINNING'
