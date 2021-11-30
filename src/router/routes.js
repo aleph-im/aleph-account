@@ -36,8 +36,8 @@ const routes = [
         props: true
       },
       {
-        name: 'vms',
-        path: 'vms',
+        name: 'my-programs',
+        path: 'my-programs',
         component: () => import('pages/VMView.vue'),
         props: true
       }

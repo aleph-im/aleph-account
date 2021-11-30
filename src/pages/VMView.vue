@@ -41,7 +41,7 @@ import VMTable from '../components/VMTable'
 // import { messages } from 'aleph-js'
 
 export default {
-  name: 'VMPage',
+  name: 'my-programs',
   components: {
     VMTable
   },
