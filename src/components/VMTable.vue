@@ -3,8 +3,9 @@
     <q-expansion-item
       v-for="item of data"
       class="overflow-hidden rounded-borders q-mb-md"
-      :key="item.hash_item"
-      :label="item.hash_item"
+      :key="item.item_hash"
+      :label="ellipseAddress(item.item_hash)"
+      icon="code"
       expand-icon-class="text-white"
       :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
       flat
@@ -57,7 +58,7 @@
               <q-item-section>
                 <q-item-label caption>Date pinned</q-item-label>
                 <q-item-label class="text-body2 overflow-hidden">
-                  {{new Date(item.time*1000).toLocaleDateString()}}
+                  {{convertTimestamp(item.time)}}
                 </q-item-label>
               </q-item-section>
             </q-item>

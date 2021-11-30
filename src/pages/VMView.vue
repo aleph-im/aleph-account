@@ -80,17 +80,6 @@ export default {
         confirmed: true,
         size: 587,
         time: 1636708258.6329114
-      },
-      {
-        _id: {
-          $oid: '618e2fa2f8ed30f3517347a6'
-        },
-        item_hash: 'a6ea73d01d8978eccfcc799972873d8dccfc031db26ac41786e1c3b45c2e27ee',
-        channel: 'TEST',
-        chain: 'ETH',
-        confirmed: true,
-        size: 587,
-        time: 1636708258.6329114
       }],
       id: '',
       agentVersion: '',
