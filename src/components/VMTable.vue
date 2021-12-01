@@ -79,6 +79,7 @@
 <script>
 
 import { ellipseAddress, convertTimestamp } from '../helpers/utilities'
+import { copyToClipboard } from 'quasar'
 
 export default {
   props: [
@@ -89,6 +90,7 @@ export default {
     return {
       ellipseAddress: ellipseAddress,
       convertTimestamp: convertTimestamp,
+      copyToClipboard: copyToClipboard,
       filter: '',
       columns: [
         { name: 'channel', label: 'Channel', field: 'channel', align: 'left' },
