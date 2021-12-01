@@ -38,7 +38,7 @@
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import VMTable from '../components/VMTable'
-// import { messages } from 'aleph-js'
+import { messages } from 'aleph-js'
 
 export default {
   name: 'my-programs',
@@ -88,13 +88,14 @@ export default {
   },
   methods: {
     async getMessages () {
-      // let items = await messages.get_messages({
-      //   message_type: 'STORE',
-      //   addresses: ['0x101d8D16372dBf5f1614adaE95Ee5CCE61998Fc9'],
-      //   pagination: 1000,
-      //   api_server: this.api_server,
-      //   channel: 'PINNING'
-      // })
+      let items = await messages.get_messages({
+        message_type: 'STORE',
+        addresses: ['0x101d8D16372dBf5f1614adaE95Ee5CCE61998Fc9'],
+        pagination: 1000,
+        api_server: this.api_server,
+        channel: 'PINNING'
+      })
+      console.log(items)
     }
   },
   watch: {
