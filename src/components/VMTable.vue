@@ -5,8 +5,8 @@
         v-for="item of data"
         class="overflow-hidden rounded-borders q-mb-md"
         :key="item.item_hash"
-        :label="ellipseAddress(item.item_hash)"
-        icon="code"
+        :label="item.item_hash"
+        icon="computer"
         expand-icon-class="text-white"
         :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
         flat
@@ -16,25 +16,9 @@
             <q-list class="col q-my-sm">
               <q-item>
                 <q-item-section>
-                  <q-item-label caption>Channel</q-item-label>
-                  <q-item-label>
-                    {{item.channel}}
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item>
-                <q-item-section>
-                  <q-item-label caption>Chain</q-item-label>
-                  <q-item-label>
-                    {{item.chain}}
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item>
-                <q-item-section>
                   <q-item-label caption>Item Hash</q-item-label>
                   <q-item-label>
-                    {{ellipseAddress(item.item_hash)}}
+                    {{item.item_hash}}
                     <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
                   </q-item-label>
                 </q-item-section>
@@ -49,9 +33,17 @@
               </q-item>
               <q-item>
                 <q-item-section>
-                  <q-item-label caption>Date pinned</q-item-label>
+                  <q-item-label caption>Date</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
                     {{convertTimestamp(item.time)}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Channel</q-item-label>
+                  <q-item-label>
+                    {{item.channel}}
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -60,9 +52,9 @@
             <q-separator vertical />
 
             <q-card-actions vertical class="justify-start q-px-md">
-                <q-btn flat icon="play_arrow" label="Open app"
+                <q-btn flat icon="play_arrow" align="left" label="Open app"
                       @click="openApp(item)" />
-                <q-btn flat icon="link" label="View Explorer"
+                <q-btn flat icon="link" align="left" label="View Explorer"
                       @click="openExplorer(item)" />
             </q-card-actions>
           </q-card-section>
@@ -79,7 +71,7 @@
 
 <script>
 
-import { ellipseAddress, convertTimestamp } from '../helpers/utilities'
+import { convertTimestamp } from '../helpers/utilities'
 import { copyToClipboard } from 'quasar'
 
 export default {
@@ -90,7 +82,6 @@ export default {
   ],
   data () {
     return {
-      ellipseAddress: ellipseAddress,
       convertTimestamp: convertTimestamp,
       copyToClipboard: copyToClipboard,
       filter: '',
