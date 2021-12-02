@@ -31,18 +31,10 @@
             </q-item>
             <q-item>
               <q-item-section>
-                <q-item-label caption>Chain</q-item-label>
+                <q-item-label caption>Item Hash</q-item-label>
                 <q-item-label>
                   {{ellipseAddress(item.item_hash)}}
                   <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label caption>Size</q-item-label>
-                <q-item-label class="text-body2 overflow-hidden">
-                  {{item.size}} MB
                 </q-item-label>
               </q-item-section>
             </q-item>
