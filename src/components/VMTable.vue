@@ -1,70 +1,79 @@
 <template>
   <div>
-    <q-expansion-item
-      v-for="item of data"
-      class="overflow-hidden rounded-borders q-mb-md"
-      :key="item.item_hash"
-      :label="ellipseAddress(item.item_hash)"
-      icon="code"
-      expand-icon-class="text-white"
-      :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
-      flat
-    >
-      <q-card class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
-        <q-card-section horizontal>
-          <q-list class="col q-my-sm">
-            <q-item>
-              <q-item-section>
-                <q-item-label caption>Channel</q-item-label>
-                <q-item-label>
-                  {{item.channel}}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-             <q-item>
-              <q-item-section>
-                <q-item-label caption>Chain</q-item-label>
-                <q-item-label>
-                  {{item.chain}}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label caption>Item Hash</q-item-label>
-                <q-item-label>
-                  {{ellipseAddress(item.item_hash)}}
-                  <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label caption>Size</q-item-label>
-                <q-item-label class="text-body2 overflow-hidden">
-                  {{item.size}} MB
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label caption>Date pinned</q-item-label>
-                <q-item-label class="text-body2 overflow-hidden">
-                  {{convertTimestamp(item.time)}}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
+    <div v-if="!loading">
+      <q-expansion-item
+        v-for="item of data"
+        class="overflow-hidden rounded-borders q-mb-md"
+        :key="item.item_hash"
+        :label="ellipseAddress(item.item_hash)"
+        icon="code"
+        expand-icon-class="text-white"
+        :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
+        flat
+      >
+        <q-card  class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
+          <q-card-section horizontal>
+            <q-list class="col q-my-sm">
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Channel</q-item-label>
+                  <q-item-label>
+                    {{item.channel}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Chain</q-item-label>
+                  <q-item-label>
+                    {{item.chain}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Item Hash</q-item-label>
+                  <q-item-label>
+                    {{ellipseAddress(item.item_hash)}}
+                    <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Size</q-item-label>
+                  <q-item-label class="text-body2 overflow-hidden">
+                    {{item.size}} MB
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Date pinned</q-item-label>
+                  <q-item-label class="text-body2 overflow-hidden">
+                    {{convertTimestamp(item.time)}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
 
-          <q-separator vertical />
+            <q-separator vertical />
 
-          <q-card-actions vertical class="justify-start q-px-md">
-              <q-btn flat icon="link" label="View Explorer"
-                     @click="openExplorer(item)" />
-          </q-card-actions>
-        </q-card-section>
+            <q-card-actions vertical class="justify-start q-px-md">
+                <q-btn flat icon="play_arrow" label="Open app"
+                      @click="openApp(item)" />
+                <q-btn flat icon="link" label="View Explorer"
+                      @click="openExplorer(item)" />
+            </q-card-actions>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
+    </div>
+    <div v-else>
+      <q-card  flat class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
+          <q-skeleton class="q-py-sm" type="rect" />
       </q-card>
-    </q-expansion-item>
+    </div>
   </div>
 </template>
 
@@ -76,7 +85,8 @@ import { copyToClipboard } from 'quasar'
 export default {
   props: [
     'data',
-    'account'
+    'account',
+    'loading'
   ],
   data () {
     return {
@@ -97,6 +107,11 @@ export default {
   methods: {
     openExplorer (message) {
       const explorerURL = `https://explorer.aleph.im/address/ETH/${this.account.address}/message/PROGRAM/${message.item_hash}`
+      window.open(explorerURL, '_blank')
+    },
+
+    openApp (message) {
+      const explorerURL = `https://aleph.sh/vm/${message.item_hash}`
       window.open(explorerURL, '_blank')
     }
   }
