@@ -7,29 +7,19 @@
           You need ALEPH tokens to use this dApp section.
         </p>
       </div>
-      <div class="row justify-between">
-        <q-tabs
-          v-model="tab"
-        >
-          <q-tab name="active" label="Active" />
-          <!-- <q-tab name="archived" label="Archived" /> -->
-        </q-tabs>
-
-        <!-- <q-btn icon="add" color="aleph-radial" label="Create VM" /> -->
-      </div>
     </div>
     <div v-else class="login-info">
       Please connect.
     </div>
     <div v-if="account">
-      <q-tab-panels class="bg-transparent" v-model="tab" elevation="0">
+      <q-card class="bg-transparent" elevation="0">
         <!-- start: active vm -->
-        <q-tab-panel name="active">
+        <div>
           <VMTable :data="programs" :account="account" :loading="loading">
           </VMTable>
-        </q-tab-panel>
+        </div>
         <!-- end: actives vm -->
-      </q-tab-panels>
+      </q-card>
     </div>
   </q-page>
 </template>
@@ -82,7 +72,7 @@ export default {
       await messages.get_messages({
         addresses: [this.account.address],
         pagination: 1000,
-        messages_type: 'PROGRAM'
+        message_type: 'PROGRAM'
       }).then((response) => {
         this.loading = false
         this.programs = response.messages
