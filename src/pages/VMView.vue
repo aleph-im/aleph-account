@@ -15,7 +15,7 @@
           <!-- <q-tab name="archived" label="Archived" /> -->
         </q-tabs>
 
-        <q-btn icon="add" color="aleph-radial" label="Create VM" />
+        <!-- <q-btn icon="add" color="aleph-radial" label="Create VM" /> -->
       </div>
     </div>
     <div v-else class="login-info">
@@ -25,7 +25,7 @@
       <q-tab-panels class="bg-transparent" v-model="tab" elevation="0">
         <!-- start: active vm -->
         <q-tab-panel name="active">
-          <VMTable :data="messages" :account="account">
+          <VMTable :data="programs" :account="account">
           </VMTable>
         </q-tab-panel>
         <!-- end: actives vm -->
@@ -70,17 +70,7 @@ export default {
   data () {
     return {
       loading: null,
-      messages: [{
-        _id: {
-          $oid: '618e2fa2f8ed30f3517347a6'
-        },
-        item_hash: 'a6ea73d01d8978eccfcc799972873d8dccfc031db26ac41786e1c3b45c2e27ee',
-        channel: 'TEST',
-        chain: 'ETH',
-        confirmed: true,
-        size: 587,
-        time: 1636708258.6329114
-      }],
+      programs: [],
       id: '',
       agentVersion: '',
       tab: 'active'
@@ -88,14 +78,14 @@ export default {
   },
   methods: {
     async getMessages () {
+      console.log('addr', this.account.address)
       let items = await messages.get_messages({
-        message_type: 'STORE',
-        addresses: ['0x101d8D16372dBf5f1614adaE95Ee5CCE61998Fc9'],
+        addresses: [this.account.address],
         pagination: 1000,
-        api_server: this.api_server,
-        channel: 'PINNING'
+        messages_type: 'PROGRAM'
       })
       console.log(items)
+      this.programs = items.messages
     }
   },
   watch: {
