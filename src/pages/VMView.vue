@@ -25,7 +25,7 @@
       <q-tab-panels class="bg-transparent" v-model="tab" elevation="0">
         <!-- start: active vm -->
         <q-tab-panel name="active">
-          <VMTable :data="programs" :account="account">
+          <VMTable :data="programs" :account="account" :loading="loading">
           </VMTable>
         </q-tab-panel>
         <!-- end: actives vm -->
@@ -69,7 +69,7 @@ export default {
   }),
   data () {
     return {
-      loading: null,
+      loading: true,
       programs: [],
       id: '',
       agentVersion: '',
@@ -78,19 +78,23 @@ export default {
   },
   methods: {
     async getMessages () {
-      console.log('addr', this.account.address)
-      let items = await messages.get_messages({
+      this.loading = true
+      await messages.get_messages({
         addresses: [this.account.address],
         pagination: 1000,
         messages_type: 'PROGRAM'
+      }).then((response) => {
+        this.loading = false
+        this.programs = response.messages
+      }).catch(() => {
+        this.loading = false
       })
-      console.log(items)
-      this.programs = items.messages
     }
   },
   watch: {
     account (account) {
       this.$store.dispatch('update_stored')
+      this.getMessages()
     },
     balance_info (account) {
 
