@@ -1,5 +1,10 @@
 <template>
   <q-page class="q-pa-md">
+        <!-- start: create vm dialog -->
+    <q-dialog v-model="showCreateProgram">
+      <CreateNewVM />
+    </q-dialog>
+    <!-- end: create vm dialog -->
     <div v-if="account" class="q-mb-md">
       <div v-if="balance_info.ALEPH < 1" class="doc-note doc-note--warning">
         <p>
@@ -10,6 +15,11 @@
     </div>
     <div v-else class="login-info">
       Please connect.
+    </div>
+    <div class="q-mb-md" v-if="account">
+    <div class="row justify-end">
+        <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true"/>
+    </div>
     </div>
     <div v-if="account">
       <q-card class="bg-transparent" elevation="0">
@@ -29,11 +39,13 @@ import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import VMTable from '../components/VMTable'
 import { messages } from 'aleph-js'
+import CreateNewVM from '../components/CreateNewVM'
 
 export default {
   name: 'my-programs',
   components: {
-    VMTable
+    VMTable,
+    CreateNewVM
   },
   computed: mapState({
     account: state => state.account,
@@ -61,6 +73,7 @@ export default {
     return {
       loading: true,
       programs: [],
+      showCreateProgram: true,
       id: '',
       agentVersion: '',
       tab: 'active'
