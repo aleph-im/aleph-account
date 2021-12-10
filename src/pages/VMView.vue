@@ -31,31 +31,14 @@ import VMTable from '../components/VMTable'
 import { messages } from 'aleph-js'
 
 export default {
-  name: 'my-programs',
+  name: 'programs',
   components: {
     VMTable
   },
   computed: mapState({
     account: state => state.account,
     balance_info: state => state.balance_info,
-    api_server: state => state.api_server,
-    nodes: state => state.nodes,
-    stored: 'stored',
-    async allowance (state) {
-      if (state.account) {
-        if (state.balance_info.ALEPH !== undefined) {
-          return state.balance_info.ALEPH * state.mb_per_aleph
-        }
-      }
-      return 0
-    },
-    total_used (state) {
-      let value = 0
-      for (let item of state.stored) {
-        value = value + item.content.size
-      }
-      return value / (1024 ** 2)
-    }
+    stored: 'stored'
   }),
   data () {
     return {
@@ -85,9 +68,6 @@ export default {
     account (account) {
       this.$store.dispatch('update_stored')
       this.getMessages()
-    },
-    balance_info (account) {
-
     }
   },
   async mounted () {
