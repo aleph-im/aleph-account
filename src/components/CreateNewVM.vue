@@ -15,7 +15,7 @@
       :header-nav="step > 1"
     >
       <div class="flex">
-        <span class="q-mr-xs"> Copy and paste your python code here.</span>
+        <span class="q-mr-xs"> Choose your language then copy and paste your code in the following text area</span>
         <q-btn
         round
         color="primary"
@@ -26,20 +26,28 @@
       </div>
       <div class="row q-gutter-md q-mt-md">
         <div class="col-12">
-          <q-select standout v-model="model" :options="languages" label="Language" />
+          <q-select standout v-model="selectedLanguage" :options="languages" label="Language">
+            <template v-slot:selected-item="scope">
+              {{ scope.opt.label }}
+              <q-chip
+                v-if="!scope.opt.available"
+                dense
+                square
+                color="white"
+                text-color="primary"
+                class="q-my-none q-mx-xs q-mr-none"
+              >Soon</q-chip>
+            </template>
+          </q-select>
         </div>
-        <div class="col-12">
-          <code>
-            <q-input v-model="newProgram.code" label="Python 3"
-             type="textarea"
-              cols="100" rows="20"
-            stack-label standout class="q-my-sm" />
-          </code>
+        <div class="col-12" v-if="selectedLanguage.available">
+          <q-input ref="textarea" type="textarea" id="editor" v-model="newProgram.code">
+          </q-input>
         </div>
       </div>
 
       <q-stepper-navigation>
-        <q-btn @click="step = 2" color="primary" label="Import script"/>
+        <q-btn @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Import script"/>
       </q-stepper-navigation>
     </q-step>
     <q-step
@@ -55,28 +63,33 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
-          <q-btn @click="addVolume()" icon="add" outline color="primary" label="Add Volume"/>
+          <q-btn class="q-mr-xs" @click="addVolume(false)" icon="add" outline color="primary" label="Add Volume"/>
+          <q-btn @click="addVolume(true)" icon="add" outline color="primary" label="Add Persistent Volume"/>
         </div>
         <q-card class="col-12 q-pa-sm" v-for="volume in newProgram.volumes" :key="volume.id">
           <div class="col-12">
-            <q-input v-model="volume.description" label="Description"
+            <q-input v-model="volume.comment" label="Description"
               stack-label standout class="q-my-sm" />
           </div>
           <div class="col-12" >
-            <q-input v-model="volume.description" label="Mount"
+            <q-input v-model="volume.mount" label="Mount"
               stack-label standout class="q-my-sm" />
           </div>
-          <div class="col-12">
-            <span>Persist on VM host ?</span>
-            <q-radio v-model="volume.persistant" :val="false" label="No" />
-            <q-radio v-model="volume.persistant" :val="false" label="No" />
-          </div>
-          <div >
-            <q-input v-model="volume.description" label="Volume name"
+          <div v-show="!volume.isPersistent">
+            <q-input v-model="volume.ref" label="Ref"
               stack-label standout class="q-my-sm" />
           </div>
-          <div >
-            <q-input v-model="volume.description" label="Size (MiB)"
+          <div v-show="!volume.isPersistent">
+            <span>Use latest version?</span>
+            <q-radio v-model="volume.latestVersion" :val="true" label="Yes" />
+            <q-radio v-model="volume.latestVersion" :val="false" label="No" />
+          </div>
+          <div v-show="volume.isPersistent">
+            <q-input v-model="volume.name" label="Volume name"
+              stack-label standout class="q-my-sm" />
+          </div>
+          <div v-show="volume.isPersistent">
+            <q-input v-model="volume.size" label="Size (MiB)"
               stack-label standout class="q-my-sm" />
           </div>
           <q-card-actions align="right">
@@ -85,8 +98,8 @@
         </q-card>
       </div>
       <q-stepper-navigation>
-        <q-btn @click="prepare_storage" color="primary" label="Deploy"/>
-        <q-btn flat @click="step = 1" color="primary" label="Back" class="q-ml-sm" />
+        <q-btn color="primary" label="Deploy" @click="deploy()"/>
+        <q-btn flat @click="backStep(1)" color="primary" label="Back" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
   </q-stepper>
@@ -94,41 +107,97 @@
 
 <script>
 
+import * as CodeMirror from 'codemirror'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/theme/blackboard.css'
+import 'codemirror/mode/python/python.js'
+import 'codemirror/mode/javascript/javascript.js'
+import { store } from 'aleph-js'
+
 export default {
   name: 'create-new-vm',
+  props: ['account'],
   data () {
     return {
+      cm: null,
+      file: null,
       newProgram: {
-        code: `
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-async def root():
-  return {"message": "Hello World"}`,
+        code: 'print("Hello Wolrd!")',
         refRuntime: 'bd79839bf96e595a06da5ac0b6ba51dea6f7e2591bb913deccded04d831d29f4',
         volumes: []
       },
       languages: [
-        { label: 'python', value: 'python', available: true },
-        { label: 'node.js (soon)', value: 'nodejs', available: false }
+        { label: 'Python', value: 'python', available: true },
+        { label: 'Javascript', value: 'javascript', available: false }
       ],
+      selectedLanguage: { label: 'Python', value: 'python', available: true },
       step: 1,
       tab: false
     }
   },
+  computed: {
+    getEditorElement () {
+      return document.getElementById('editor')
+    }
+  },
   methods: {
-    addVolume () {
-      this.newProgram.volumes.push({
-        id: (Math.random() + 1).toString(36).substring(7)
-      })
+    addVolume (isPersistent) {
+      if (isPersistent) {
+        this.newProgram.volumes.push({
+          id: (Math.random() + 1).toString(36).substring(7),
+          isPersistent: true,
+          persistence: 'host'
+        })
+      } else {
+        this.newProgram.volumes.push({
+          id: (Math.random() + 1).toString(36).substring(7),
+          isPersistent: false
+        })
+      }
     },
     deleteVolume (volume) {
       this.newProgram.volumes.splice(this.newProgram.volumes.findIndex(v => v.id === volume.id), 1)
+    },
+    backStep (step) {
+      this.step = step
+    },
+    init () {
+      CodeMirror.fromTextArea(this.$refs.textarea, {
+        lineNumbers: true,
+        theme: 'blackboard',
+        mode: 'python'
+      })
+    },
+    async importCode () {
+      this.file = new File([this.newProgram.code], 'code.py', { type: 'text/plain' })
+      this.step = 2
+    },
+    async deploy () {
+      await store.submit(
+        this.account.address,
+        {
+          chain: 'ETH',
+          type: 'PROGRAM',
+          sender: this.account.address,
+          channel: 'TEST',
+          fileobject: this.file,
+          content: {
+            address: this.account.address,
+            volumes: this.newProgram.volumes,
+            runtime: {
+              ref: this.newProgram.refRuntime,
+              comment: this.newProgram.description
+            }
+          },
+          api_server: 'https://api2.aleph.im'
+        }
+      )
     }
   },
   watch: {
+  },
+  mounted () {
+    this.init()
   }
 }
 </script>

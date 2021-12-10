@@ -2,7 +2,7 @@
   <q-page class="q-pa-md">
         <!-- start: create vm dialog -->
     <q-dialog v-model="showCreateProgram">
-      <CreateNewVM />
+      <CreateNewVM :account="account" />
     </q-dialog>
     <!-- end: create vm dialog -->
     <div v-if="account" class="q-mb-md">
@@ -73,7 +73,7 @@ export default {
     return {
       loading: true,
       programs: [],
-      showCreateProgram: true,
+      showCreateProgram: false,
       id: '',
       agentVersion: '',
       tab: 'active'
