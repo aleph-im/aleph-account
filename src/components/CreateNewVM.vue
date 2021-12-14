@@ -112,11 +112,11 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
 import 'codemirror/mode/python/python.js'
 import 'codemirror/mode/javascript/javascript.js'
-import { store } from 'aleph-js'
+import { store, broadcast, nuls, nuls2, neo, ethereum } from 'aleph-js'
 
 export default {
   name: 'create-new-vm',
-  props: ['account'],
+  props: ['account', 'api_server'],
   data () {
     return {
       cm: null,
@@ -172,26 +172,76 @@ export default {
       this.file = new File([this.newProgram.code], 'code.py', { type: 'text/plain' })
       this.step = 2
     },
+    async send (message) {
+      if (this.account.type === 'NULS') {
+        message = nuls.sign(Buffer.from(this.account.private_key, 'hex'), message)
+      } else if (this.account.type === 'NULS2') {
+        message = await nuls2.sign(this.account, message)
+      } else if (this.account.type === 'NEO') {
+        message = await neo.sign(this.account, message)
+      } else if (this.account.type === 'ETH') {
+        message = await ethereum.sign(this.account, message)
+      }
+      console.log(message)
+      await broadcast(message, { api_server: 'https://api2.aleph.im' })
+    },
     async deploy () {
-      await store.submit(
+      let storeMessage = await store.submit(
         this.account.address,
         {
           chain: 'ETH',
-          type: 'PROGRAM',
           sender: this.account.address,
+          account: this.account,
           channel: 'TEST',
           fileobject: this.file,
-          content: {
-            address: this.account.address,
-            volumes: this.newProgram.volumes,
-            runtime: {
-              ref: this.newProgram.refRuntime,
-              comment: this.newProgram.description
-            }
-          },
           api_server: 'https://api2.aleph.im'
         }
       )
+
+      console.log(storeMessage)
+      let item_hash = storeMessage.item_hash
+
+      let message = {
+        chain: 'ETH',
+        time: Date.now(),
+        channel: 'TEST',
+        sender: this.account.address,
+        type: 'PROGRAM',
+        item_hash: '',
+        on: {
+          http: true
+        },
+        item_type: 'inline',
+        content: {
+          time: Date.now(),
+          type: 'vm-function',
+          address: this.account.address,
+          volumes: this.newProgram.volumes,
+          allow_amend: false,
+          resources: {
+            vcpus: 1,
+            memory: 128,
+            seconds: 30
+          },
+          code: {
+            encoding: 'zip',
+            entrypoint: 'main:app',
+            ref: item_hash
+          },
+          environment: {
+            reproducible: false,
+            internet: true,
+            aleph_api: true,
+            shared_cache: false
+          },
+          runtime: {
+            ref: this.newProgram.refRuntime,
+            use_latest: true,
+            comment: 'Aleph Alpine Linux with Python 3.8'
+          }
+        }
+      }
+      await this.send(message)
     }
   },
   watch: {

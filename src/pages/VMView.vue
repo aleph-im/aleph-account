@@ -2,7 +2,7 @@
   <q-page class="q-pa-md">
         <!-- start: create vm dialog -->
     <q-dialog v-model="showCreateProgram">
-      <CreateNewVM :account="account" />
+      <CreateNewVM :account="account" :api_server="api_server" />
     </q-dialog>
     <!-- end: create vm dialog -->
     <div v-if="account" class="q-mb-md">
@@ -49,6 +49,7 @@ export default {
   },
   computed: mapState({
     account: state => state.account,
+    api_server: state => state.api_server,
     balance_info: state => state.balance_info,
     stored: 'stored'
   }),
