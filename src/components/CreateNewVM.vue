@@ -106,13 +106,15 @@
 </template>
 
 <script>
+/* eslint new-cap: ["error", { "newIsCap": false }] */
 
 import * as CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
 import 'codemirror/mode/python/python.js'
 import 'codemirror/mode/javascript/javascript.js'
-import { store, broadcast, nuls, nuls2, neo, ethereum } from 'aleph-js'
+const shajs = require('sha.js')
+import { store, broadcast, storage_push, ipfs_push, create, nuls, nuls2, neo, ethereum } from 'aleph-js'
 
 export default {
   name: 'create-new-vm',
@@ -168,6 +170,30 @@ export default {
         mode: 'python'
       })
     },
+    async putContent (message, content, inline_requested, storage_engine, api_server) {
+      let inline = inline_requested
+      if (inline) {
+        let serialized = JSON.stringify(content)
+        if (serialized.length > 150000) {
+          inline = false
+        } else {
+          message.item_type = 'inline'
+          message.item_content = serialized
+          message.item_hash = new shajs.sha256().update(serialized).digest('hex')
+        }
+      }
+      if (!inline) {
+        let hash = ''
+        if (storage_engine === 'ipfs') {
+          message.item_type = 'ipfs'
+          hash = await ipfs_push(content, { api_server: api_server })
+        } else {
+          message.item_type = 'storage'
+          hash = await storage_push(content, { api_server: api_server })
+        }
+        message.item_hash = hash
+      }
+    },
     async importCode () {
       this.file = new File([this.newProgram.code], 'code.py', { type: 'text/plain' })
       this.step = 2
@@ -198,7 +224,6 @@ export default {
         }
       )
 
-      console.log(storeMessage)
       let item_hash = storeMessage.item_hash
 
       let message = {
@@ -211,42 +236,46 @@ export default {
         on: {
           http: true
         },
-        item_type: 'inline',
-        content: {
-          time: Date.now(),
-          type: 'vm-function',
-          address: this.account.address,
-          volumes: this.newProgram.volumes,
-          allow_amend: false,
-          resources: {
-            vcpus: 1,
-            memory: 128,
-            seconds: 30
-          },
-          code: {
-            encoding: 'zip',
-            entrypoint: 'main:app',
-            ref: item_hash
-          },
-          environment: {
-            reproducible: false,
-            internet: true,
-            aleph_api: true,
-            shared_cache: false
-          },
-          runtime: {
-            ref: this.newProgram.refRuntime,
-            use_latest: true,
-            comment: 'Aleph Alpine Linux with Python 3.8'
-          }
+        item_type: 'inline'
+      }
+
+      let store_content = {
+        time: Date.now() / 1000,
+        type: 'vm-function',
+        address: this.account.address,
+        volumes: this.newProgram.volumes,
+        allow_amend: false,
+        resources: {
+          vcpus: 1,
+          memory: 128,
+          seconds: 30
+        },
+        code: {
+          encoding: 'zip',
+          entrypoint: 'main:app',
+          ref: item_hash
+        },
+        environment: {
+          reproducible: false,
+          internet: true,
+          aleph_api: true,
+          shared_cache: false
+        },
+        runtime: {
+          ref: this.newProgram.refRuntime,
+          use_latest: true,
+          comment: 'Aleph Alpine Linux with Python 3.8'
         }
       }
+
+      await this.putContent(message, store_content, true, 'storage', 'https://api2.aleph.im')
       await this.send(message)
     }
   },
   watch: {
   },
   mounted () {
+    console.log(create)
     this.init()
   }
 }
