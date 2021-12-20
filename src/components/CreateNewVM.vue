@@ -195,12 +195,13 @@ export default {
       }
     },
     async importCode () {
-      this.file = new File([this.newProgram.code], 'code.py', { type: 'text/plain' })
+      this.file = new File([this.newProgram.code], 'main.py', { type: 'text/plain' })
+      console.log(this.file)
       this.step = 2
     },
     async send (message) {
       if (this.account.type === 'NULS') {
-        message = nuls.sign(Buffer.from(this.account.private_key, 'hex'), message)
+        message = await nuls.sign(Buffer.from(this.account.private_key, 'hex'), message)
       } else if (this.account.type === 'NULS2') {
         message = await nuls2.sign(this.account, message)
       } else if (this.account.type === 'NEO') {
@@ -208,7 +209,7 @@ export default {
       } else if (this.account.type === 'ETH') {
         message = await ethereum.sign(this.account, message)
       }
-      console.log(message)
+
       await broadcast(message, { api_server: 'https://api2.aleph.im' })
     },
     async deploy () {
@@ -228,7 +229,7 @@ export default {
 
       let message = {
         chain: 'ETH',
-        time: Date.now(),
+        time: parseInt(Date.now() / 1000),
         channel: 'TEST',
         sender: this.account.address,
         type: 'PROGRAM',
@@ -240,7 +241,7 @@ export default {
       }
 
       let store_content = {
-        time: Date.now() / 1000,
+        time: parseInt(Date.now() / 1000),
         type: 'vm-function',
         address: this.account.address,
         volumes: this.newProgram.volumes,
@@ -253,7 +254,11 @@ export default {
         code: {
           encoding: 'zip',
           entrypoint: 'main:app',
-          ref: item_hash
+          ref: item_hash,
+          use_latest: true
+        },
+        on: {
+          http: true
         },
         environment: {
           reproducible: false,
