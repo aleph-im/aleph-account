@@ -5,7 +5,7 @@
         v-for="item of data"
         class="overflow-hidden rounded-borders q-mb-md"
         :key="item.item_hash"
-        :label="item.item_hash"
+        :label="getProgramLabel(item)"
         icon="computer"
         expand-icon-class="text-white"
         :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
@@ -20,6 +20,14 @@
                   <q-item-label>
                     {{item.item_hash}}
                     <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label caption>Program Name</q-item-label>
+                  <q-item-label>
+                    {{getProgramLabel(item)}}
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -104,6 +112,18 @@ export default {
     openApp (message) {
       const explorerURL = `https://aleph.sh/vm/${message.item_hash}`
       window.open(explorerURL, '_blank')
+    },
+
+    getProgramLabel (program) {
+      console.log(program.content)
+      if (!('extra_fields' in program.content)) {
+        return program.item_hash
+      } else if (!('program_name' in program.content.extra_fields)) {
+        return program.item_hash
+      } else if (program.content.extra_fields.program_name.length === 0) {
+        return program.item_hash
+      }
+      return program.content.extra_fields.program_name
     }
   }
 }

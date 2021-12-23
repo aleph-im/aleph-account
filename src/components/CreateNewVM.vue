@@ -41,7 +41,7 @@
           </q-select>
         </div>
         <div class="col-12" v-if="selectedLanguage.available">
-          <q-input ref="textarea" type="textarea" id="editor" v-model="newProgram.code">
+          <q-input ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code">
           </q-input>
         </div>
       </div>
@@ -58,6 +58,10 @@
       :header-nav="step > 2"
     >
     <div class="row q-gutter-md q-mt-md">
+        <div class="col-12">
+            <q-input v-model="newProgram.name" label="Name your program"
+            stack-label standout class="q-my-sm" />
+        </div>
         <div class="col-12">
             <q-input v-model="newProgram.refRuntime" label="Ref of runtime"
             stack-label standout class="q-my-sm" />
@@ -114,7 +118,7 @@ import 'codemirror/theme/blackboard.css'
 import 'codemirror/mode/python/python.js'
 import 'codemirror/mode/javascript/javascript.js'
 const shajs = require('sha.js')
-import { store, broadcast, storage_push, ipfs_push, create, nuls, nuls2, neo, ethereum } from 'aleph-js'
+import { store, broadcast, storage_push, ipfs_push, nuls, nuls2, neo, ethereum } from 'aleph-js'
 
 export default {
   name: 'create-new-vm',
@@ -124,6 +128,7 @@ export default {
       cm: null,
       file: null,
       newProgram: {
+        name: '',
         code: 'print("Hello Wolrd!")',
         refRuntime: 'bd79839bf96e595a06da5ac0b6ba51dea6f7e2591bb913deccded04d831d29f4',
         volumes: []
@@ -196,7 +201,6 @@ export default {
     },
     async importCode () {
       this.file = new File([this.newProgram.code], 'main.py', { type: 'text/plain' })
-      console.log(this.file)
       this.step = 2
     },
     async send (message) {
@@ -246,13 +250,16 @@ export default {
         address: this.account.address,
         volumes: this.newProgram.volumes,
         allow_amend: false,
+        extra_fields: {
+          program_name: this.newProgram.name
+        },
         resources: {
           vcpus: 1,
           memory: 128,
           seconds: 30
         },
         code: {
-          encoding: 'zip',
+          encoding: 'tar',
           entrypoint: 'main:app',
           ref: item_hash,
           use_latest: true
@@ -280,7 +287,6 @@ export default {
   watch: {
   },
   mounted () {
-    console.log(create)
     this.init()
   }
 }
@@ -290,22 +296,12 @@ export default {
 .nftcard {
   width: 900px !important;
   max-width: 80vw !important;
-  // &>.row {
-  //   >:first-child {
-  //     border-right: 1px solid rgba(0,0,0,.1);
-  //   }
-  // }
 }
 
 .body--dark {
   .nftcard {
     background: #1d262e;
     border: none;
-    // &>.row {
-    //   >:first-child {
-    //     border-right: 1px solid rgba(255,255,255,.1);
-    //   }
-    // }
   }
 
   .q-stepper {
