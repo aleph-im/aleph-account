@@ -2,7 +2,7 @@
   <q-page class="q-pa-md">
         <!-- start: create vm dialog -->
     <q-dialog v-model="showCreateProgram">
-      <CreateNewVM :account="account" :api_server="api_server" />
+      <CreateNewVM :account="account" :api_server="api_server" @created="uploadVM" />
     </q-dialog>
     <!-- end: create vm dialog -->
     <div v-if="account" class="q-mb-md">
@@ -25,7 +25,7 @@
       <q-card class="bg-transparent" elevation="0">
         <!-- start: active vm -->
         <div>
-          <VMTable :data="programs" :account="account" :loading="loading">
+          <VMTable :data="programs" :account="account" :loading="loading" >
           </VMTable>
         </div>
         <!-- end: actives vm -->
@@ -64,6 +64,11 @@ export default {
     }
   },
   methods: {
+    uploadVM (value) {
+      this.showCreateProgram = value
+      this.getMessages()
+    },
+
     async getMessages () {
       this.loading = true
       await messages.get_messages({

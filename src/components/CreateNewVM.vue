@@ -41,13 +41,13 @@
           </q-select>
         </div>
         <div class="col-12" v-if="selectedLanguage.available">
-          <q-input ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code">
-          </q-input>
+          <textarea ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code">
+          </textarea>
         </div>
       </div>
 
       <q-stepper-navigation>
-        <q-btn @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Import script"/>
+        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Import script"/>
       </q-stepper-navigation>
     </q-step>
     <q-step
@@ -85,15 +85,15 @@
           </div>
           <div v-show="!volume.isPersistent">
             <span>Use latest version?</span>
-            <q-radio v-model="volume.latestVersion" :val="true" label="Yes" />
-            <q-radio v-model="volume.latestVersion" :val="false" label="No" />
+            <q-radio v-model="volume.use_latest" :val="true" label="Yes" />
+            <q-radio v-model="volume.use_latest" :val="false" label="No" />
           </div>
           <div v-show="volume.isPersistent">
             <q-input v-model="volume.name" label="Volume name"
               stack-label standout class="q-my-sm" />
           </div>
           <div v-show="volume.isPersistent">
-            <q-input v-model="volume.size" label="Size (MiB)"
+            <q-input v-model="volume.size_mib" label="Size (MiB)"
               stack-label standout class="q-my-sm" />
           </div>
           <q-card-actions align="right">
@@ -102,7 +102,7 @@
         </q-card>
       </div>
       <q-stepper-navigation>
-        <q-btn color="primary" label="Deploy" @click="deploy()"/>
+        <q-btn :loading="loading" color="primary" label="Deploy" @click="deploy()"/>
         <q-btn flat @click="backStep(1)" color="primary" label="Back" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -118,7 +118,12 @@ import 'codemirror/theme/blackboard.css'
 import 'codemirror/mode/python/python.js'
 import 'codemirror/mode/javascript/javascript.js'
 const shajs = require('sha.js')
+import JSZip from 'jszip'
 import { store, broadcast, storage_push, ipfs_push, nuls, nuls2, neo, ethereum } from 'aleph-js'
+
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 export default {
   name: 'create-new-vm',
@@ -126,10 +131,15 @@ export default {
   data () {
     return {
       cm: null,
-      file: null,
+      loading: false,
+      exportFile: null,
       newProgram: {
         name: '',
-        code: 'print("Hello Wolrd!")',
+        code: `from fastapi import FastAPI
+app = FastAPI()
+@app.get("/")
+async def root():
+  return {"message": "Hello World"}`,
         refRuntime: 'bd79839bf96e595a06da5ac0b6ba51dea6f7e2591bb913deccded04d831d29f4',
         volumes: []
       },
@@ -152,13 +162,16 @@ export default {
       if (isPersistent) {
         this.newProgram.volumes.push({
           id: (Math.random() + 1).toString(36).substring(7),
+          comment: 'Basic description of your vm',
           isPersistent: true,
           persistence: 'host'
         })
       } else {
         this.newProgram.volumes.push({
           id: (Math.random() + 1).toString(36).substring(7),
-          isPersistent: false
+          comment: 'Basic description of your vm',
+          isPersistent: false,
+          use_latest: false
         })
       }
     },
@@ -200,8 +213,12 @@ export default {
       }
     },
     async importCode () {
-      this.file = new File([this.newProgram.code], 'main.py', { type: 'text/plain' })
+      this.loading = true
+      const zip = new JSZip()
+      zip.file('main.py', this.newProgram.code)
+      this.exportFile = await zip.generateAsync({ type: 'blob' })
       this.step = 2
+      this.loading = false
     },
     async send (message) {
       if (this.account.type === 'NULS') {
@@ -217,6 +234,7 @@ export default {
       await broadcast(message, { api_server: 'https://api2.aleph.im' })
     },
     async deploy () {
+      this.loading = true
       let storeMessage = await store.submit(
         this.account.address,
         {
@@ -224,10 +242,12 @@ export default {
           sender: this.account.address,
           account: this.account,
           channel: 'TEST',
-          fileobject: this.file,
+          fileobject: this.exportFile,
           api_server: 'https://api2.aleph.im'
         }
-      )
+      ).catch((response) => {
+        this.loading = false
+      })
 
       let item_hash = storeMessage.item_hash
 
@@ -250,16 +270,13 @@ export default {
         address: this.account.address,
         volumes: this.newProgram.volumes,
         allow_amend: false,
-        extra_fields: {
-          program_name: this.newProgram.name
-        },
         resources: {
           vcpus: 1,
           memory: 128,
           seconds: 30
         },
         code: {
-          encoding: 'tar',
+          encoding: 'zip',
           entrypoint: 'main:app',
           ref: item_hash,
           use_latest: true
@@ -280,8 +297,18 @@ export default {
         }
       }
 
-      await this.putContent(message, store_content, true, 'storage', 'https://api2.aleph.im')
-      await this.send(message)
+      await this.putContent(message, store_content, true, 'storage', 'https://api2.aleph.im').catch((response) => {
+        this.loading = false
+      })
+
+      await sleep(1000)
+
+      await this.send(message).catch((response) => {
+        this.loading = false
+      })
+
+      this.$emit('created', false)
+      this.loading = false
     }
   },
   watch: {
