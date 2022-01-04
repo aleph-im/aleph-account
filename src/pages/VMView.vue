@@ -80,7 +80,7 @@ export default {
         this.programs = response.messages
         for (var i = 0; i < this.programs.length; i++) {
           let tx = this.programs[i].content.code.ref
-          //retrieve store messages
+          // retrieve store messages
           await messages.get_messages({
             addresses: [this.account.address],
             hashes: [tx]
