@@ -75,9 +75,22 @@ export default {
         addresses: [this.account.address],
         pagination: 1000,
         message_type: 'PROGRAM'
-      }).then((response) => {
+      }).then(async (response) => {
         this.loading = false
         this.programs = response.messages
+        for (var i = 0; i < this.programs.length; i++) {
+          let tx = this.programs[i].content.code.ref
+          //retrieve store messages
+          await messages.get_messages({
+            addresses: [this.account.address],
+            hashes: [tx]
+          }).then(async (response) => {
+            let storeObj = response.messages[0].content
+            this.programs[i].storeObj = storeObj
+          }).catch(() => {
+            this.loading = false
+          })
+        }
       }).catch(() => {
         this.loading = false
       })

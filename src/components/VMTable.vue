@@ -35,7 +35,7 @@
                 <q-item-section>
                   <q-item-label caption>Size</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
-                    {{item.size}} MB
+                    {{item.storeObj.size}}b
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -64,6 +64,8 @@
                       @click="openApp(item)" />
                 <q-btn flat icon="link" align="left" label="View Explorer"
                       @click="openExplorer(item)" />
+                <q-btn flat icon="upload_file" align="left" label="Download source code"
+                      @click="downloadSourceCode(item.storeObj.item_hash)" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -114,8 +116,12 @@ export default {
       window.open(explorerURL, '_blank')
     },
 
+    downloadSourceCode (item_hash) {
+      const explorerURL = `http://api2.aleph.im/api/v0/storage/raw/${item_hash}`
+      window.open(explorerURL, '_blank')
+    },
+
     getProgramLabel (program) {
-      console.log(program.content)
       if (!('extra_fields' in program.content)) {
         return program.item_hash
       } else if (!('program_name' in program.content.extra_fields)) {

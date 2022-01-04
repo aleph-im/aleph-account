@@ -41,8 +41,8 @@
           </q-select>
         </div>
         <div class="col-12" v-if="selectedLanguage.available">
-          <textarea ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code">
-          </textarea>
+          <q-input ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code">
+          </q-input>
         </div>
       </div>
 
@@ -184,6 +184,10 @@ async def root():
     init () {
       CodeMirror.fromTextArea(this.$refs.textarea, {
         lineNumbers: true,
+        styleActiveLine: true,
+        tabSize: 4,
+        autoRefresh: true,
+        value: this.newProgram.code,
         theme: 'blackboard',
         mode: 'python'
       })
