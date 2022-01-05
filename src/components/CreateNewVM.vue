@@ -41,8 +41,7 @@
           </q-select>
         </div>
         <div class="col-12" v-if="selectedLanguage.available">
-          <q-input ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code">
-          </q-input>
+          <codemirror :options="cmOptions" ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code"/>
         </div>
       </div>
 
@@ -112,7 +111,7 @@
 <script>
 /* eslint new-cap: ["error", { "newIsCap": false }] */
 
-import * as CodeMirror from 'codemirror'
+import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
 import 'codemirror/mode/python/python.js'
@@ -128,9 +127,18 @@ function sleep (ms) {
 export default {
   name: 'create-new-vm',
   props: ['account', 'api_server'],
+  components: {
+    codemirror
+  },
   data () {
     return {
-      cm: null,
+      cmOptions: {
+        tabSize: 4,
+        mode: 'text/python',
+        lineNumbers: true,
+        line: true,
+        theme: 'blackboard'
+      },
       loading: false,
       exportFile: null,
       newProgram: {
@@ -180,17 +188,6 @@ async def root():
     },
     backStep (step) {
       this.step = step
-    },
-    init () {
-      CodeMirror.fromTextArea(this.$refs.textarea, {
-        lineNumbers: true,
-        styleActiveLine: true,
-        tabSize: 4,
-        autoRefresh: true,
-        value: this.newProgram.code,
-        theme: 'blackboard',
-        mode: 'python'
-      })
     },
     async putContent (message, content, inline_requested, storage_engine, api_server) {
       let inline = inline_requested
@@ -314,11 +311,6 @@ async def root():
       this.$emit('created', false)
       this.loading = false
     }
-  },
-  watch: {
-  },
-  mounted () {
-    this.init()
   }
 }
 </script>

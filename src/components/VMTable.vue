@@ -35,7 +35,7 @@
                 <q-item-section>
                   <q-item-label caption>Size</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
-                    {{item.storeObj.size}}b
+                    {{item.storeObj ? item.storeObj.size : 'Null' }}b
                   </q-item-label>
                 </q-item-section>
               </q-item>
