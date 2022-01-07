@@ -62,6 +62,10 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
+            <q-input v-model="newProgram.entrypoint" label="Your entrypoint"
+            stack-label standout class="q-my-sm" />
+        </div>
+        <div class="col-12">
             <q-input v-model="newProgram.refRuntime" label="Ref of runtime"
             stack-label standout class="q-my-sm" />
         </div>
@@ -142,6 +146,7 @@ export default {
       loading: false,
       exportFile: null,
       newProgram: {
+        entrypoint: 'app',
         name: '',
         code: `from fastapi import FastAPI
 app = FastAPI()
@@ -278,7 +283,7 @@ async def root():
         },
         code: {
           encoding: 'zip',
-          entrypoint: 'main:app',
+          entrypoint: `main:${this.newProgram.entrypoint}`,
           ref: item_hash,
           use_latest: true
         },
