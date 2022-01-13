@@ -18,6 +18,7 @@
     </div>
     <div class="q-mb-md" v-if="account">
     <div class="row justify-end">
+        <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" label="Reload" @click="reloadVM()"/>
         <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true"/>
     </div>
     </div>
@@ -95,6 +96,10 @@ export default {
       }).catch(() => {
         this.loading = false
       })
+    },
+
+    async reloadVM () {
+      this.getMessages()
     }
   },
   watch: {
