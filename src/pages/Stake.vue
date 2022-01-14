@@ -6,6 +6,9 @@
     <q-dialog v-model="createNode">
       <create-node @done="creation_done" />
     </q-dialog>
+    <q-dialog v-model="createComputeNode">
+      <create-compute-node @done="creation_done" @close="createComputeNode=false"/>
+    </q-dialog>
     <q-dialog v-model="showNode">
       <node-info :node="displayed_node"
       @close="showNode=false"
@@ -88,6 +91,7 @@
       :user_stakes="user_stakes"
       @node-action="node_emit_action"
       @create-node="createNode = true"
+      @create-compute-node="createComputeNode = true"
       @node-info="(node) => {showNode=true; displayed_node=node}"
       class="q-mb-xl">
     </nodes-table>
@@ -100,6 +104,7 @@
       :show-header="true"
       @node-action="node_emit_action"
       @create-node="createNode = true"
+      @create-compute-node="createComputeNode = true"
       @node-info="(node) => {showNode=true; displayed_node=node}">
     </nodes-table>
   </q-page>
@@ -108,6 +113,7 @@
 <script>
 import { mapState } from 'vuex'
 import CreateNode from '../components/CreateNode'
+import CreateComputeNode from '../components/CreateComputeNode'
 import NodesTable from '../components/NodesTable'
 import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
@@ -219,16 +225,21 @@ export default {
     },
     total_per_aleph_per_day (state) {
       return this.total_per_day / this.total_staked_in_active
+    },
+    closeComputeDialog () {
+      this.createComputeNode = false
     }
   }),
   components: {
     CreateNode,
+    CreateComputeNode,
     NodesTable,
     NodeInfo
   },
   data () {
     return {
       createNode: false,
+      createComputeNode: false,
       showNode: false,
       loading: null,
       displayed_node: null,
@@ -283,6 +294,7 @@ export default {
     },
     async creation_done () {
       this.createNode = false
+      this.createComputeNode = false
       this.loading = true
       this.loading = null
     },
