@@ -3,7 +3,6 @@
     <q-card-section>
       <div class="row justify-between">
                 <div class="text-h6">Create Compute Resource Node</div>
-                <q-btn unelevated size="md" icon="help"></q-btn>
                 <q-btn unelevated size="md" icon="close" @click="closeDialog()"></q-btn>
         </div>
     </q-card-section>
@@ -16,7 +15,7 @@
             <q-input label="Multiaddress" placeholder="/ip4/46.19.179.231/tcp/4025/p2p/Lqs2Hd ..." stack-label standout class="q-my-sm" />
         </div>
         <div class="q-my-md">
-            <a href="">How to install your node and retrieve the multiaddress.</a>
+            <a href="" :style="`color: ${primary};`" >How to install your node and retrieve the multiaddress.</a>
         </div>
         <div>
             <q-btn class="full-width" text-color="white" outline color="primary" label="Register" />

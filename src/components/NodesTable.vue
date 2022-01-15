@@ -1,21 +1,21 @@
 <template>
   <div>
     <q-table
-      :title="title"
-      :data="values"
-      :columns="columns"
-      :filter="filter"
-      :rows-per-page-options="[0]"
-      row-key="hash"
-      flat
-      class="bg-transparent"
-      :hide-bottom="!showFooter"
-      :dense="$q.screen.lt.md"
-      :visible-columns="visible_columns"
+    :title="title"
+    :data="values"
+    :columns="columns"
+    :filter="filter"
+    :rows-per-page-options="[0]"
+    row-key="hash"
+    flat
+    class="bg-transparent"
+    :hide-bottom="!showFooter"
+    :dense="$q.screen.lt.md"
+    :visible-columns="visible_columns"
     >
       <template v-slot:top-right>
         <span class="row" v-if="showHeader">
-          <q-input rounded standout dense debounce="300" v-model="filter" placeholder="search nodes">
+          <q-input standout dense debounce="300" v-model="filter" placeholder="search nodes">
             <template v-slot:prepend>
               <q-icon name="search" />
             </template>
@@ -25,23 +25,6 @@
             class="q-ml-sm font-weight-bold" icon="add" size="sm" @click="$emit('create-node')">
             Create node
           </q-btn> -->
-          <q-btn-dropdown :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))" size="md" class="q-ml-sm" color="aleph-radial" label="Create node" icon="add" v-if="account">
-          <!-- start: dropdown item list  -->
-          <q-list>
-            <q-item clickable v-close-popup @click="$emit('create-node')">
-              <q-item-section>
-                <q-item-label>Core Channel Node</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-close-popup @click="$emit('create-compute-node')">
-              <q-item-section>
-                <q-item-label>Compute Resource Node</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <!-- end: dropdown item list  -->
-        </q-btn-dropdown>
         </span>
       </template>
       <template v-slot:body="props">
@@ -179,6 +162,7 @@ export default {
   data () {
     return {
       filter: '',
+      tab: 'all_nodes',
       columns: [
         {
           name: 'picture'
