@@ -82,31 +82,124 @@
         </q-card-section>
       </q-card>
     </div>
-    <nodes-table
-      v-if="my_nodes.length"
-      title="My Nodes"
-      :values="my_nodes"
-      :loading="loading"
-      :user_node="user_node"
-      :user_stakes="user_stakes"
-      @node-action="node_emit_action"
-      @create-node="createNode = true"
-      @create-compute-node="createComputeNode = true"
-      @node-info="(node) => {showNode=true; displayed_node=node}"
-      class="q-mb-xl">
-    </nodes-table>
-    <nodes-table
-      title="All Nodes"
-      :values="values"
-      :loading="loading"
-      :user_node="user_node"
-      :user_stakes="user_stakes"
-      :show-header="true"
-      @node-action="node_emit_action"
-      @create-node="createNode = true"
-      @create-compute-node="createComputeNode = true"
-      @node-info="(node) => {showNode=true; displayed_node=node}">
-    </nodes-table>
+    <div class="row justify-between q-my-md">
+      <div>
+        <q-tabs v-model="tab" dense no-caps align="left" indicator-color="primary">
+          <q-tab name="all_nodes" label="All nodes" />
+          <q-tab name="core" label="Core" />
+          <q-tab name="compute" label="Compute" />
+          <q-tab name="storage" label="Storage" />
+        </q-tabs>
+      </div>
+      <div>
+        <q-btn-dropdown size="md" class="q-ml-sm" color="aleph-radial" label="Create node" icon="add" v-if="account">
+          <!-- start: dropdown item list  -->
+          <q-list>
+            <q-item clickable v-close-popup @click="$emit('create-node')">
+              <q-item-section>
+                <q-item-label>Core Channel Node</q-item-label>
+              </q-item-section>
+            </q-item>
+
+              <q-item clickable v-close-popup @click="$emit('create-compute-node')">
+                <q-item-section>
+                  <q-item-label>Compute Resource Node</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+              <!-- end: dropdown item list  -->
+        </q-btn-dropdown>
+      </div>
+    </div>
+    <q-tab-panels v-model="tab" animated class="transparent">
+      <!-- start: all nodes -->
+      <q-tab-panel name="all_nodes" >
+        <nodes-table
+          v-if="my_nodes.length"
+          title="My Nodes"
+          :values="my_nodes"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node}"
+          class="q-mb-xl">
+        </nodes-table>
+        <nodes-table
+          title="All Nodes"
+          :values="values"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node}">
+        </nodes-table>
+      </q-tab-panel>
+      <!-- end: all nodes -->
+      <!-- start: all nodes -->
+      <q-tab-panel name="core" >
+        <nodes-table
+          v-if="my_nodes.length"
+          title="My Nodes"
+          :values="my_nodes"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node}"
+          class="q-mb-xl">
+        </nodes-table>
+        <nodes-table
+          title="All Core Nodes"
+          :values="values"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node}">
+        </nodes-table>
+      </q-tab-panel>
+      <!-- end: all nodes -->
+      <!-- start: all nodes -->
+      <q-tab-panel name="compute" >
+        <nodes-table
+          v-if="my_nodes.length"
+          title="My Nodes"
+          :values="my_nodes"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node}"
+          class="q-mb-xl">
+        </nodes-table>
+        <nodes-table
+          title="All Compute Nodes"
+          :values="values"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node}">
+        </nodes-table>
+      </q-tab-panel>
+      <!-- end: all nodes -->
+    </q-tab-panels>
   </q-page>
 </template>
 
@@ -238,6 +331,7 @@ export default {
   },
   data () {
     return {
+      tab: 'all_nodes',
       createNode: false,
       createComputeNode: false,
       showNode: false,
