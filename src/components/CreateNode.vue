@@ -82,7 +82,7 @@ export default {
       }
     },
     async finish () {
-      let result = await posts.submit(this.account.address, this.node_post_type,
+      await posts.submit(this.account.address, this.node_post_type,
         {
           tags: ['create-node', ...this.tags],
           action: 'create-node',
@@ -105,7 +105,7 @@ export default {
       //   account: this.account,
       //   channel: this.channel
       // })
-      this.$emit('done', result)
+      this.$emit('done', 'node')
     }
   }
 }

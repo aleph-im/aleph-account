@@ -92,16 +92,16 @@
         </q-tabs>
       </div>
       <div>
-        <q-btn-dropdown size="md" class="q-ml-sm" color="aleph-radial" label="Create node" icon="add" v-if="account">
+        <q-btn-dropdown :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))" size="md" class="q-ml-sm" color="aleph-radial" label="Create node" icon="add" v-if="account">
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="$emit('create-node')">
+            <q-item clickable v-close-popup @click="createNode = true">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>
             </q-item>
 
-              <q-item clickable v-close-popup @click="$emit('create-compute-node')">
+              <q-item clickable v-close-popup @click="createComputeNode = true">
                 <q-item-section>
                   <q-item-label>Compute Resource Node</q-item-label>
                 </q-item-section>
@@ -173,9 +173,9 @@
       <!-- start: all nodes -->
       <q-tab-panel name="compute" >
         <nodes-table
-          v-if="my_nodes.length"
+          v-if="!my_nodes.length"
           title="My Nodes"
-          :values="my_nodes"
+          :values="[values[0]]"
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
@@ -386,7 +386,8 @@ export default {
         this.statusSocket.close()
       }.bind(this)
     },
-    async creation_done () {
+    async creation_done (tab) {
+      this.tab = tab
       this.createNode = false
       this.createComputeNode = false
       this.loading = true

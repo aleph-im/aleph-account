@@ -18,7 +18,7 @@
             <a href="" :style="`color: ${primary};`" >How to install your node and retrieve the multiaddress.</a>
         </div>
         <div>
-            <q-btn class="full-width" text-color="white" outline color="primary" label="Register" />
+            <q-btn class="full-width" text-color="white" outline color="primary" label="Register" @click="finish()" />
         </div>
     </q-card-section>
   </q-card>
@@ -54,7 +54,7 @@ export default {
       }
     },
     async finish () {
-      let result = await posts.submit(this.account.address, this.node_post_type,
+      await posts.submit(this.account.address, this.node_post_type,
         {
           tags: ['create-node', ...this.tags],
           action: 'create-node',
@@ -77,7 +77,7 @@ export default {
       //   account: this.account,
       //   channel: this.channel
       // })
-      this.$emit('done', result)
+      this.$emit('done', 'compute')
     },
 
     closeDialog () {
