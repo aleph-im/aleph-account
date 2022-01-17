@@ -82,7 +82,7 @@
         </q-card-section>
       </q-card>
     </div>
-    <div class="row justify-between q-my-md">
+    <div class="row justify-between q-mt-xl">
       <div>
         <q-tabs v-model="tab" dense no-caps align="left" indicator-color="primary">
           <q-tab name="all_nodes" label="All nodes" />
@@ -92,7 +92,7 @@
         </q-tabs>
       </div>
       <div>
-        <q-btn-dropdown :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))" size="md" class="q-ml-sm" color="aleph-radial" label="Create node" icon="add" v-if="account">
+        <q-btn-dropdown :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))" size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
           <!-- start: dropdown item list  -->
           <q-list>
             <q-item clickable v-close-popup @click="createNode = true">
