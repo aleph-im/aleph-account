@@ -15,7 +15,7 @@
             <q-input label="Multiaddress" placeholder="/ip4/46.19.179.231/tcp/4025/p2p/Lqs2Hd ..." stack-label standout class="q-my-sm" />
         </div>
         <div class="q-my-md">
-            <a href="" :style="`color: ${primary};`" >How to install your node and retrieve the multiaddress.</a>
+            <a href="" :style="`color: inherit;`" >How to install your node and retrieve the multiaddress.</a>
         </div>
         <div>
             <q-btn class="full-width" text-color="white" outline color="primary" label="Register" @click="finish()" />
