@@ -15,7 +15,7 @@
       @done="edit_done" />
     </q-dialog>
     <div class="row q-gutter-md">
-      <q-card flat class="bg-card">
+      <q-card flat class="bg-card" block>
         <q-card-section>
           <div class="text-bold">Nodes</div>
         </q-card-section>
@@ -120,6 +120,7 @@
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
+          :show-header="true"
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
@@ -149,6 +150,7 @@
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
+          :show-header="true"
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
@@ -178,6 +180,7 @@
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
+          :show-header="true"
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
