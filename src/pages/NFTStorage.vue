@@ -4,12 +4,6 @@
       <nft-snapshot @finished="uploaded" />
     </q-dialog>
     <div v-if="account" class="q-mb-md">
-      <div v-if="balance_info.ALEPH < 1" class="doc-note doc-note--warning">
-        <p>
-          <q-icon name="warning" size="md" />
-          You need ALEPH tokens to use this dApp section.
-        </p>
-      </div>
       <div class="row justify-between">
         <q-tabs
           v-model="tab"
@@ -24,7 +18,7 @@
         </div>
       </div>
     </div>
-    <div v-else class="login-info">
+    <div v-else>
       Please connect.
     </div>
     <div v-if="account">
