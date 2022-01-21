@@ -9,10 +9,11 @@
 
     <q-card-section class="q-pt-md">
         <div class="q-mb-md">
-            <q-input label="Node name" stack-label standout class="q-my-sm" />
+            <p>Your node name should be short and meaningful.</p>
+            <q-input label="Node name" v-model="name" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-mb-md">
-            <q-input label="Address" placeholder="https://my-domain.tld/" stack-label standout class="q-my-sm" />
+            <q-input label="Address" v-model="address" placeholder="https://my-domain.tld/" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-my-md">
             <a href="" :style="`color: inherit;`">How to install your node and retrieve the address.</a>

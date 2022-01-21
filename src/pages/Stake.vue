@@ -85,7 +85,6 @@
     <div class="row justify-between q-mt-xl">
       <div>
         <q-tabs v-model="tab" dense no-caps align="left" indicator-color="primary">
-          <q-tab name="all_nodes" label="All nodes" />
           <q-tab name="core" label="Core" />
           <q-tab name="compute" label="Compute" />
         </q-tabs>
@@ -98,7 +97,7 @@
 >>>>>>> e162812 (work in progress)
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
+            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 10000))&&(user_node===null))">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>
@@ -115,36 +114,6 @@
       </div>
     </div>
     <q-tab-panels v-model="tab" animated class="transparent">
-      <!-- start: all nodes -->
-      <q-tab-panel name="all_nodes" >
-        <nodes-table
-          v-if="my_nodes.length"
-          title="My Nodes"
-          :values="my_nodes"
-          :loading="loading"
-          :user_node="user_node"
-          :user_stakes="user_stakes"
-          :show-header="true"
-          @node-action="node_emit_action"
-          @create-node="createNode = true"
-          @create-compute-node="createComputeNode = true"
-          @node-info="(node) => {showNode=true; displayed_node=node}"
-          class="q-mb-xl">
-        </nodes-table>
-        <nodes-table
-          title="All Nodes"
-          :values="values"
-          :loading="loading"
-          :user_node="user_node"
-          :user_stakes="user_stakes"
-          :show-header="true"
-          @node-action="node_emit_action"
-          @create-node="createNode = true"
-          @create-compute-node="createComputeNode = true"
-          @node-info="(node) => {showNode=true; displayed_node=node}">
-        </nodes-table>
-      </q-tab-panel>
-      <!-- end: all nodes -->
       <!-- start: all nodes -->
       <q-tab-panel name="core" >
         <nodes-table
@@ -177,6 +146,7 @@
       <!-- end: all nodes -->
       <!-- start: all nodes -->
       <q-tab-panel name="compute" >
+        {{resource_nodes}}
         <nodes-table
           v-if="!my_nodes.length"
           title="My Nodes"
@@ -242,13 +212,18 @@ export default {
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
     nodes: state => state.nodes,
+    resource_nodes: state => state.resource_nodes,
     node_post_type: 'node_post_type',
     ws_api_server: 'ws_api_server',
     monitor_address: 'monitor_address',
     values (state) {
-      return state.nodes.filter((node) => {
-        return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
-      }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+      if (state.nodes) {
+        return state.nodes.filter((node) => {
+          return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
+        }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+      } else {
+        return []
+      }
     },
     user_node (state) {
       if (state.account) {
@@ -337,7 +312,7 @@ export default {
   },
   data () {
     return {
-      tab: 'all_nodes',
+      tab: 'core',
       createNode: false,
       createComputeNode: false,
       showNode: false,
@@ -375,8 +350,12 @@ export default {
 
       this.statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
-        if ((data.content.key === 'corechannel') && (data.content.content.nodes !== undefined)) {
+        if ((data.content !== undefined) &&
+            (data.content.address === this.monitor_address) &&
+            (data.content.key === 'corechannel') &&
+            (data.content.content.nodes !== undefined)) {
           this.$store.commit('set_nodes', data.content.content.nodes)
+          this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
         }
       }.bind(this)
 
