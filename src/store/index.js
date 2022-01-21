@@ -50,7 +50,7 @@ export default new Vuex.Store({
     ethereum_network: 'homestead',
     infura_key: '4890a5bd89854916b128088119d76b50',
     ethereum_provider: null,
-    tags: ['mainnet'],
+    tags: ['mainnet-test'],
     node_post_type: 'corechan-operation'
   },
   mutations: {
