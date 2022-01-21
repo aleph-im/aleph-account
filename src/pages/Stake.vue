@@ -94,7 +94,7 @@
         <q-btn-dropdown  size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="createNode = true">
+            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>

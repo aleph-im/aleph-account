@@ -2,7 +2,7 @@
   <q-card style="width:100%;">
     <q-card-section>
       <div class="row justify-between">
-                <div class="text-h6">Create Compute Resource Node</div>
+                <div class="text-h6">Register Computing Resource Node</div>
                 <q-btn unelevated size="md" icon="close" @click="closeDialog()"></q-btn>
         </div>
     </q-card-section>
@@ -12,10 +12,10 @@
             <q-input label="Node name" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-mb-md">
-            <q-input label="Multiaddress" placeholder="/ip4/46.19.179.231/tcp/4025/p2p/Lqs2Hd ..." stack-label standout class="q-my-sm" />
+            <q-input label="Address" placeholder="https://my-domain.tld/" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-my-md">
-            <a href="" :style="`color: inherit;`" >How to install your node and retrieve the multiaddress.</a>
+            <a href="" :style="`color: inherit;`">How to install your node and retrieve the address.</a>
         </div>
         <div>
             <q-btn class="full-width" text-color="white" outline color="primary" label="Register" @click="finish()" />
@@ -42,7 +42,7 @@ export default {
     return {
       step: 1,
       name: '',
-      multiaddress: ''
+      address: ''
     }
   },
   methods: {
@@ -56,11 +56,12 @@ export default {
     async finish () {
       await posts.submit(this.account.address, this.node_post_type,
         {
-          tags: ['create-node', ...this.tags],
-          action: 'create-node',
+          tags: ['create-resource-node', ...this.tags],
+          action: 'create-resource-node',
           details: {
             name: this.name,
-            multiaddress: this.multiaddress
+            type: 'compute',
+            address: this.address
           }
         },
         {
