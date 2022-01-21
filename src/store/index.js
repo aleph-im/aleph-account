@@ -23,7 +23,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     erc20_address: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
-    monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
+    monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2',
     sender_address: '0x3a5CC6aBd06B601f4654035d125F9DD2FC992C25',
     api_server: 'https://api1.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
@@ -40,6 +40,7 @@ export default new Vuex.Store({
     notebooks: {},
     files: [],
     nodes: [],
+    resource_nodes: [],
     stored: [],
     mb_per_aleph: 3,
     balance_info: {
@@ -78,6 +79,9 @@ export default new Vuex.Store({
     },
     set_nodes (state, nodes) {
       state.nodes = nodes
+    },
+    set_resource_nodes (state, nodes) {
+      state.resource_nodes = nodes
     },
     set_stored (state, stored) {
       state.stored = stored
@@ -278,7 +282,10 @@ export default new Vuex.Store({
 
       let nodes = []
       if (corechannel.nodes !== undefined) { nodes = corechannel.nodes }
+      let resource_nodes = []
+      if (corechannel.resource_nodes !== undefined) { resource_nodes = corechannel.resource_nodes }
       commit('set_nodes', nodes)
+      commit('set_resource_nodes', resource_nodes)
     },
     async update_stored ({ state, commit }) {
       if (state.account !== null) {
