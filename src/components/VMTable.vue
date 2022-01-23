@@ -64,7 +64,7 @@
                       @click="openApp(item)" />
                 <q-btn flat icon="link" align="left" label="View Explorer"
                       @click="openExplorer(item)" />
-                <q-btn flat icon="upload_file" align="left" label="Download source code"
+                <q-btn flat icon="upload_file" align="left" label="Download Program File"
                       @click="downloadSourceCode(item.storeObj.item_hash)" />
             </q-card-actions>
           </q-card-section>

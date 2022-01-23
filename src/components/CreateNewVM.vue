@@ -46,7 +46,7 @@
       </div>
 
       <q-stepper-navigation>
-        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Import script"/>
+        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Use this script"/>
       </q-stepper-navigation>
     </q-step>
     <q-step
@@ -62,6 +62,10 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
+            <q-input v-model="newProgram.filename" label="File name"
+            stack-label standout class="q-my-sm" />
+        </div>
+        <div class="col-12">
             <q-input v-model="newProgram.entrypoint" label="Your entrypoint"
             stack-label standout class="q-my-sm" />
         </div>
@@ -74,6 +78,9 @@
           <q-btn @click="addVolume(true)" icon="add" outline color="primary" label="Add Persistent Volume"/>
         </div>
         <q-card class="col-12 q-pa-sm" v-for="volume in newProgram.volumes" :key="volume.id">
+          <div class="q-ml-sm">
+            <div class="text-h6">{{volume.isPersistent ? 'Persistent Volume' : 'Volume'}}</div>
+          </div>
           <div class="col-12">
             <q-input v-model="volume.comment" label="Description"
               stack-label standout class="q-my-sm" />
@@ -147,6 +154,7 @@ export default {
       exportFile: null,
       newProgram: {
         entrypoint: 'app',
+        filename: 'main',
         name: '',
         code: `from fastapi import FastAPI
 app = FastAPI()
@@ -283,7 +291,7 @@ async def root():
         },
         code: {
           encoding: 'zip',
-          entrypoint: `main:${this.newProgram.entrypoint}`,
+          entrypoint: `${this.newProgram.filename}:${this.newProgram.entrypoint}`,
           ref: item_hash,
           use_latest: true
         },
