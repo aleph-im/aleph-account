@@ -123,6 +123,7 @@ export default {
   name: 'nodes-table',
   computed: {
     visible_columns () {
+      console.log(this.showStaking)
       if (this.$q.screen.lt.sm) {
         return [
           'picture',
@@ -130,15 +131,26 @@ export default {
           'actions'
         ]
       } else {
-        return [
-          'picture',
-          'name',
-          'total_staked',
-          'uptime',
-          'time',
-          'stared',
-          'actions'
-        ]
+        if (this.showStaking) {
+          return [
+            'picture',
+            'name',
+            'total_staked',
+            'uptime',
+            'time',
+            'stared',
+            'actions'
+          ]
+        } else {
+          return [
+            'picture',
+            'name',
+            'uptime',
+            'time',
+            'stared',
+            'actions'
+          ]
+        }
       }
     },
     ...mapState([
@@ -157,7 +169,8 @@ export default {
     'user_stakes',
     'loading',
     'showHeader',
-    'showFooter'
+    'showFooter',
+    'showStaking'
   ],
   data () {
     return {
