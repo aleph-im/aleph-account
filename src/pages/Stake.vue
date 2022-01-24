@@ -98,7 +98,7 @@
 >>>>>>> e162812 (work in progress)
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 10000))&&(user_node===null))">
+            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>
