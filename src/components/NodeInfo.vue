@@ -168,7 +168,8 @@ export default {
     ])
   },
   props: [
-    'node'
+    'node',
+    'node-type'
   ],
   data () {
     return {
