@@ -11,6 +11,7 @@
     </q-dialog>
     <q-dialog v-model="showNode">
       <node-info :node="displayed_node"
+      :node-type="displayed_node_type"
       @close="showNode=false"
       @done="edit_done" />
     </q-dialog>
