@@ -23,7 +23,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     erc20_address: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
-    monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2',
+    // monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2', // test
+    monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
     sender_address: '0x3a5CC6aBd06B601f4654035d125F9DD2FC992C25',
     api_server: 'https://api1.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
@@ -51,7 +52,8 @@ export default new Vuex.Store({
     ethereum_network: 'homestead',
     infura_key: '4890a5bd89854916b128088119d76b50',
     ethereum_provider: null,
-    tags: ['mainnet-test'],
+    // tags: ['mainnet-test'], // test
+    tags: ['mainnet'],
     node_post_type: 'corechan-operation'
   },
   mutations: {
