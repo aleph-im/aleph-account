@@ -120,11 +120,11 @@
           :user_node="user_node"
           :user_stakes="user_stakes"
           :show-header="true"
-          :show-staking="true"
+          :core-node-mode="true"
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
-          @node-info="(node) => {showNode=true; displayed_node=node}"
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='core'}"
           class="q-mb-xl">
         </nodes-table>
         <nodes-table
@@ -134,21 +134,20 @@
           :user_node="user_node"
           :user_stakes="user_stakes"
           :show-header="true"
-          :show-staking="true"
+          :core-node-mode="true"
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
-          @node-info="(node) => {showNode=true; displayed_node=node}">
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='core'}">
         </nodes-table>
       </q-tab-panel>
       <!-- end: all nodes -->
       <!-- start: all nodes -->
       <q-tab-panel name="compute" >
-        {{resource_nodes}}
         <nodes-table
-          v-if="!my_nodes.length"
+          v-if="my_resource_nodes.length"
           title="My Nodes"
-          :values="[values[0]]"
+          :values="my_resource_nodes"
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
@@ -156,12 +155,12 @@
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
-          @node-info="(node) => {showNode=true; displayed_node=node}"
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='resource'}"
           class="q-mb-xl">
         </nodes-table>
         <nodes-table
           title="All Compute Nodes"
-          :values="values"
+          :values="resource_nodes_list"
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
@@ -169,7 +168,7 @@
           @node-action="node_emit_action"
           @create-node="createNode = true"
           @create-compute-node="createComputeNode = true"
-          @node-info="(node) => {showNode=true; displayed_node=node}">
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='resource'}">
         </nodes-table>
       </q-tab-panel>
       <!-- end: all nodes -->
@@ -244,6 +243,27 @@ export default {
       }
       return nodes
     },
+    my_resource_nodes (state) {
+      if (state.resource_nodes && state.account) {
+        return state.resource_nodes.filter((node) => {
+          return (node.owner === state.account.address)
+        })
+      } else {
+        return []
+      }
+    },
+    resource_nodes_list (state) {
+      if (state.resource_nodes && state.account) {
+        return state.resource_nodes.filter((node) => {
+          return (node.owner !== state.account.address)
+        }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+      } else if (state.resource_nodes) {
+        console.log(state.resource_nodes)
+        return state.resource_nodes.filter((node) => true)
+      } else {
+        return []
+      }
+    },
     my_nodes (state) {
       let nodes = []
       if (state.account) {
@@ -316,6 +336,7 @@ export default {
       showNode: false,
       loading: null,
       displayed_node: null,
+      displayed_node_type: null,
       calculator_staked: 10000
       // values: [
       //   {
