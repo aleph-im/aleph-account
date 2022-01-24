@@ -16,7 +16,7 @@
             <q-input label="Address" v-model="address" placeholder="https://my-domain.tld/" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-my-md">
-            <a href="" :style="`color: inherit;`">How to install your node and retrieve the address.</a>
+            <a href="https://medium.com/aleph-im/step-by-step-on-how-to-create-and-register-your-compute-resource-node-e5308130fbf7" :style="`color: inherit;`">How to install your node and retrieve the address.</a>
         </div>
         <div>
             <q-btn class="full-width" text-color="white" outline color="primary" label="Register" @click="finish()" />
