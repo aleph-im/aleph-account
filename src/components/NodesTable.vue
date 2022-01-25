@@ -111,6 +111,8 @@
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
+            <q-btn size="sm" v-if="!coreNodeMode" :disable="props.parent" color="primary" outline class="q-ml-sm" type="a"
+            >{{ props.parent ? 'Linked' : 'Link' }} </q-btn>
             <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">Info</q-btn>
           </q-td>
