@@ -80,6 +80,10 @@
                         :label="(props.row.total_staked > 500000 ? '+' : '') + ((props.row.total_staked - 500000)/1000).toFixed(0) + 'k'" />
             </div> -->
           </q-td>
+          <q-td key="linked" :props="props">
+            <span v-if="props.row.parent === null">Unlinked</span>
+            <span v-else>{{props.row.parent}}</span>
+          </q-td>
           <q-td key="uptime" :props="props">
             <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
           </q-td>
@@ -96,13 +100,13 @@
               <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
             </span>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-if="account&&user_node&&(user_node.hash == props.row.hash)" type="a"
+            v-if="account&&(account.address == props.row.owner)" type="a"
             @click="$emit('node-action', 'drop-node', props.row.hash)">drop node</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)" type="a"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
-            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<750000))" outline
+            v-else-if="coreNodeMode" :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<750000))" outline
             @click="$emit('node-action', 'stake-split', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
@@ -123,6 +127,7 @@ export default {
   name: 'nodes-table',
   computed: {
     visible_columns () {
+      console.log(this.coreNodeMode)
       if (this.$q.screen.lt.sm) {
         return [
           'picture',
@@ -130,15 +135,27 @@ export default {
           'actions'
         ]
       } else {
-        return [
-          'picture',
-          'name',
-          'total_staked',
-          'uptime',
-          'time',
-          'stared',
-          'actions'
-        ]
+        if (this.coreNodeMode) {
+          return [
+            'picture',
+            'name',
+            'total_staked',
+            'uptime',
+            'time',
+            'stared',
+            'actions'
+          ]
+        } else {
+          return [
+            'picture',
+            'name',
+            'linked',
+            'uptime',
+            'time',
+            'stared',
+            'actions'
+          ]
+        }
       }
     },
     ...mapState([
@@ -157,7 +174,8 @@ export default {
     'user_stakes',
     'loading',
     'showHeader',
-    'showFooter'
+    'showFooter',
+    'coreNodeMode'
   ],
   data () {
     return {
@@ -181,6 +199,12 @@ export default {
           field: 'total_staked',
           align: 'left',
           sortable: true
+        },
+        {
+          name: 'linked',
+          label: 'Linked',
+          align: 'left',
+          field: props => props.parent
         },
         {
           name: 'uptime',

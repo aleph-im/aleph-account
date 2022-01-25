@@ -31,13 +31,6 @@
         >
             <p>The multiaddress is a way for the network to find your node.</p>
             <q-input outlined v-model="multiaddress" label="Multiaddress (optional)" />
-            <p style="padding-top: 8px; opacity:.8;">
-              Don't worry if you still didn't install your node (server).
-              You will receive a multiaddress during the installation of your node.
-              But be warned, you need to have a node active and a multiaddress set by <b>Jan 11th 2021</b>
-              if you want to continue to receive rewards after that date.
-              Until then, it is optional and you can finish for now and comback later to pair it.
-            </p>
             <p><a href="https://bit.ly/3mw3GYK" :class="($q.dark.isActive?'text-white':'text-black')" target="_blank">How to create a node</a>!</p>
         </q-step>
 

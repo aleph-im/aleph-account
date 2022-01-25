@@ -45,10 +45,16 @@
               <q-item-label class="text-body2 overflow-hidden">{{node.reward}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout">
+          <q-item class="standout" v-if="nodeType==='core'">
             <q-item-section>
               <q-item-label caption>Multi-Address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{multiaddress}}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item class="standout" v-else-if="nodeType==='resource'">
+            <q-item-section>
+              <q-item-label caption>Address</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{address}}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item v-if="description"  class="standout">
@@ -69,7 +75,10 @@
         <q-input v-model="reward" label="Reward address"
         stack-label standout
         class="q-my-sm" />
-        <q-input v-model="multiaddress" label="Multi-Address"
+        <q-input v-model="multiaddress" label="Multi-Address" v-if="nodeType === 'core'"
+        stack-label standout
+        class="q-my-sm" />
+        <q-input v-model="address" label="Address" v-else-if="nodeType === 'resource'"
         stack-label standout
         class="q-my-sm" />
         <q-input v-model="description" label="Description" hint="optional"
@@ -119,6 +128,15 @@
             <span :class="'status-pill q-ml-sm bg-'+(node.status === 'active' ? 'positive': 'inactive')"></span>
           </span>
         </div>
+        <div class="row justify-between q-mb-sm" v-if="nodeType === 'resource'">
+          <span>
+            Linked to
+          </span>
+          <span style="text-transform: capitalize;">
+            {{ node.parent !== null ? node.parent : 'Unlinked' }}
+            <span :class="'status-pill q-ml-sm bg-'+(node.parent !== null ? 'positive': 'negative')"></span>
+          </span>
+        </div>
         <div class="row justify-between q-mb-sm">
           <span>
             Creation time
@@ -135,7 +153,7 @@
             {{ node.uptime ? node.uptime : ' -- ' }} %
           </span>
         </div>
-        <div class="row justify-between q-mb-sm">
+        <div class="row justify-between q-mb-sm" v-if="nodeType==='core'">
           <span>
             Total staked
           </span>
@@ -168,12 +186,14 @@ export default {
     ])
   },
   props: [
-    'node'
+    'node',
+    'node-type'
   ],
   data () {
     return {
       name: '',
       multiaddress: '',
+      address: '',
       description: '',
       reward: '',
       picture: null,
@@ -201,6 +221,7 @@ export default {
     async update () {
       this.name = this.node.name
       this.multiaddress = this.node.multiaddress
+      this.address = this.node.address
       this.description = this.node.description
       this.reward = this.node.reward
       this.locked = this.node.locked
@@ -214,13 +235,18 @@ export default {
       if (this.banner) {
         banner = await this.upload_file(this.banner)
       }
+      let amend_action = 'create-node'
+      if (this.nodeType === 'resource') {
+        amend_action = 'create-resource-node'
+      }
       let result = await posts.submit(this.account.address, 'amend',
         {
-          tags: ['create-node', ...this.tags],
-          action: 'create-node',
+          tags: [amend_action, ...this.tags],
+          action: amend_action,
           details: {
             name: this.name,
             multiaddress: this.multiaddress,
+            address: this.address,
             description: this.description,
             reward: this.reward,
             picture: picture,

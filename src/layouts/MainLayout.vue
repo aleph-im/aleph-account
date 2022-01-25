@@ -199,8 +199,13 @@ export default {
 
       statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
+
         console.log(data)
         console.log(data.content.content.status)
+        if (data.content === undefined) {
+          return
+        }
+
         if (data.content.content.status === 'distribution') {
           for (let dist of data.content.content.targets) {
             if (dist.success) {
