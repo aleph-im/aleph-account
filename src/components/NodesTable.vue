@@ -81,8 +81,21 @@
             </div> -->
           </q-td>
           <q-td key="linked" :props="props">
-            <span v-if="props.row.parent === null">Unlinked</span>
-            <span v-else>{{props.row.parent}}</span>
+            <div v-if="!coreNodeMode">
+              <span v-if="props.row.parent === null">Unlinked</span>
+              <span v-else>{{props.row.parent}}</span>
+            </div>
+            <!-- TODO: fetch number of linked node -->
+            <!-- <div v-else>
+              <div>
+                X linked
+              </div>
+              <div class="row justify-start">
+              <span class="dot q-mr-sm" :class="true?'green':''"></span>
+              <span class="dot q-mr-sm"></span>
+              <span class="dot"></span>
+              </div>
+            </div> -->
           </q-td>
           <q-td key="uptime" :props="props">
             <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
@@ -143,6 +156,7 @@ export default {
             'name',
             'total_staked',
             'uptime',
+            'linked',
             'time',
             'stared',
             'actions'
@@ -267,5 +281,17 @@ export default {
       }
     }
   }
+}
+
+.dot {
+  height: 5px;
+  width: 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.green {
+  background-color: #1CC272;
 }
 </style>
