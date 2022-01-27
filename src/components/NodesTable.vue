@@ -33,7 +33,7 @@
             <q-icon v-if="props.row.picture" :name="`img:${api_server}/api/v0/storage/raw/${props.row.picture}`" class="rounded-borders" />
           </q-td>
           <q-td key="name" :props="props">
-            <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
+            <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
             <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
             <q-icon name="lock" v-if="props.row.locked">
