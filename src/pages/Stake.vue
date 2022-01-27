@@ -98,7 +98,7 @@
 >>>>>>> e162812 (work in progress)
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
+            <q-item clickable v-close-popup @click="showCCNDialog(true)" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>
@@ -423,6 +423,11 @@ export default {
         this.calculator_staked = this.balance_info.ALEPH.toFixed(0)
       } else {
         this.calculator_staked = 10000
+      }
+    },
+    showCCNDialog (value) {
+      if ((this.account && (this.balance_info.ALEPH >= 200000)) && (this.user_node === null)) {
+        this.createNode = value
       }
     }
   },
