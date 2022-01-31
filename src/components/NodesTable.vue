@@ -91,9 +91,9 @@
                 X linked
               </div>
               <div class="row justify-end">
-              <span class="dot q-mr-sm" :class="true?'green':''"></span>
-              <span class="dot q-mr-sm"></span>
-              <span class="dot"></span>
+                <span class="dot q-mr-sm" :class="true?'green':''"></span>
+                <span class="dot q-mr-sm"></span>
+                <span class="dot"></span>
               </div>
             </div>
           </q-td>
@@ -154,7 +154,6 @@ export default {
   name: 'nodes-table',
   computed: {
     visible_columns () {
-      console.log(this.coreNodeMode)
       if (this.$q.screen.lt.sm) {
         return [
           'picture',
@@ -231,7 +230,7 @@ export default {
         {
           name: 'linked',
           label: 'Linked',
-          align: 'left',
+          align: 'right',
           field: props => props.parent
         },
         {
