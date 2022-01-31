@@ -158,7 +158,7 @@
       <!-- start: all nodes -->
       <q-tab-panel name="compute" >
         <nodes-table
-          v-if="resource_nodes_list.length"
+          v-if="my_resource_nodes.length"
           title="My Nodes"
           :values="my_resource_nodes"
           :loading="loading"
