@@ -86,16 +86,16 @@
               <span v-else>{{props.row.parent}}</span>
             </div>
             <!-- TODO: fetch number of linked node -->
-            <!-- <div v-else>
-              <div>
+            <div v-else>
+              <div class="row justify-end">
                 X linked
               </div>
-              <div class="row justify-start">
+              <div class="row justify-end">
               <span class="dot q-mr-sm" :class="true?'green':''"></span>
               <span class="dot q-mr-sm"></span>
               <span class="dot"></span>
               </div>
-            </div> -->
+            </div>
           </q-td>
           <q-td key="uptime" :props="props">
             <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
@@ -104,7 +104,6 @@
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
           <q-td key="stared" :props="props">
-
           </q-td>
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
@@ -124,7 +123,20 @@
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
-            <q-btn size="sm" v-if="!coreNodeMode" :disable="props.parent" color="primary" outline class="q-ml-sm" type="a"
+
+            <!-- TODO: check core owner conditions-->
+            <!-- Drop node btn if user is the core owner and compute owner -->
+            <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
+            v-if="account&&(account.address == props.row.owner)" type="a"
+            @click="$emit('node-action', 'drop-node', props.row.hash)">drop node</q-btn>
+            <!-- Unlink if user is the core owner or (core owner and compute owner) -->
+            <q-btn size="sm" v-if="!coreNodeMode&&account&&(account.address == props.row.owner)" color="primary" outline class="q-ml-sm" type="a"
+            >{{ props.parent ? 'Unlink' : 'Link' }}</q-btn>
+            <!-- Unlink button if user is NOT the compute owner but linked a compute -->
+            <q-btn size="sm" v-if="!coreNodeMode&&account&&(account.address == props.row.owner)" color="primary" outline class="q-ml-sm" type="a"
+            >{{ props.parent ? 'Unlink' : 'Link' }}</q-btn>
+
+            <q-btn size="sm" v-if="!coreNodeMode&&(account.address != props.row.owner)" :disable="props.row.parent" color="primary" outline class="q-ml-sm" type="a"
             >{{ props.parent ? 'Linked' : 'Link' }} </q-btn>
             <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">Info</q-btn>

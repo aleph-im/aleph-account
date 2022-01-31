@@ -18,7 +18,7 @@
     <div class="row q-gutter-md">
       <q-card flat class="bg-card" block>
         <q-card-section>
-          <div class="text-bold">Nodes</div>
+          <div class="text-bold">Core Channel Nodes</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
           <vc-donut :sections="nodes_sections"
@@ -26,6 +26,18 @@
           :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :size="70" unit="px" :thickness="30"
           :total="nodes.length" has-legend legend-placement="right"></vc-donut>
+        </q-card-section>
+      </q-card>
+      <q-card flat class="bg-card" block>
+        <q-card-section>
+          <div class="text-bold">Compute Resource Nodes</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <vc-donut :sections="resource_nodes_sections"
+          :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :size="70" unit="px" :thickness="30"
+          :total="resource_nodes.length" has-legend legend-placement="right"></vc-donut>
         </q-card-section>
       </q-card>
       <q-card flat class="bg-card">
@@ -146,7 +158,7 @@
       <!-- start: all nodes -->
       <q-tab-panel name="compute" >
         <nodes-table
-          v-if="my_resource_nodes.length"
+          v-if="resource_nodes_list.length"
           title="My Nodes"
           :values="my_resource_nodes"
           :loading="loading"
@@ -277,6 +289,7 @@ export default {
       return nodes
     },
     active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
+    linked_nodes: (state) => state.resource_nodes.filter((node) => node.parent).length,
     nodes_sections (state) {
       const total_nodes = state.nodes.length
       return [
@@ -288,6 +301,21 @@ export default {
         {
           label: `${this.active_nodes} active`,
           value: this.active_nodes,
+          color: '#0054FF'
+        }
+      ]
+    },
+    resource_nodes_sections (state) {
+      const total_nodes = state.resource_nodes.length
+      return [
+        {
+          label: `${total_nodes} nodes`,
+          value: total_nodes - this.linked_nodes,
+          color: '#71C9FA'
+        },
+        {
+          label: `${this.linked_nodes} linked`,
+          value: this.linked_nodes,
           color: '#0054FF'
         }
       ]
