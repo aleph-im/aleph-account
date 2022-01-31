@@ -46,7 +46,7 @@
       </div>
 
       <q-stepper-navigation>
-        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Use this script"/>
+        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Use this code"/>
       </q-stepper-navigation>
     </q-step>
     <q-step
@@ -62,7 +62,7 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
-            <q-input v-model="newProgram.filename" label="File name"
+            <q-input v-model="newProgram.filename" label="File name (without extension: .py, .js ...)"
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
@@ -183,14 +183,14 @@ async def root():
       if (isPersistent) {
         this.newProgram.volumes.push({
           id: (Math.random() + 1).toString(36).substring(7),
-          comment: 'Basic description of your vm',
+          comment: 'Basic description of your volume',
           isPersistent: true,
           persistence: 'host'
         })
       } else {
         this.newProgram.volumes.push({
           id: (Math.random() + 1).toString(36).substring(7),
-          comment: 'Basic description of your vm',
+          comment: 'Basic description of your volume',
           isPersistent: false,
           use_latest: false
         })
