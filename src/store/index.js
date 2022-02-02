@@ -279,7 +279,8 @@ export default new Vuex.Store({
       let corechannel = await aggregates.fetch_one(
         state.monitor_address,
         'corechannel', {
-          api_server: state.api_server
+          api_server: state.api_server,
+          limit: 50
         })
 
       let nodes = []
