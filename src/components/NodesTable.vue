@@ -83,17 +83,17 @@
           <q-td key="linked" :props="props">
             <div v-if="!coreNodeMode">
               <span v-if="props.row.parent === null">Unlinked</span>
-              <span v-else>{{props.row.parent}}</span>
+              <span v-else>{{props.row.parent.slice(-10)}}</span>
             </div>
             <!-- TODO: fetch number of linked node -->
             <div v-else>
               <div class="row justify-end">
-                X linked
+                {{props.row.resource_nodes.length}} linked
               </div>
               <div class="row justify-end">
-                <span class="dot q-mr-sm" :class="true?'green':''"></span>
-                <span class="dot q-mr-sm"></span>
-                <span class="dot"></span>
+                <span class="dot q-mr-sm" :class="props.row.resource_nodes.length>0?'green':''"></span>
+                <span class="dot q-mr-sm" :class="props.row.resource_nodes.length>1?'green':''"></span>
+                <span class="dot" :class="props.row.resource_nodes.length>2?'green':''"></span>
               </div>
             </div>
           </q-td>
@@ -124,17 +124,15 @@
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
-
             <!-- Unlink if user is the core owner or (core owner and compute owner) -->
             <q-btn size="sm" v-if="(!coreNodeMode)&&account&&user_node&&(user_node.hash === props.row.parent)" color="primary" outline class="q-ml-sm" type="a"
-            >Unlink</q-btn>
-            <!-- Unlink button if user is NOT the compute owner but linked a compute -->
-            {{ props.row.parent }}
-            <q-btn size="sm" v-if="(!coreNodeMode)&&account&&(account.address == props.row.owner)&&(props.row.parent !== null)" color="primary" outline class="q-ml-sm" type="a"
-            >Unlink</q-btn>
+            @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
+            <!-- Unlink button if user is the compute owner but linked a compute -->
+            <q-btn size="sm" v-else-if="(!coreNodeMode)&&account&&(account.address == props.row.owner)&&(props.row.parent !== null)" color="primary" outline class="q-ml-sm" type="a"
+            @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
 
             <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
-            >Link</q-btn>
+            @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
             <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">Info</q-btn>
           </q-td>
