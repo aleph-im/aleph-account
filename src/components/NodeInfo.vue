@@ -167,6 +167,20 @@
             {{ node.total_staked.toFixed(2) }}
           </span>
         </div>
+        <div class="row justify-between q-mt-lg q-mb-md">
+          <div class="text-weight-bold text-h5 ">Linked resource nodes</div>
+          <span class="text-grey">{{node.resource_nodes.length}} of 3</span>
+        </div>
+        <q-list bordered v-if="node.resource_nodes.length">
+          <q-item v-for="resource_node of node.resource_nodes" :key="resource_node">
+            <q-item-section>
+              <node-name :node-hash="resource_node" node-type="resource"></node-name>
+            </q-item-section>
+          </q-item>
+        </q-list>
+        <div v-else>
+          None yet.
+        </div>
       </div>
     </div>
   </q-card>
@@ -175,9 +189,11 @@
 <script>
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
+import NodeName from './NodeName.vue'
 // import { aggregates } from 'aleph-js'
 
 export default {
+  components: { NodeName },
   name: 'node-info',
   computed: {
     editing () {
