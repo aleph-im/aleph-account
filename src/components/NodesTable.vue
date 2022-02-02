@@ -86,7 +86,7 @@
               <node-name :node-hash="props.row.parent" node-type="core" v-else></node-name>
             </div>
             <!-- TODO: fetch number of linked node -->
-            <div v-else>
+            <div v-else-if="props.row.resource_nodes !== undefined">
               <div class="row justify-end">
                 {{props.row.resource_nodes.length}} linked
               </div>
