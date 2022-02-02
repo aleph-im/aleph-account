@@ -20,8 +20,11 @@
       <div class="col-12 col-md-5 q-pa-md" v-if="!editing">
         <div class="text-weight-bold text-h5 q-mb-md">
           <q-icon name="lock" v-if="locked" class="float-right">
-            <q-tooltip>
+            <q-tooltip v-if="nodeType==='core'">
               No staker can join this node.
+            </q-tooltip>
+            <q-tooltip v-if="nodeType==='resource'">
+              No core channel code can link this resource node.
             </q-tooltip>
           </q-icon>
           Node Info
@@ -104,8 +107,11 @@
             :label="locked ? 'Locked' : 'Unlocked'"
             left-label
           >
-            <q-tooltip>
+            <q-tooltip v-if="nodeType==='core'">
               Prevent stakers from joining this node.
+            </q-tooltip>
+            <q-tooltip v-if="nodeType==='resource'">
+              Prevent core channel node owners from linking to this resource node.
             </q-tooltip>
           </q-toggle>
         </div>
