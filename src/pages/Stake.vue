@@ -4,10 +4,10 @@
       <q-spinner-gears size="50px" color="primary" />
     </q-inner-loading>
     <q-dialog v-model="createNode">
-      <create-node @done="creation_done" />
+      <create-node @done="creation_done('core')"  @close="createNode=false" />
     </q-dialog>
     <q-dialog v-model="createComputeNode">
-      <create-compute-node @done="creation_done" @close="createComputeNode=false"/>
+      <create-compute-node @done="creation_done('compute')" @close="createComputeNode=false"/>
     </q-dialog>
     <q-dialog v-model="showNode">
       <node-info :node="displayed_node"
