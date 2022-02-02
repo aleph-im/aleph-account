@@ -167,7 +167,7 @@
             {{ node.total_staked.toFixed(2) }}
           </span>
         </div>
-        <template v-if="nodeType === 'resource'">
+        <template v-if="nodeType === 'core'">
           <div class="row justify-between q-mt-lg q-mb-md">
             <div class="text-weight-bold text-h5 ">Linked resource nodes</div>
             <span class="text-grey">{{node.resource_nodes.length}} of 3</span>
