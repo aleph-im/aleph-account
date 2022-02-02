@@ -139,7 +139,8 @@
             Linked to
           </span>
           <span style="text-transform: capitalize;">
-            {{ node.parent !== null ? node.parent : 'Unlinked' }}
+            <span v-if="node.parent === null">Unlinked</span>
+            <node-name v-else :node-hash="node.parent" node-type="core"></node-name>
             <span :class="'status-pill q-ml-sm bg-'+(node.parent !== null ? 'positive': 'negative')"></span>
           </span>
         </div>
