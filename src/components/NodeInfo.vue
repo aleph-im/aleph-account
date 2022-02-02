@@ -20,8 +20,11 @@
       <div class="col-12 col-md-5 q-pa-md" v-if="!editing">
         <div class="text-weight-bold text-h5 q-mb-md">
           <q-icon name="lock" v-if="locked" class="float-right">
-            <q-tooltip>
+            <q-tooltip v-if="nodeType==='core'">
               No staker can join this node.
+            </q-tooltip>
+            <q-tooltip v-if="nodeType==='resource'">
+              No core channel code can link this resource node.
             </q-tooltip>
           </q-icon>
           Node Info
@@ -104,8 +107,11 @@
             :label="locked ? 'Locked' : 'Unlocked'"
             left-label
           >
-            <q-tooltip>
+            <q-tooltip v-if="nodeType==='core'">
               Prevent stakers from joining this node.
+            </q-tooltip>
+            <q-tooltip v-if="nodeType==='resource'">
+              Prevent core channel node owners from linking to this resource node.
             </q-tooltip>
           </q-toggle>
         </div>
@@ -161,6 +167,22 @@
             {{ node.total_staked.toFixed(2) }}
           </span>
         </div>
+        <template v-if="nodeType === 'resource'">
+          <div class="row justify-between q-mt-lg q-mb-md">
+            <div class="text-weight-bold text-h5 ">Linked resource nodes</div>
+            <span class="text-grey">{{node.resource_nodes.length}} of 3</span>
+          </div>
+          <q-list bordered v-if="node.resource_nodes.length">
+            <q-item v-for="resource_node of node.resource_nodes" :key="resource_node">
+              <q-item-section>
+                <node-name :node-hash="resource_node" node-type="resource"></node-name>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <div v-else>
+            None yet.
+          </div>
+        </template>
       </div>
     </div>
   </q-card>
@@ -169,9 +191,11 @@
 <script>
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
+import NodeName from './NodeName.vue'
 // import { aggregates } from 'aleph-js'
 
 export default {
+  components: { NodeName },
   name: 'node-info',
   computed: {
     editing () {

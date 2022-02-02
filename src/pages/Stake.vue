@@ -4,10 +4,10 @@
       <q-spinner-gears size="50px" color="primary" />
     </q-inner-loading>
     <q-dialog v-model="createNode">
-      <create-node @done="creation_done" />
+      <create-node @done="creation_done('core')"  @close="createNode=false" />
     </q-dialog>
     <q-dialog v-model="createComputeNode">
-      <create-compute-node @done="creation_done" @close="createComputeNode=false"/>
+      <create-compute-node @done="creation_done('compute')" @close="createComputeNode=false"/>
     </q-dialog>
     <q-dialog v-model="showNode">
       <node-info :node="displayed_node"
@@ -18,7 +18,7 @@
     <div class="row q-gutter-md">
       <q-card flat class="bg-card" block>
         <q-card-section>
-          <div class="text-bold">Nodes</div>
+          <div class="text-bold">Core Channel Nodes</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
           <vc-donut :sections="nodes_sections"
@@ -26,6 +26,18 @@
           :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :size="70" unit="px" :thickness="30"
           :total="nodes.length" has-legend legend-placement="right"></vc-donut>
+        </q-card-section>
+      </q-card>
+      <q-card flat class="bg-card" block>
+        <q-card-section>
+          <div class="text-bold">Compute Resource Nodes</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <vc-donut :sections="resource_nodes_sections"
+          :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :size="70" unit="px" :thickness="30"
+          :total="resource_nodes.length" has-legend legend-placement="right"></vc-donut>
         </q-card-section>
       </q-card>
       <q-card flat class="bg-card">
@@ -91,10 +103,10 @@
         </q-tabs>
       </div>
       <div>
-        <q-btn-dropdown :disabled="!(account)" size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
+        <q-btn-dropdown  size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="createNode = true" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
+            <q-item clickable v-close-popup @click="showCCNDialog(true)" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>
@@ -277,6 +289,7 @@ export default {
       return nodes
     },
     active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
+    linked_nodes: (state) => state.resource_nodes.filter((node) => node.parent).length,
     nodes_sections (state) {
       const total_nodes = state.nodes.length
       return [
@@ -288,6 +301,21 @@ export default {
         {
           label: `${this.active_nodes} active`,
           value: this.active_nodes,
+          color: '#0054FF'
+        }
+      ]
+    },
+    resource_nodes_sections (state) {
+      const total_nodes = state.resource_nodes.length
+      return [
+        {
+          label: `${total_nodes} nodes`,
+          value: total_nodes - this.linked_nodes,
+          color: '#71C9FA'
+        },
+        {
+          label: `${this.linked_nodes} linked`,
+          value: this.linked_nodes,
           color: '#0054FF'
         }
       ]
@@ -419,6 +447,11 @@ export default {
         this.calculator_staked = this.balance_info.ALEPH.toFixed(0)
       } else {
         this.calculator_staked = 10000
+      }
+    },
+    showCCNDialog (value) {
+      if ((this.account && (this.balance_info.ALEPH >= 200000)) && (this.user_node === null)) {
+        this.createNode = value
       }
     }
   },
