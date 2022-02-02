@@ -83,7 +83,7 @@
           <q-td key="linked" :props="props">
             <div v-if="!coreNodeMode">
               <span v-if="props.row.parent === null">Unlinked</span>
-              <span v-else>{{props.row.parent.slice(-10)}}</span>
+              <node-name :node-hash="props.row.parent" node-type="core" v-else></node-name>
             </div>
             <!-- TODO: fetch number of linked node -->
             <div v-else>
@@ -144,6 +144,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import NodeName from './NodeName'
 
 export default {
   name: 'nodes-table',
@@ -188,6 +189,9 @@ export default {
       'node_post_type',
       'balance_info'
     ])
+  },
+  components: {
+    NodeName
   },
   props: [
     'values',
