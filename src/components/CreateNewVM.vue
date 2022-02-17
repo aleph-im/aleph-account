@@ -16,13 +16,6 @@
     >
       <div class="flex">
         <span class="q-mr-xs"> Choose your language then copy and paste your code in the following text area</span>
-        <q-btn
-        round
-        color="primary"
-        size="xs"
-        icon="help"
-        outline
-      />
       </div>
       <div class="row q-gutter-md q-mt-md">
         <div class="col-12">
@@ -148,10 +141,10 @@ async def root():
         volumes: []
       },
       languages: [
-        { label: 'Python', value: 'python', available: true, code: "from fastapi import FastAPI\napp = FastAPI()\n@app.get('/')\nasync def root():\n\treturn {'message': 'Hello World'}" },
+        { label: 'Python 3', value: 'python', available: true, code: "from fastapi import FastAPI\napp = FastAPI()\n@app.get('/')\nasync def root():\n\treturn {'message': 'Hello World'}" },
         { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
-      selectedLanguage: { label: 'Python', value: 'python', available: true },
+      selectedLanguage: { label: 'Python 3', value: 'python', available: true },
       step: 1,
       tab: false
     }
