@@ -66,7 +66,7 @@
                 <q-btn flat icon="link" align="left" label="View Explorer"
                       @click="openExplorer(item)" />
                 <q-btn flat icon="upload_file" align="left" label="Download Program File"
-                      @click="downloadSourceCode(item.storeObj.item_hash)" />
+                      @click="downloadFile(item.storeObj.item_hash)" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -117,9 +117,20 @@ export default {
       window.open(explorerURL, '_blank')
     },
 
-    downloadSourceCode (item_hash) {
-      const explorerURL = `http://api2.aleph.im/api/v0/storage/raw/${item_hash}`
-      window.open(explorerURL, '_blank')
+    downloadFile (item_hash) {
+      const urlToSend = `http://api2.aleph.im/api/v0/storage/raw/${item_hash}`
+      var req = new XMLHttpRequest()
+      req.open('GET', urlToSend, true)
+      req.responseType = 'blob'
+      req.onload = function (event) {
+        var blob = req.response
+        var fileName = `${item_hash}.zip` // if you have the fileName header available
+        var link = document.createElement('a')
+        link.href = window.URL.createObjectURL(blob)
+        link.download = fileName
+        link.click()
+      }
+      req.send()
     },
 
     getProgramLabel (program) {
