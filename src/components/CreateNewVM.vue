@@ -40,8 +40,8 @@
             </template>
           </q-select>
         </div>
-        <div class="col-12" v-if="selectedLanguage.available">
-          <codemirror :options="cmOptions" ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code"/>
+        <div class="col-12">
+          <codemirror :options="getCodeMirrorOption(selectedLanguage)" ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code"/>
         </div>
       </div>
 
@@ -57,14 +57,6 @@
       :header-nav="step > 2"
     >
     <div class="row q-gutter-md q-mt-md">
-        <div class="col-12">
-            <q-input v-model="newProgram.name" label="Name your program"
-            stack-label standout class="q-my-sm" />
-        </div>
-        <div class="col-12">
-            <q-input v-model="newProgram.filename" label="File name (without extension: .py, .js ...)"
-            stack-label standout class="q-my-sm" />
-        </div>
         <div class="col-12">
             <q-input v-model="newProgram.entrypoint" label="Your entrypoint"
             stack-label standout class="q-my-sm" />
@@ -82,7 +74,7 @@
             <div class="text-h6">{{volume.isPersistent ? 'Persistent Volume' : 'Volume'}}</div>
           </div>
           <div class="col-12">
-            <q-input v-model="volume.comment" label="Description"
+            <q-input v-model="volume.comment" placeholder="Basic description of your volume" label="Description"
               stack-label standout class="q-my-sm" />
           </div>
           <div class="col-12" >
@@ -126,7 +118,6 @@ import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
 import 'codemirror/mode/python/python.js'
-import 'codemirror/mode/javascript/javascript.js'
 const shajs = require('sha.js')
 import JSZip from 'jszip'
 import { store, broadcast, storage_push, ipfs_push, nuls, nuls2, neo, ethereum } from 'aleph-js'
@@ -143,19 +134,11 @@ export default {
   },
   data () {
     return {
-      cmOptions: {
-        tabSize: 4,
-        mode: 'text/python',
-        lineNumbers: true,
-        line: true,
-        theme: 'blackboard'
-      },
       loading: false,
       exportFile: null,
       newProgram: {
         entrypoint: 'app',
         filename: 'main',
-        name: '',
         code: `from fastapi import FastAPI
 app = FastAPI()
 @app.get("/")
@@ -165,8 +148,8 @@ async def root():
         volumes: []
       },
       languages: [
-        { label: 'Python', value: 'python', available: true },
-        { label: 'Javascript', value: 'javascript', available: false }
+        { label: 'Python', value: 'python', available: true, code: "from fastapi import FastAPI\napp = FastAPI()\n@app.get('/')\nasync def root():\n\treturn {'message': 'Hello World'}" },
+        { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
       selectedLanguage: { label: 'Python', value: 'python', available: true },
       step: 1,
@@ -179,18 +162,34 @@ async def root():
     }
   },
   methods: {
+
+    getCodeMirrorOption (selectedLanguage) {
+      var cmOption = {
+        tabSize: 4,
+        mode: `text/${selectedLanguage.value}`,
+        line: true,
+        theme: 'blackboard',
+        readOnly: !selectedLanguage.available,
+        value: this.newProgram.code
+      }
+      if (selectedLanguage.code !== 'undefined') {
+        cmOption.value = selectedLanguage.code
+      }
+      return cmOption
+    },
+
     addVolume (isPersistent) {
       if (isPersistent) {
         this.newProgram.volumes.push({
           id: (Math.random() + 1).toString(36).substring(7),
-          comment: 'Basic description of your volume',
+          comment: '',
           isPersistent: true,
           persistence: 'host'
         })
       } else {
         this.newProgram.volumes.push({
           id: (Math.random() + 1).toString(36).substring(7),
-          comment: 'Basic description of your volume',
+          comment: '',
           isPersistent: false,
           use_latest: false
         })
@@ -245,7 +244,7 @@ async def root():
         message = await ethereum.sign(this.account, message)
       }
 
-      await broadcast(message, { api_server: 'https://api2.aleph.im' })
+      await broadcast(message, { api_server: this.api_server })
     },
     async deploy () {
       this.loading = true
@@ -257,7 +256,7 @@ async def root():
           account: this.account,
           channel: 'TEST',
           fileobject: this.exportFile,
-          api_server: 'https://api2.aleph.im'
+          api_server: this.api_server
         }
       ).catch((response) => {
         this.loading = false
