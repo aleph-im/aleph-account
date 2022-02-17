@@ -33,7 +33,7 @@
             <q-icon v-if="props.row.picture" :name="`img:${api_server}/api/v0/storage/raw/${props.row.picture}`" class="rounded-borders" />
           </q-td>
           <q-td key="name" :props="props">
-            <span class="text-grey text-weight-light">Node-ID: </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
+            <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
             <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
             <q-icon name="lock" v-if="props.row.locked">
@@ -80,6 +80,23 @@
                         :label="(props.row.total_staked > 500000 ? '+' : '') + ((props.row.total_staked - 500000)/1000).toFixed(0) + 'k'" />
             </div> -->
           </q-td>
+          <q-td key="linked" :props="props">
+            <div v-if="!coreNodeMode">
+              <span v-if="props.row.parent === null">Unlinked</span>
+              <node-name :node-hash="props.row.parent" node-type="core" v-else></node-name>
+            </div>
+            <!-- TODO: fetch number of linked node -->
+            <div v-else-if="props.row.resource_nodes !== undefined">
+              <div class="row justify-end">
+                {{props.row.resource_nodes.length}} linked
+              </div>
+              <div class="row justify-end">
+                <span class="dot q-mr-sm" :class="props.row.resource_nodes.length>0?'green':''"></span>
+                <span class="dot q-mr-sm" :class="props.row.resource_nodes.length>1?'green':''"></span>
+                <span class="dot" :class="props.row.resource_nodes.length>2?'green':''"></span>
+              </div>
+            </div>
+          </q-td>
           <q-td key="uptime" :props="props">
             <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
           </q-td>
@@ -87,7 +104,6 @@
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
           <q-td key="stared" :props="props">
-
           </q-td>
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
@@ -96,17 +112,27 @@
               <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
             </span>
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
-            v-if="account&&user_node&&(user_node.hash == props.row.hash)" type="a"
+            v-if="account&&(account.address == props.row.owner)" type="a"
             @click="$emit('node-action', 'drop-node', props.row.hash)">drop node</q-btn>
+
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)" type="a"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
-            v-else :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<750000))" outline
+            v-else-if="coreNodeMode" :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<750000))" outline
             @click="$emit('node-action', 'stake-split', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
+            <!-- Unlink if user is the core owner or (core owner and compute owner) -->
+            <q-btn size="sm" v-if="(!coreNodeMode)&&account&&user_node&&(user_node.hash === props.row.parent)" color="primary" outline class="q-ml-sm" type="a"
+            @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
+            <!-- Unlink button if user is the compute owner but linked a compute -->
+            <q-btn size="sm" v-else-if="(!coreNodeMode)&&account&&(account.address == props.row.owner)&&(props.row.parent !== null)" color="primary" outline class="q-ml-sm" type="a"
+            @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
+
+            <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
+            @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
             <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">Info</q-btn>
           </q-td>
@@ -118,6 +144,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import NodeName from './NodeName'
 
 export default {
   name: 'nodes-table',
@@ -130,15 +157,28 @@ export default {
           'actions'
         ]
       } else {
-        return [
-          'picture',
-          'name',
-          'total_staked',
-          'uptime',
-          'time',
-          'stared',
-          'actions'
-        ]
+        if (this.coreNodeMode) {
+          return [
+            'picture',
+            'name',
+            'total_staked',
+            'uptime',
+            'linked',
+            'time',
+            'stared',
+            'actions'
+          ]
+        } else {
+          return [
+            'picture',
+            'name',
+            'linked',
+            'uptime',
+            'time',
+            'stared',
+            'actions'
+          ]
+        }
       }
     },
     ...mapState([
@@ -150,6 +190,9 @@ export default {
       'balance_info'
     ])
   },
+  components: {
+    NodeName
+  },
   props: [
     'values',
     'title',
@@ -157,7 +200,8 @@ export default {
     'user_stakes',
     'loading',
     'showHeader',
-    'showFooter'
+    'showFooter',
+    'coreNodeMode'
   ],
   data () {
     return {
@@ -181,6 +225,12 @@ export default {
           field: 'total_staked',
           align: 'left',
           sortable: true
+        },
+        {
+          name: 'linked',
+          label: 'Linked',
+          align: 'right',
+          field: props => props.parent
         },
         {
           name: 'uptime',
@@ -241,5 +291,17 @@ export default {
       }
     }
   }
+}
+
+.dot {
+  height: 5px;
+  width: 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.green {
+  background-color: #1CC272;
 }
 </style>
