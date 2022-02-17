@@ -4,17 +4,21 @@
       <q-spinner-gears size="50px" color="primary" />
     </q-inner-loading>
     <q-dialog v-model="createNode">
-      <create-node @done="creation_done" />
+      <create-node @done="creation_done('core')"  @close="createNode=false" />
+    </q-dialog>
+    <q-dialog v-model="createComputeNode">
+      <create-compute-node @done="creation_done('compute')" @close="createComputeNode=false"/>
     </q-dialog>
     <q-dialog v-model="showNode">
       <node-info :node="displayed_node"
+      :node-type="displayed_node_type"
       @close="showNode=false"
       @done="edit_done" />
     </q-dialog>
     <div class="row q-gutter-md">
-      <q-card flat class="bg-card">
+      <q-card flat class="bg-card" block>
         <q-card-section>
-          <div class="text-bold">Nodes</div>
+          <div class="text-bold">Core Channel Nodes</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
           <vc-donut :sections="nodes_sections"
@@ -22,6 +26,18 @@
           :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :size="70" unit="px" :thickness="30"
           :total="nodes.length" has-legend legend-placement="right"></vc-donut>
+        </q-card-section>
+      </q-card>
+      <q-card flat class="bg-card" block>
+        <q-card-section>
+          <div class="text-bold">Compute Resource Nodes</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <vc-donut :sections="resource_nodes_sections"
+          :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
+          :size="70" unit="px" :thickness="30"
+          :total="resource_nodes.length" has-legend legend-placement="right"></vc-donut>
         </q-card-section>
       </q-card>
       <q-card flat class="bg-card">
@@ -79,35 +95,104 @@
         </q-card-section>
       </q-card>
     </div>
-    <nodes-table
-      v-if="my_nodes.length"
-      title="My Nodes"
-      :values="my_nodes"
-      :loading="loading"
-      :user_node="user_node"
-      :user_stakes="user_stakes"
-      @node-action="node_emit_action"
-      @create-node="createNode = true"
-      @node-info="(node) => {showNode=true; displayed_node=node}"
-      class="q-mb-xl">
-    </nodes-table>
-    <nodes-table
-      title="All Nodes"
-      :values="values"
-      :loading="loading"
-      :user_node="user_node"
-      :user_stakes="user_stakes"
-      :show-header="true"
-      @node-action="node_emit_action"
-      @create-node="createNode = true"
-      @node-info="(node) => {showNode=true; displayed_node=node}">
-    </nodes-table>
+    <div class="row justify-between q-mt-xl">
+      <div>
+        <q-tabs v-model="tab" dense no-caps align="left" indicator-color="primary">
+          <q-tab name="core" label="Core" />
+          <q-tab name="compute" label="Compute" />
+        </q-tabs>
+      </div>
+      <div>
+        <q-btn-dropdown  size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
+          <!-- start: dropdown item list  -->
+          <q-list>
+            <q-item clickable v-close-popup @click="showCCNDialog(true)" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
+              <q-item-section>
+                <q-item-label>Core Channel Node</q-item-label>
+              </q-item-section>
+            </q-item>
+
+              <q-item clickable v-close-popup @click="createComputeNode = true">
+                <q-item-section>
+                  <q-item-label>Compute Resource Node</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+              <!-- end: dropdown item list  -->
+        </q-btn-dropdown>
+      </div>
+    </div>
+    <q-tab-panels v-model="tab" animated class="transparent">
+      <!-- start: all nodes -->
+      <q-tab-panel name="core" >
+        <nodes-table
+          v-if="my_nodes.length"
+          title="My Nodes"
+          :values="my_nodes"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          :core-node-mode="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='core'}"
+          class="q-mb-xl">
+        </nodes-table>
+        <nodes-table
+          title="All Core Nodes"
+          :values="values"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          :core-node-mode="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='core'}">
+        </nodes-table>
+      </q-tab-panel>
+      <!-- end: all nodes -->
+      <!-- start: all nodes -->
+      <q-tab-panel name="compute" >
+        <nodes-table
+          v-if="my_resource_nodes.length"
+          title="My Nodes"
+          :values="my_resource_nodes"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='resource'}"
+          class="q-mb-xl">
+        </nodes-table>
+        <nodes-table
+          title="All Compute Nodes"
+          :values="resource_nodes_list"
+          :loading="loading"
+          :user_node="user_node"
+          :user_stakes="user_stakes"
+          :show-header="true"
+          @node-action="node_emit_action"
+          @create-node="createNode = true"
+          @create-compute-node="createComputeNode = true"
+          @node-info="(node) => {showNode=true; displayed_node=node; displayed_node_type='resource'}">
+        </nodes-table>
+      </q-tab-panel>
+      <!-- end: all nodes -->
+    </q-tab-panels>
   </q-page>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import CreateNode from '../components/CreateNode'
+import CreateComputeNode from '../components/CreateComputeNode'
 import NodesTable from '../components/NodesTable'
 import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
@@ -137,13 +222,18 @@ export default {
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
     nodes: state => state.nodes,
+    resource_nodes: state => state.resource_nodes,
     node_post_type: 'node_post_type',
     ws_api_server: 'ws_api_server',
     monitor_address: 'monitor_address',
     values (state) {
-      return state.nodes.filter((node) => {
-        return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
-      }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+      if (state.nodes) {
+        return state.nodes.filter((node) => {
+          return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
+        }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+      } else {
+        return []
+      }
     },
     user_node (state) {
       if (state.account) {
@@ -166,6 +256,27 @@ export default {
       }
       return nodes
     },
+    my_resource_nodes (state) {
+      if (state.resource_nodes && state.account) {
+        return state.resource_nodes.filter((node) => {
+          return (node.owner === state.account.address)
+        })
+      } else {
+        return []
+      }
+    },
+    resource_nodes_list (state) {
+      if (state.resource_nodes && state.account) {
+        return state.resource_nodes.filter((node) => {
+          return (node.owner !== state.account.address)
+        }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+      } else if (state.resource_nodes) {
+        console.log(state.resource_nodes)
+        return state.resource_nodes.filter((node) => true)
+      } else {
+        return []
+      }
+    },
     my_nodes (state) {
       let nodes = []
       if (state.account) {
@@ -178,6 +289,7 @@ export default {
       return nodes
     },
     active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
+    linked_nodes: (state) => state.resource_nodes.filter((node) => node.parent).length,
     nodes_sections (state) {
       const total_nodes = state.nodes.length
       return [
@@ -189,6 +301,21 @@ export default {
         {
           label: `${this.active_nodes} active`,
           value: this.active_nodes,
+          color: '#0054FF'
+        }
+      ]
+    },
+    resource_nodes_sections (state) {
+      const total_nodes = state.resource_nodes.length
+      return [
+        {
+          label: `${total_nodes} nodes`,
+          value: total_nodes - this.linked_nodes,
+          color: '#71C9FA'
+        },
+        {
+          label: `${this.linked_nodes} linked`,
+          value: this.linked_nodes,
           color: '#0054FF'
         }
       ]
@@ -219,19 +346,26 @@ export default {
     },
     total_per_aleph_per_day (state) {
       return this.total_per_day / this.total_staked_in_active
+    },
+    closeComputeDialog () {
+      this.createComputeNode = false
     }
   }),
   components: {
     CreateNode,
+    CreateComputeNode,
     NodesTable,
     NodeInfo
   },
   data () {
     return {
+      tab: 'core',
       createNode: false,
+      createComputeNode: false,
       showNode: false,
       loading: null,
       displayed_node: null,
+      displayed_node_type: null,
       calculator_staked: 10000
       // values: [
       //   {
@@ -264,8 +398,12 @@ export default {
 
       this.statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
-        if ((data.content.key === 'corechannel') && (data.content.content.nodes !== undefined)) {
+        if ((data.content !== undefined) &&
+            (data.content.address === this.monitor_address) &&
+            (data.content.key === 'corechannel') &&
+            (data.content.content.nodes !== undefined)) {
           this.$store.commit('set_nodes', data.content.content.nodes)
+          this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
         }
       }.bind(this)
 
@@ -281,8 +419,10 @@ export default {
         this.statusSocket.close()
       }.bind(this)
     },
-    async creation_done () {
+    async creation_done (tab) {
+      this.tab = tab
       this.createNode = false
+      this.createComputeNode = false
       this.loading = true
       this.loading = null
     },
@@ -307,6 +447,11 @@ export default {
         this.calculator_staked = this.balance_info.ALEPH.toFixed(0)
       } else {
         this.calculator_staked = 10000
+      }
+    },
+    showCCNDialog (value) {
+      if ((this.account && (this.balance_info.ALEPH >= 200000)) && (this.user_node === null)) {
+        this.createNode = value
       }
     }
   },

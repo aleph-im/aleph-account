@@ -186,25 +186,13 @@ async function get_uri_info (field, ipfs, uri) {
   } else {
     let content = null
     try {
-      let httpres = null
-      try {
-        httpres = await axios.get(uri, {
-          responseType: 'arraybuffer'
-        })
-      } catch {
-        httpres = await this.$axios.get('https://pp.aleph.im/' + uri, {
-          responseType: 'arraybuffer'
-        })
-      }
+      let httpres = await axios.get(uri, {
+        responseType: 'arraybuffer'
+      })
       console.log(httpres)
       content = httpres.data
     } catch {
-      let httpres = null
-      try {
-        httpres = await axios.get(uri)
-      } catch {
-        httpres = await axios.get('https://pp.aleph.im/' + uri)
-      }
+      let httpres = await axios.get(uri)
       console.log(httpres)
       content = JSON.stringify(httpres.data)
     }
@@ -212,9 +200,9 @@ async function get_uri_info (field, ipfs, uri) {
       field: field,
       type: 'http',
       original_uri: uri,
-      size: content.byteLength !== undefined ? content.byteLength : content.length,
+      size: content.byteLength,
       stats: {
-        size: content.byteLength !== undefined ? content.byteLength : content.length
+        size: content.byteLength
       },
       content: content
     }
@@ -323,13 +311,7 @@ export default {
         this.nft_uri = token_uri[0]
         let request_uri = token_uri[0]
         request_uri = request_uri.replace('ipfs://', 'https://ipfs.io/')
-        console.log(request_uri)
-        let result = null
-        try {
-          result = await this.$axios.get(request_uri)
-        } catch (e) {
-          result = await this.$axios.get('https://pp.aleph.im/' + request_uri)
-        }
+        let result = await this.$axios.get(request_uri)
         this.nft_data = result.data
         this.tab = 'contract'
         this.step = 2
@@ -363,11 +345,6 @@ export default {
         parts = parts.split('/tokens/')
         this.nft_contract = parts[0]
         this.nft_index = parts[1]
-        await this.fetch_token()
-      } else if (url.includes('niftygateway.com/itemdetail/')) {
-        let parts = url.split('niftygateway.com/itemdetail/')[1].split('/')
-        this.nft_contract = parts[parts.length - 2]
-        this.nft_index = parts[parts.length - 1]
         await this.fetch_token()
       } else {
         this.$q.notify({
