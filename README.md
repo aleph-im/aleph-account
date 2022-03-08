@@ -7,6 +7,12 @@ aleph.im account manager
 yarn
 ```
 
+## Install the [Quasar CLI](https://quasar.dev/quasar-cli/installation)
+
+```bash
+yarn global add @quasar/cli
+```
+
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 ```bash
 quasar dev
