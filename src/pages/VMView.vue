@@ -23,14 +23,10 @@
     </div>
     </div>
     <div v-if="account">
-      <q-card class="bg-transparent" elevation="0">
-        <!-- start: active vm -->
-        <div>
-          <VMTable :data="programs" :account="account" :loading="loading" >
-          </VMTable>
-        </div>
-        <!-- end: actives vm -->
-      </q-card>
+      <!-- start: active vm -->
+      <VMTable :data="programs" :account="account" :loading="loading" >
+      </VMTable>
+      <!-- end: actives vm -->
     </div>
   </q-page>
 </template>
@@ -78,19 +74,19 @@ export default {
         message_type: 'PROGRAM'
       }).then(async (response) => {
         var programsTmp = response.messages
-        for (var i = 0; i < programsTmp.length; i++) {
-          let tx = programsTmp[i].content.code.ref
+        programsTmp.forEach(async program => {
+          let tx = program.content.code.ref
           // retrieve store messages
           await messages.get_messages({
             addresses: [this.account.address],
             hashes: [tx]
           }).then(async (response) => {
             let storeObj = response.messages[0].content
-            programsTmp[i].storeObj = storeObj
+            program.storeObj = storeObj
           }).catch(() => {
             this.loading = false
           })
-        }
+        })
         this.programs = programsTmp
         this.loading = false
       }).catch(() => {
