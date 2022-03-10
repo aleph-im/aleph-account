@@ -3,6 +3,9 @@
 aleph.im account manager
 
 ## Install the dependencies
+
+Use Node 14.
+
 ```bash
 yarn
 ```
@@ -24,3 +27,10 @@ quasar build
 
 ### Customize the configuration
 See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+
+## In a Docker container:
+
+```bash
+docker run --rm -ti -v (pwd):/mnt -w /mnt -p 8080:8080 node:14 yarn
+docker run --rm -ti -v (pwd):/mnt -w /mnt -p 8080:8080 node:14 ./node_modules/@quasar/app/bin/quasar dev
+```
