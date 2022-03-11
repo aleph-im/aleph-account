@@ -8,11 +8,11 @@
         animated
       >
     <q-step
-      :name="1"
+      :name="STEP_EDITOR"
       title="Insert your script"
       icon="settings"
-      :done="step > 1"
-      :header-nav="step > 1"
+      :done="step > STEP_EDITOR"
+      :header-nav="step > STEP_EDITOR"
     >
       <div class="flex">
         <span class="q-mr-xs"> Choose your language then copy and paste your code in the following text area</span>
@@ -43,11 +43,11 @@
       </q-stepper-navigation>
     </q-step>
     <q-step
-      :name="2"
+      :name="STEP_DONE"
       title="Settings"
       icon="settings"
-      :done="step > 2"
-      :header-nav="step > 2"
+      :done="step > STEP_DONE"
+      :header-nav="step > STEP_DONE"
     >
     <div class="row q-gutter-md q-mt-md">
         <div class="col-12">
@@ -98,7 +98,7 @@
       </div>
       <q-stepper-navigation>
         <q-btn :loading="loading" color="primary" label="Deploy" @click="deploy()"/>
-        <q-btn flat @click="backStep(1)" color="primary" label="Back" class="q-ml-sm" />
+        <q-btn flat @click="backStep(STEP_EDITOR)" color="primary" label="Back" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
   </q-stepper>
@@ -110,10 +110,12 @@
 import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
+import 'codemirror/theme/lucario.css'
 import 'codemirror/mode/python/python.js'
+import 'codemirror/mode/javascript/javascript.js'
 const shajs = require('sha.js')
 import JSZip from 'jszip'
-import { store, broadcast, storage_push, ipfs_push, nuls, nuls2, neo, ethereum } from 'aleph-js'
+import { store, broadcast, storage_push, ipfs_push, nuls, nuls2, ethereum } from 'aleph-js'
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -127,6 +129,8 @@ export default {
   },
   data () {
     return {
+      STEP_DONE: 2,
+      STEP_EDITOR: 1,
       loading: false,
       exportFile: null,
       newProgram: {
@@ -159,9 +163,9 @@ async def root():
     getCodeMirrorOption (selectedLanguage) {
       var cmOption = {
         tabSize: 4,
-        mode: `text/${selectedLanguage.value}`,
+        mode: `${selectedLanguage.value}`,
         line: true,
-        theme: 'blackboard',
+        theme: this.$q.dark.isActive ? 'blackboard': 'lucario',
         readOnly: !selectedLanguage.available,
         value: this.newProgram.code
       }
@@ -223,18 +227,16 @@ async def root():
       const zip = new JSZip()
       zip.file('main.py', this.newProgram.code)
       this.exportFile = await zip.generateAsync({ type: 'blob' })
-      this.step = 2
+      this.step = this.STEP_DONE
       this.loading = false
     },
     async send (message) {
-      if (this.account.type === 'NULS') {
+      if (this.account.type === 'ETH') {
+        message = await ethereum.sign(this.account, message)
+      } else if (this.account.type === 'NULS') {
         message = await nuls.sign(Buffer.from(this.account.private_key, 'hex'), message)
       } else if (this.account.type === 'NULS2') {
         message = await nuls2.sign(this.account, message)
-      } else if (this.account.type === 'NEO') {
-        message = await neo.sign(this.account, message)
-      } else if (this.account.type === 'ETH') {
-        message = await ethereum.sign(this.account, message)
       }
 
       await broadcast(message, { api_server: this.api_server })
