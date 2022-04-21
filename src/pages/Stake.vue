@@ -21,7 +21,8 @@
           <div class="text-bold">Core Channel Nodes</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <vc-donut :sections="nodes_sections"
+          <vc-donut v-if="nodes.length"
+          :sections="nodes_sections"
           :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :size="70" unit="px" :thickness="30"
@@ -33,7 +34,8 @@
           <div class="text-bold">Compute Resource Nodes</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <vc-donut :sections="resource_nodes_sections"
+          <vc-donut v-if="resource_nodes.length"
+          :sections="resource_nodes_sections"
           :background="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :foreground="$q.dark.isActive?'#2E363B':'#FAFAFA'"
           :size="70" unit="px" :thickness="30"
