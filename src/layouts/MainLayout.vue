@@ -201,8 +201,7 @@ export default {
         const data = JSON.parse(event.data)
 
         console.log(data)
-        console.log(data.content.content.status)
-        if (data.content === undefined) {
+        if (data.content === undefined || data.content.content === undefined) {
           return
         }
 
