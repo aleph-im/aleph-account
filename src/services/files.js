@@ -9,7 +9,7 @@ export async function retrieve_file (filepost, account, api_server) {
       content = await encryption.decrypt(account, content, { as_hex: false, as_string: false })
     }
 
-    const data = new Blob([content], {type: filepost.content.mimetype})
+    const data = new Blob([content], { type: filepost.content.mimetype })
     return data
   } else {
     return null
@@ -17,14 +17,14 @@ export async function retrieve_file (filepost, account, api_server) {
 }
 
 export async function retrieve_file_url (filepost, account, api_server,
-  {revoke_timeout = null} = {}) {
+  { revoke_timeout = null } = {}) {
   const data = await retrieve_file(filepost, account, api_server)
   if (data !== null) {
     const objurl = createObjectURL(data)
     if (revoke_timeout) {
       setTimeout(function () {
         // For Firefox it is necessary to delay revoking the ObjectURL
-        revokeObjectURL (objurl)
+        revokeObjectURL(objurl)
       }, revoke_timeout)
     }
 
@@ -49,7 +49,7 @@ export async function navigate_to_file (filepost, account, api_server,
   if (revoke_timeout) {
     setTimeout(function () {
       // For Firefox it is necessary to delay revoking the ObjectURL
-      revokeObjectURL (link.href)
+      revokeObjectURL(link.href)
     }, revoke_timeout)
   }
 }
