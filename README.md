@@ -31,6 +31,6 @@ See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
 ## In a Docker container:
 
 ```bash
-docker run --rm -ti -v (pwd):/mnt -w /mnt -p 8080:8080 node:14 yarn
-docker run --rm -ti -v (pwd):/mnt -w /mnt -p 8080:8080 node:14 ./node_modules/@quasar/app/bin/quasar dev
+docker run --rm -ti -v (pwd):/mnt -w /mnt -p 8080:8080 node:16 yarn
+docker run --rm -ti -v (pwd):/mnt -w /mnt -p 8080:8080 node:16 ./node_modules/@quasar/app/bin/quasar dev
 ```
