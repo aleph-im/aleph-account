@@ -203,7 +203,7 @@ export default new Vuex.Store({
       for (let post of result.posts) {
         i += 1
         try {
-          if ((post.content.private) | (post.type === 'folder')) {
+          if ((post.content.private) || (post.type === 'folder')) {
             await decrypt_content(post.content, ['filename', 'mimetype', 'thumbnail_url'], state.account)
           }
         } catch (e) {
