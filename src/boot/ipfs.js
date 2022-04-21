@@ -1,9 +1,11 @@
-import IPFS from 'ipfs'
+// import IPFS from 'ipfs'
 import Vue from 'vue'
 
 const plugin = {
   install (Vue, opts = {}) {
-    Vue.prototype.$ipfs = IPFS.create(opts)
+    // IPFS.create(opts).then(function (value) {
+    //   Vue.prototype.$ipfs = value
+    // })
   }
 }
 

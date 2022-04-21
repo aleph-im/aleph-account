@@ -323,9 +323,9 @@ export default {
         })
       }
       await sleep(1000)
-      this.$store.dispatch('update_stored')
+      await this.$store.dispatch('update_stored')
       await sleep(5000)
-      this.$store.dispatch('update_stored')
+      await this.$store.dispatch('update_stored')
     },
     async fetch_cid_info () {
       if (!isIPFS.cid(this.cid_input)) { this.cid_info = null }
