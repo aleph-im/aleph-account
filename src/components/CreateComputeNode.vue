@@ -13,7 +13,7 @@
             <q-input label="Node name" v-model="name" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-mb-md">
-            <q-input label="Address" v-model="address" placeholder="https://my-domain.tld/" stack-label standout class="q-my-sm" />
+            <q-input label="Address" ref="addrRule" :rules="[rules.url]" v-model="address" placeholder="https://my-domain.tld/" stack-label standout class="q-my-sm" />
         </div>
         <div class="q-my-md">
             <a href="https://medium.com/aleph-im/step-by-step-on-how-to-create-and-register-your-compute-resource-node-e5308130fbf7" :style="`color: inherit;`">How to install your node and retrieve the address.</a>
@@ -43,7 +43,13 @@ export default {
     return {
       step: 1,
       name: '',
-      address: ''
+      address: '',
+      rules: {
+        url: (value) => {
+          const pattern = /^(ftp|http|https):\/\/[^ "]+$/
+          return pattern.test(value) || 'Please enter a valid address.'
+        }
+      }
     }
   },
   methods: {
@@ -55,31 +61,24 @@ export default {
       }
     },
     async finish () {
-      await posts.submit(this.account.address, this.node_post_type,
-        {
-          tags: ['create-resource-node', ...this.tags],
-          action: 'create-resource-node',
-          details: {
-            name: this.name,
-            type: 'compute',
-            address: this.address
-          }
-        },
-        {
-          api_server: this.api_server,
-          account: this.account,
-          channel: this.channel
-        })
-      // await aggregates.submit(this.account.address, 'node', {
-      //   name: this.name,
-      //   multiaddress: this.multiaddress,
-      //   hash: result.item_hash
-      // }, {
-      //   api_server: this.api_server,
-      //   account: this.account,
-      //   channel: this.channel
-      // })
-      this.$emit('done', 'compute')
+      if (this.$refs.addrRule.validate()) {
+        await posts.submit(this.account.address, this.node_post_type,
+          {
+            tags: ['create-resource-node', ...this.tags],
+            action: 'create-resource-node',
+            details: {
+              name: this.name,
+              type: 'compute',
+              address: this.address
+            }
+          },
+          {
+            api_server: this.api_server,
+            account: this.account,
+            channel: this.channel
+          })
+        this.$emit('done', 'compute')
+      }
     },
 
     closeDialog () {
