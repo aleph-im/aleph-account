@@ -34,7 +34,32 @@
           </q-select>
         </div>
         <div class="col-12">
-          <codemirror :options="getCodeMirrorOption(selectedLanguage)" ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code"/>
+          <q-tabs
+            v-model="csMethodeTab"
+            dense
+            no-caps
+            indicator-color="primary"
+            inline-label
+            align="left"
+            :breakpoint="0"
+          >
+            <q-tab name="ide" icon="code" label="Online Editor"/>
+            <q-tab name="file" icon="upload_file" label="Upload File"/>
+          </q-tabs>
+        </div>
+        <div class="col-12">
+        <q-tab-panels v-model="csMethodeTab" animated class="transparent">
+          <q-tab-panel name="ide">
+            <codemirror :options="getCodeMirrorOption(selectedLanguage)" ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code"/>
+          </q-tab-panel>
+          <q-tab-panel name="file">
+            <q-file v-model="newProgram.file" label="Your program file" accept=".py" counter outlined>
+            <template v-slot:prepend>
+              <q-icon name="upload_file" />
+            </template>
+          </q-file>
+          </q-tab-panel>
+        </q-tab-panels>
         </div>
       </div>
 
@@ -131,9 +156,12 @@ export default {
     return {
       STEP_DONE: 2,
       STEP_EDITOR: 1,
+      csMethodeTab: 'ide',
       loading: false,
       exportFile: null,
       newProgram: {
+        isFile: false,
+        file: null,
         entrypoint: 'app',
         filename: 'main',
         code: `from fastapi import FastAPI
@@ -165,7 +193,7 @@ async def root():
         tabSize: 4,
         mode: `${selectedLanguage.value}`,
         line: true,
-        theme: this.$q.dark.isActive ? 'blackboard': 'lucario',
+        theme: this.$q.dark.isActive ? 'blackboard' : 'lucario',
         readOnly: !selectedLanguage.available,
         value: this.newProgram.code
       }
@@ -225,8 +253,14 @@ async def root():
     async importCode () {
       this.loading = true
       const zip = new JSZip()
-      zip.file('main.py', this.newProgram.code)
+
+      if (this.csMethodeTab === 'ide') {
+        zip.file('main.py', this.newProgram.code)
+      } else if (this.csMethodeTab === 'file') {
+        zip.file('main.py', this.newProgram.file)
+      }
       this.exportFile = await zip.generateAsync({ type: 'blob' })
+
       this.step = this.STEP_DONE
       this.loading = false
     },

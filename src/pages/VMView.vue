@@ -18,8 +18,13 @@
     </div>
     <div class="q-mb-md" v-if="account">
     <div class="row justify-end">
-        <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" label="Reload" @click="reloadVM()"/>
-        <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true"/>
+        <q-input standout v-model="search" @keydown.enter.prevent="reloadVM()" dense label="Search program" class="q-mr-md">
+          <template v-slot:prepend>
+          <q-icon name="search"/>
+        </template>
+        </q-input>
+        <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" :disabled="loading" :loading="loading" label="Reload" @click="reloadVM()"/>
+        <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true" :disabled="balance_info.ALEPH < 1"/>
     </div>
     </div>
     <div v-if="account">
@@ -54,6 +59,7 @@ export default {
     return {
       loading: true,
       programs: [],
+      search: '',
       showCreateProgram: false,
       id: '',
       agentVersion: '',
@@ -68,11 +74,15 @@ export default {
 
     async getMessages () {
       this.loading = true
-      await messages.get_messages({
+      var params = {
         addresses: [this.account.address],
         pagination: 1000,
         message_type: 'PROGRAM'
-      }).then(async (response) => {
+      }
+      if (this.search.length > 0) {
+        params.hashes = [this.search]
+      }
+      await messages.get_messages(params).then(async (response) => {
         var programsTmp = response.messages
         programsTmp.forEach(async program => {
           let tx = program.content.code.ref
@@ -95,7 +105,7 @@ export default {
     },
 
     async reloadVM () {
-      this.getMessages()
+      await this.getMessages()
     }
   },
   watch: {

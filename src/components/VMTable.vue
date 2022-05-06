@@ -26,8 +26,8 @@
               <q-item>
                 <q-item-section>
                   <q-item-label caption>Direct link</q-item-label>
-                  <q-item-label>
-                    https://aleph.sh/vm/7{{item.item_hash}}
+                  <q-item-label color="white">
+                    <a :href="`https://aleph.sh/vm/${item.item_hash}`" target="_blank" style="color:white;">https://aleph.sh/vm/{{item.item_hash}}</a>
                     <q-btn @click="copyToClipboard(`https://aleph.sh/vm/${item.item_hash}`)" flat round icon="content_copy" size="sm"/>
                   </q-item-label>
                 </q-item-section>
@@ -87,8 +87,8 @@ import { copyToClipboard } from 'quasar'
 
 export default {
   props: [
-    'data',
     'account',
+    'data',
     'loading'
   ],
   data () {
