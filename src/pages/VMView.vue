@@ -84,19 +84,19 @@ export default {
       }
       await messages.get_messages(params).then(async (response) => {
         var programsTmp = response.messages
-        programsTmp.forEach(async program => {
-          let tx = program.content.code.ref
+        for (var i = 0; i < programsTmp.length; i++) {
+          let tx = programsTmp[i].content.code.ref
           // retrieve store messages
           await messages.get_messages({
             addresses: [this.account.address],
             hashes: [tx]
           }).then(async (response) => {
             let storeObj = response.messages[0].content
-            program.storeObj = storeObj
+            programsTmp[i].storeObj = storeObj
           }).catch(() => {
             this.loading = false
           })
-        })
+        }
         this.programs = programsTmp
         this.loading = false
       }).catch(() => {
