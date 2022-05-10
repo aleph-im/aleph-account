@@ -1,6 +1,6 @@
 # aleph.im account (aleph-account)
 
-aleph.im account manager
+aleph.im account manager on https://account.aleph.im/
 
 ## Install the dependencies
 
