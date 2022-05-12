@@ -8,7 +8,6 @@
     </q-card-section>
 
     <q-card-section class="q-pt-md">
-      <form>
         <div class="q-mb-md">
             <p>Your node name should be short and meaningful.</p>
             <q-input label="Node name" v-model="name" stack-label standout class="q-my-sm" />
@@ -20,9 +19,8 @@
             <a href="https://medium.com/aleph-im/step-by-step-on-how-to-create-and-register-your-compute-resource-node-e5308130fbf7" :style="`color: inherit;`">How to install your node and retrieve the address.</a>
         </div>
         <div>
-            <q-btn class="full-width" text-color="white" outline color="primary" label="Register" @submit="finish()" type="submit" />
+            <q-btn class="full-width" text-color="white" outline color="primary" label="Register" @click="finish()" />
         </div>
-        </form>
     </q-card-section>
   </q-card>
 </template>
@@ -89,9 +87,3 @@ export default {
   }
 }
 </script>
-
-<style>
-input:invalid {
-  border: red solid 3px;
-}
-</style>

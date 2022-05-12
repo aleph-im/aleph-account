@@ -173,7 +173,7 @@ async def root():
         volumes: []
       },
       languages: [
-        { label: 'Python 3', value: 'python', available: true, code: "from fastapi import FastAPI\napp = FastAPI()\n@app.get('/')\nasync def root():\n\treturn {'message': 'Hello World'}" },
+        { label: 'Python 3', value: 'python', available: true, code: '' },
         { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
       selectedLanguage: { label: 'Python 3', value: 'python', available: true },
