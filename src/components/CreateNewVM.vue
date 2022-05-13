@@ -53,7 +53,7 @@
             <codemirror :options="getCodeMirrorOption(selectedLanguage)" ref="textarea" type="textarea" id="editor" outlined v-model="newProgram.code"/>
           </q-tab-panel>
           <q-tab-panel name="file">
-            <q-file v-model="newProgram.file" label="Your program file" accept=".py" counter outlined>
+            <q-file v-model="newProgram.file" label="Your program file" accept=".py" counter outlined max-total-size="1024">
             <template v-slot:prepend>
               <q-icon name="upload_file" />
             </template>
@@ -64,7 +64,7 @@
       </div>
 
       <q-stepper-navigation>
-        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Use this code"/>
+        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available || (csMethodeTab == 'file' && !newProgram.file)" color="primary" label="Use this code"/>
       </q-stepper-navigation>
     </q-step>
     <q-step
@@ -173,7 +173,7 @@ async def root():
         volumes: []
       },
       languages: [
-        { label: 'Python 3', value: 'python', available: true, code: '' },
+        { label: 'Python 3', value: 'python', available: true, code: 'from fastapi import FastAPI\napp = FastAPI()\n@app.get("/")\nasync def root():\n\treturn {"message": "Hello World"}' },
         { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
       selectedLanguage: { label: 'Python 3', value: 'python', available: true },
