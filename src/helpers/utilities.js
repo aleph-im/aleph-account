@@ -1,5 +1,8 @@
 import { Notify } from 'quasar'
 
+// FIXME
+// Potential dupplicate of "text-overflow: ellipsis" property
+// https://developer.mozilla.org/en-US/docs/Web/CSS/text-overflow
 export function ellipseText (text, maxLength = 9999) {
   if (text.length <= maxLength) {
     return text
