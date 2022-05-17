@@ -144,7 +144,7 @@
           </span>
           <span style="text-transform: capitalize;">
             <span v-if="node.parent === null">Unlinked</span>
-            <node-name v-else :node-hash="node.parent" node-type="core"></node-name>
+            <core-node-name v-else :node-hash="node.parent" />
             <span :class="'status-pill q-ml-sm bg-'+(node.parent !== null ? 'positive': 'negative')"></span>
           </span>
         </div>
@@ -172,16 +172,17 @@
             {{ node.total_staked.toFixed(2) }}
           </span>
         </div>
+
+        <q-separator class="q-mt-md" />
+
         <template v-if="nodeType === 'core'">
-          <div class="row justify-between q-mt-lg q-mb-md">
+          <div class="row items-end justify-between q-mt-md q-mb-md">
             <div class="text-weight-bold text-h5 ">Linked resource nodes</div>
             <span class="text-grey">{{node.resource_nodes.length}} of 3</span>
           </div>
-          <q-list bordered v-if="node.resource_nodes.length">
+          <q-list v-if="node.resource_nodes.length">
             <q-item v-for="resource_node of node.resource_nodes" :key="resource_node">
-              <q-item-section>
-                <node-name :node-hash="resource_node" node-type="resource"></node-name>
-              </q-item-section>
+                <resource-node-name :node-hash="resource_node" />
             </q-item>
           </q-list>
           <div v-else>
@@ -196,12 +197,11 @@
 <script>
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
-import NodeName from './NodeName.vue'
+import ResourceNodeName from './ResourceNodeName.vue'
 import { copyToClipboard, ellipseAddress } from '../helpers/utilities'
-// import { aggregates } from 'aleph-js'
 
 export default {
-  components: { NodeName },
+  components: { ResourceNodeName },
   name: 'node-info',
   computed: {
     editing () {
@@ -338,7 +338,7 @@ export default {
     background: $light-grey;
   }
   &:hover{
-    filter: brightness(1.25);
+    filter: brightness(.75);
     .copy-icon{
       opacity: 1;
     }
@@ -356,9 +356,6 @@ export default {
   }
 
   .copyonclick{
-    &:hover{
-      filter: brightness(.75);
-    }
     .copy-icon{
       background: #223038;
     }
