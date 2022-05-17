@@ -42,7 +42,7 @@
               </q-tooltip>
             </q-icon>
             {{ props.row.name.substring(0, 30) }}
-            <div class="lt-sm">
+            <div class="lt-sm" v-if="coreNodeMode">
               <span class="text-weight-bold">
                 {{ (props.row.total_staked/1000).toFixed(0) }}k
               </span>
