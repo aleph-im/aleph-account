@@ -40,14 +40,14 @@
             <q-item-section @click="copyToClipboard(node.owner)">
               <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Owner</q-item-label>
-              <q-item-label class="text-body2 overflow-hidden">{{node.owner}}</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{ellipseAddress(node.owner)}}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item v-if="node.reward !== node.owner"  class="standout copyonclick">
             <q-item-section  @click="copyToClipboard(node.reward)">
               <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Reward address</q-item-label>
-              <q-item-label class="text-body2 overflow-hidden">{{node.reward}}</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{ellipseAddress(node.reward)}}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item class="standout copyonclick" v-if="nodeType==='core'">
@@ -197,7 +197,7 @@
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
 import NodeName from './NodeName.vue'
-import { copyToClipboard } from '../helpers/utilities'
+import { copyToClipboard, ellipseAddress } from '../helpers/utilities'
 // import { aggregates } from 'aleph-js'
 
 export default {
@@ -233,6 +233,7 @@ export default {
   },
   methods: {
     copyToClipboard,
+    ellipseAddress,
     async upload_file (fileobject) {
       let message = await store.submit(
         this.account.address,
@@ -314,6 +315,10 @@ export default {
       border-right: 1px solid rgba(0,0,0,.1);
     }
   }
+}
+
+.overflow-hidden{
+  text-overflow: ellipsis;
 }
 
 .copyonclick{
