@@ -23,7 +23,7 @@
               Rewards are sent every few days when gas is low.
             </q-tooltip>
           </q-btn>
-          <q-btn v-if="account" color="white" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
+          <q-btn v-if="account" color="white" @click="copyToClipboard(account.address)" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
         </q-btn-group>
       </q-toolbar>
     </q-header>
@@ -85,7 +85,7 @@
   </q-layout>
 </template>
 <script>
-import { ellipseAddress } from '../helpers/utilities'
+import { ellipseAddress, copyToClipboard } from '../helpers/utilities'
 import { ethers } from 'ethers'
 
 import { mapState } from 'vuex'
@@ -108,13 +108,13 @@ export default {
     monitor_address: state => state.monitor_address,
     ws_api_server: 'ws_api_server',
 
-    allowance: function (state) {
+    allowance: function () {
       if ((this.balance_info !== null) && (this.balance_info.ALEPH !== undefined)) {
         return this.balance_info.ALEPH * this.mb_per_aleph
       }
       return 0
     },
-    owed_rewards: function (state) {
+    owed_rewards: function () {
       if ((this.last_calculation !== null) && (this.account !== null)) {
         if (this.last_calculation.content.rewards[this.account.address]) {
           return this.last_calculation.content.rewards[this.account.address]
@@ -192,6 +192,8 @@ export default {
     }
   },
   methods: {
+    copyToClipboard,
+
     async prepare_distributions_feed () {
       const statusSocket = new WebSocket(
         `${this.ws_api_server}/api/ws0/messages?msgType=POST&contentTypes=staking-rewards-distribution&addresses=` +
