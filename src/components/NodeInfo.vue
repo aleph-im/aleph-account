@@ -36,26 +36,30 @@
               <q-item-label>{{name}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout">
-            <q-item-section>
+          <q-item class="standout copyonclick">
+            <q-item-section @click="copyToClipboard(node.owner)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Owner</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{node.owner}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item v-if="node.reward !== node.owner"  class="standout">
-            <q-item-section>
+          <q-item v-if="node.reward !== node.owner"  class="standout copyonclick">
+            <q-item-section  @click="copyToClipboard(node.reward)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Reward address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{node.reward}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout" v-if="nodeType==='core'">
-            <q-item-section>
+          <q-item class="standout copyonclick" v-if="nodeType==='core'">
+            <q-item-section @click="copyToClipboard(multiaddress)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Multi-Address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{multiaddress}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout" v-else-if="nodeType==='resource'">
-            <q-item-section>
+          <q-item class="standout copyonclick" v-else-if="nodeType==='resource'">
+            <q-item-section @click="copyToClipboard(address)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{address}}</q-item-label>
             </q-item-section>
@@ -193,6 +197,7 @@
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
 import NodeName from './NodeName.vue'
+import { copyToClipboard } from '../helpers/utilities'
 // import { aggregates } from 'aleph-js'
 
 export default {
@@ -227,6 +232,7 @@ export default {
     }
   },
   methods: {
+    copyToClipboard,
     async upload_file (fileobject) {
       let message = await store.submit(
         this.account.address,
@@ -289,7 +295,7 @@ export default {
     }
   },
   watch: {
-    node (old, node) {
+    node () {
       this.update()
     }
   },
@@ -310,6 +316,30 @@ export default {
   }
 }
 
+.copyonclick{
+  transition: .3s;
+  cursor: pointer;
+  position: relative;
+  .copy-icon{
+    transition: .3s;
+    position: absolute;
+    font-size: 150%;
+    opacity: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    background: $light-grey;
+  }
+  &:hover{
+    filter: brightness(1.25);
+    .copy-icon{
+      opacity: 1;
+    }
+  }
+}
+
 .body--dark {
   .infocard {
     background: #1d262e;
@@ -317,6 +347,15 @@ export default {
       >:first-child {
         border-right: 1px solid rgba(255,255,255,.1);
       }
+    }
+  }
+
+  .copyonclick{
+    &:hover{
+      filter: brightness(.75);
+    }
+    .copy-icon{
+      background: #223038;
     }
   }
 }
