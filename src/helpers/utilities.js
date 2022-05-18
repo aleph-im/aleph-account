@@ -44,7 +44,6 @@ export function ellipseAddress (address, width = 10) {
 }
 
 export async function copyToClipboard (text) {
-  console.log('function')
   const clipboardPermission = await navigator.permissions.query({ name: 'clipboard-write' })
   const notifyOptions = {
     position: 'top',
@@ -58,8 +57,6 @@ export async function copyToClipboard (text) {
     notifyOptions.message = 'Unable to access the clipboard'
     notifyOptions.color = 'negative'
   }
-
-  console.log(Notify)
 
   return Notify.create(notifyOptions)
 }
