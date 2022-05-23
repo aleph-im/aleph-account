@@ -173,9 +173,9 @@
           </span>
         </div>
 
-        <q-separator class="q-mt-md" />
-
         <template v-if="nodeType === 'core'">
+          <q-separator class="q-mt-md" />
+
           <div class="row items-end justify-between q-mt-md q-mb-md">
             <div class="text-weight-bold text-h5 ">Linked resource nodes</div>
             <span class="text-grey">{{node.resource_nodes.length}} of 3</span>
@@ -198,10 +198,11 @@
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
 import ResourceNodeName from './ResourceNodeName.vue'
+import CoreNodeName from './CoreNodeName.vue'
 import { copyToClipboard, ellipseAddress } from '../helpers/utilities'
 
 export default {
-  components: { ResourceNodeName },
+  components: { ResourceNodeName, CoreNodeName },
   name: 'node-info',
   computed: {
     editing () {
