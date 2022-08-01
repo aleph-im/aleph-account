@@ -27,6 +27,21 @@ jobs:
       - name: Build
         run: yarn lint
 
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn test
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -42,17 +57,7 @@ jobs:
       - name: Build
         run: npx quasar build
 
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-
-      - name: Install dependencies
-        run: yarn install
-
-      - name: Build
-        run: yarn test
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aleph-account
+          path: dist/spa
