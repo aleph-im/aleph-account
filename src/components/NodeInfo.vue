@@ -36,26 +36,30 @@
               <q-item-label>{{name}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout">
-            <q-item-section>
+          <q-item class="standout copyonclick">
+            <q-item-section @click="copyToClipboard(node.owner)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Owner</q-item-label>
-              <q-item-label class="text-body2 overflow-hidden">{{node.owner}}</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{ellipseAddress(node.owner)}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item v-if="node.reward !== node.owner"  class="standout">
-            <q-item-section>
+          <q-item v-if="node.reward !== node.owner"  class="standout copyonclick">
+            <q-item-section  @click="copyToClipboard(node.reward)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Reward address</q-item-label>
-              <q-item-label class="text-body2 overflow-hidden">{{node.reward}}</q-item-label>
+              <q-item-label class="text-body2 overflow-hidden">{{ellipseAddress(node.reward)}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout" v-if="nodeType==='core'">
-            <q-item-section>
+          <q-item class="standout copyonclick" v-if="nodeType==='core'">
+            <q-item-section @click="copyToClipboard(multiaddress)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Multi-Address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{multiaddress}}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item class="standout" v-else-if="nodeType==='resource'">
-            <q-item-section>
+          <q-item class="standout copyonclick" v-else-if="nodeType==='resource'">
+            <q-item-section @click="copyToClipboard(address)">
+              <q-icon name="content_copy" class="copy-icon bg-dark-50" />
               <q-item-label caption>Address</q-item-label>
               <q-item-label class="text-body2 overflow-hidden">{{address}}</q-item-label>
             </q-item-section>
@@ -140,7 +144,7 @@
           </span>
           <span style="text-transform: capitalize;">
             <span v-if="node.parent === null">Unlinked</span>
-            <node-name v-else :node-hash="node.parent" node-type="core"></node-name>
+            <core-node-name v-else :node-hash="node.parent" />
             <span :class="'status-pill q-ml-sm bg-'+(node.parent !== null ? 'positive': 'negative')"></span>
           </span>
         </div>
@@ -168,16 +172,17 @@
             {{ node.total_staked.toFixed(2) }}
           </span>
         </div>
+
         <template v-if="nodeType === 'core'">
-          <div class="row justify-between q-mt-lg q-mb-md">
+          <q-separator class="q-mt-md" />
+
+          <div class="row items-end justify-between q-mt-md q-mb-md">
             <div class="text-weight-bold text-h5 ">Linked resource nodes</div>
             <span class="text-grey">{{node.resource_nodes.length}} of 3</span>
           </div>
-          <q-list bordered v-if="node.resource_nodes.length">
+          <q-list v-if="node.resource_nodes.length">
             <q-item v-for="resource_node of node.resource_nodes" :key="resource_node">
-              <q-item-section>
-                <node-name :node-hash="resource_node" node-type="resource"></node-name>
-              </q-item-section>
+                <resource-node-name :node-hash="resource_node" />
             </q-item>
           </q-list>
           <div v-else>
@@ -192,11 +197,12 @@
 <script>
 import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
-import NodeName from './NodeName.vue'
-// import { aggregates } from 'aleph-js'
+import ResourceNodeName from './ResourceNodeName.vue'
+import CoreNodeName from './CoreNodeName.vue'
+import { copyToClipboard, ellipseAddress } from '../helpers/utilities'
 
 export default {
-  components: { NodeName },
+  components: { ResourceNodeName, CoreNodeName },
   name: 'node-info',
   computed: {
     editing () {
@@ -227,6 +233,8 @@ export default {
     }
   },
   methods: {
+    copyToClipboard,
+    ellipseAddress,
     async upload_file (fileobject) {
       let message = await store.submit(
         this.account.address,
@@ -289,7 +297,7 @@ export default {
     }
   },
   watch: {
-    node (old, node) {
+    node () {
       this.update()
     }
   },
@@ -310,6 +318,34 @@ export default {
   }
 }
 
+.overflow-hidden{
+  text-overflow: ellipsis;
+}
+
+.copyonclick{
+  transition: .3s;
+  cursor: pointer;
+  position: relative;
+  .copy-icon{
+    transition: .3s;
+    position: absolute;
+    font-size: 150%;
+    opacity: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    background: $light-grey;
+  }
+  &:hover{
+    filter: brightness(.75);
+    .copy-icon{
+      opacity: 1;
+    }
+  }
+}
+
 .body--dark {
   .infocard {
     background: #1d262e;
@@ -317,6 +353,12 @@ export default {
       >:first-child {
         border-right: 1px solid rgba(255,255,255,.1);
       }
+    }
+  }
+
+  .copyonclick{
+    .copy-icon{
+      background: #223038;
     }
   }
 }
