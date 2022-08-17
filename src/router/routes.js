@@ -9,11 +9,6 @@ const routes = [
         path: 'dashboard',
         component: () => import('pages/Index.vue')
       },
-      // {
-      //   name: 'swap',
-      //   path: 'swap',
-      //   component: () => import('pages/Swap.vue')
-      // },
       {
         name: 'stake',
         path: '',

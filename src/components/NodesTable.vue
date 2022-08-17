@@ -42,7 +42,7 @@
               </q-tooltip>
             </q-icon>
             {{ props.row.name.substring(0, 30) }}
-            <div class="lt-sm">
+            <div class="lt-sm" v-if="coreNodeMode">
               <span class="text-weight-bold">
                 {{ (props.row.total_staked/1000).toFixed(0) }}k
               </span>
@@ -83,7 +83,7 @@
           <q-td key="linked" :props="props">
             <div v-if="!coreNodeMode">
               <span v-if="props.row.parent === null">Unlinked</span>
-              <node-name :node-hash="props.row.parent" node-type="core" v-else></node-name>
+              <core-node-name :node-hash="props.row.parent" node-type="core" v-else />
             </div>
             <!-- TODO: fetch number of linked node -->
             <div v-else-if="props.row.resource_nodes !== undefined">
@@ -144,7 +144,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import NodeName from './NodeName'
+import CoreNodeName from './CoreNodeName'
 
 export default {
   name: 'nodes-table',
@@ -191,7 +191,7 @@ export default {
     ])
   },
   components: {
-    NodeName
+    CoreNodeName
   },
   props: [
     'values',
