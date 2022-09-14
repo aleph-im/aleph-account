@@ -203,7 +203,6 @@ export default {
       statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
 
-        console.log(data)
         if (data.content === undefined || data.content.content === undefined) {
           return
         }

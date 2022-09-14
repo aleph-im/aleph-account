@@ -32,7 +32,13 @@ export default {
   name: 'resource-node-name',
   computed: {
     editing () {
-      return (this.account && (this.node.owner === this.account.address))
+      return (
+        this.account &&
+        (
+          this.node.owner === this.account.address ||
+          this.node.manager === this.account.address
+        )
+      )
     },
     ...mapState([
       'nodes',
