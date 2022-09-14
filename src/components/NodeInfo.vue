@@ -88,6 +88,8 @@
         <q-input v-model="address" label="Address" v-else-if="nodeType === 'resource'"
         stack-label standout
         class="q-my-sm" />
+        <q-input v-model="manager" label="Manager" stack-label standout class="q-my-sm" />
+        <q-input :disable="locked" v-model="registration_url" label="Registration URL" stack-label standout class="q-my-sm" />
         <q-input v-model="description" label="Description" hint="optional"
         stack-label standout type="textarea"
         class="q-my-sm" />
@@ -189,6 +191,28 @@
             None yet.
           </div>
         </template>
+
+        <template v-if="editing && locked">
+
+          <div class="row items-end justify-between q-mt-md q-mb-md">
+            <div class="text-weight-bold text-h5 ">Authorized list</div>
+            <span class="text-grey">Only these addresses will be able to stake.</span>
+          </div>
+
+          <q-select
+            label="Mode: 'add-unique'"
+            filled
+            v-model="authorized"
+            use-input
+            use-chips
+            multiple
+            hide-dropdown-icon
+            input-debounce="0"
+            new-value-mode="add-unique"
+            style="width: 250px"
+          />
+
+        </template>
       </div>
     </div>
   </q-card>
@@ -206,7 +230,13 @@ export default {
   name: 'node-info',
   computed: {
     editing () {
-      return (this.account && (this.node.owner === this.account.address))
+      return (
+        this.account &&
+        (
+          this.node.owner === this.account.address ||
+          this.node.manager === this.account.address
+        )
+      )
     },
     ...mapState([
       'account',
@@ -222,6 +252,8 @@ export default {
   ],
   data () {
     return {
+      registration_url: '',
+      manager: '',
       name: '',
       multiaddress: '',
       address: '',
@@ -229,7 +261,8 @@ export default {
       reward: '',
       picture: null,
       banner: null,
-      locked: false
+      locked: false,
+      authorized: []
     }
   },
   methods: {
@@ -254,12 +287,17 @@ export default {
     async update () {
       this.name = this.node.name
       this.multiaddress = this.node.multiaddress
+      this.manager = this.node.manager
+      this.registration_url = this.node.registration_url
       this.address = this.node.address
       this.description = this.node.description
       this.reward = this.node.reward
       this.locked = this.node.locked
+      this.authorized = this.node.authorized
     },
     async save () {
+      if (!this.locked) { this.registration_url = '' }
+
       let picture = this.node.picture
       if (this.picture) {
         picture = await this.upload_file(this.picture)
@@ -279,12 +317,15 @@ export default {
           details: {
             name: this.name,
             multiaddress: this.multiaddress,
+            manager: this.manager,
+            registration_url: this.registration_url.trim(),
             address: this.address,
             description: this.description,
             reward: this.reward,
             picture: picture,
             banner: banner,
-            locked: this.locked
+            locked: this.locked,
+            authorized: this.authorized
           }
         },
         {
