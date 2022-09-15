@@ -14,7 +14,39 @@
         </q-toolbar-title>
         <q-space />
         <q-btn-group class="shadow-1 bg-aleph-radial">
-          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="web3Connect">Connect to a wallet</q-btn>
+          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="web3ConnectModal = true">Connect to a wallet</q-btn>
+          <q-dialog v-model="web3ConnectModal">
+            <q-card style="width: 550px">
+              <q-card-section>
+                <div class="text-h6">Connect to wallet</div>
+              </q-card-section>
+
+              <q-card-section class="q-pt-none">
+                <div class="row">
+                  <div class="col">
+                    <q-btn outline left @click="web3Connect('metamask')">
+                      <q-avatar size="sm" square class="q-mr-sm">
+                        <img :src="require('../assets/metamask.svg')">
+                      </q-avatar>
+                      Metamask
+                    </q-btn>
+                  </div>
+                  <div class="col">
+                    <q-btn outline left @click="web3Connect('walletconnect')">
+                      <q-avatar size="sm" square class="q-mr-sm">
+                        <img :src="require('../assets/walletconnect-circle-blue.svg')">
+                      </q-avatar>
+                      Wallet Connect
+                    </q-btn>
+                  </div>
+                </div>
+              </q-card-section>
+
+              <q-card-actions align="left">
+                <q-btn flat label="Close" color="white" v-close-popup />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
           <q-btn v-if="account" class="text-white">
             {{balance_info['ALEPH'].toFixed(2)}}
             <span v-if="owed_rewards">&nbsp;/ {{owed_rewards.toFixed(2)}}</span> <img src="~/assets/logo-white.svg" style="height: 1.4em; margin: 0 0 .2em .4em;"/>
@@ -23,7 +55,8 @@
               Rewards are sent every few days when gas is low.
             </q-tooltip>
           </q-btn>
-          <q-btn v-if="account" color="white" @click="copyToClipboard(account.address)" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
+          <q-btn v-if="account" color="white" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
+          <q-btn v-if="account" class="" round icon="logout" size="sm" @click="web3Logout()"></q-btn>
         </q-btn-group>
       </q-toolbar>
     </q-header>
@@ -85,8 +118,9 @@
   </q-layout>
 </template>
 <script>
-import { ellipseAddress, copyToClipboard } from '../helpers/utilities'
-import { ethers } from 'ethers'
+import { ellipseAddress } from '../helpers/utilities'
+import { ethers, providers } from 'ethers'
+import WalletConnectProvider from '@walletconnect/web3-provider'
 
 import { mapState } from 'vuex'
 import {
@@ -137,6 +171,7 @@ export default {
   },
   data () {
     return {
+      web3ConnectModal: false,
       ellipseAddress: ellipseAddress,
       left: false,
       search: '',
@@ -192,8 +227,6 @@ export default {
     }
   },
   methods: {
-    copyToClipboard,
-
     async prepare_distributions_feed () {
       const statusSocket = new WebSocket(
         `${this.ws_api_server}/api/ws0/messages?msgType=POST&contentTypes=staking-rewards-distribution&addresses=` +
@@ -203,7 +236,6 @@ export default {
       statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
 
-        console.log(data)
         if (data.content === undefined || data.content.content === undefined) {
           return
         }
@@ -215,7 +247,6 @@ export default {
             }
           }
         } else if (data.content.content.status === 'calculation') {
-          console.log('setting value', data.content)
           this.last_calculation = data.content
         }
       }.bind(this)
@@ -252,38 +283,80 @@ export default {
       }
       this.last_distribution = last_distribution
     },
-    async update_eth_account () {
-      let account = await ethereum.from_provider(window.ethereum)
+    async update_eth_account (provider) {
+      let account = await ethereum.from_provider(provider)
       this.$store.commit('set_account', account)
     },
-    async web3Connect () {
+    async web3Connect (wallet) {
       let provider = null
+      let web3Provider = null
+      if (wallet === 'walletconnect') {
+        try {
+          const wc = new WalletConnectProvider({
+            infuraId: this.infura_key,
+            qrcodeModalOptions: {
+              mobileLinks: [
+                'metamask',
+                'trust'
+              ]
+            }
+          })
+          await wc.enable()
+          provider = new providers.Web3Provider(wc)
+          web3Provider = wc
+          this.web3ConnectModal = false
+        } catch (err) {
+          this.$q.notify({
+            type: 'negative',
+            message: err.message
+          })
+        }
+      } else if (wallet === 'metamask') {
+        if (window.ethereum) {
+          await window.ethereum.enable()
 
-      if (window.ethereum) {
-        await window.ethereum.enable()
-
-        provider = new ethers.providers.Web3Provider(window.ethereum)
-      } else if (window.web3) {
-        provider = new ethers.providers.Web3Provider(window.web3.currentProvider)
-      } else {
-        this.$q.notify({
-          type: 'negative',
-          message: 'Non-Ethereum browser detected. You should consider trying MetaMask!'
-        })
-        console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
-        return
+          provider = new ethers.providers.Web3Provider(window.ethereum)
+          web3Provider = window.ethereum
+          this.web3ConnectModal = false
+        } else if (window.web3) {
+          provider = new ethers.providers.Web3Provider(window.web3.currentProvider)
+          web3Provider = window.web3
+          this.web3ConnectModal = false
+        } else {
+          this.$q.notify({
+            type: 'negative',
+            message: 'Non-Ethereum browser detected. You should consider trying MetaMask!'
+          })
+          console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
+          return
+        }
       }
 
       provider.on('network', async (newNetwork, oldNetwork) => {
         this.eth_chain_id = newNetwork.chainId
-        await this.update_eth_account()
+        await this.update_eth_account(web3Provider)
         await this.update_distributions()
       })
 
-      window.ethereum.on('accountsChanged', async (account) => {
-        await this.update_eth_account()
+      provider.on('accountsChanged', async (account) => {
+        await this.update_eth_account(web3Provider)
         await this.update_distributions()
       })
+    },
+
+    async web3Logout () {
+      const wc = new WalletConnectProvider({
+        infuraId: this.infura_key
+      })
+      try {
+        await wc.disconnect()
+        this.$store.commit('set_account', null)
+      } catch (err) {
+        this.$q.notify({
+          type: 'negative',
+          message: err.message
+        })
+      }
     }
   },
   created () {
