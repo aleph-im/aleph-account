@@ -189,7 +189,7 @@ export default {
     },
     displayed_stores (state) {
       let ipfs_stores = this.stored.filter(
-        item => item.content.item_type === 'ipfs'
+        item => item.content?.item_type === 'ipfs'
       )
       if (this.tab === 'active') {
         return ipfs_stores.filter(

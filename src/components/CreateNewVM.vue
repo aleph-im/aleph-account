@@ -80,6 +80,10 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
+            <q-input v-model="newProgram.metadata.name" label="Name your VM"
+            stack-label standout class="q-my-sm" />
+        </div>
+        <div class="col-12">
             <q-input v-model="newProgram.refRuntime" label="Ref of runtime"
             stack-label standout class="q-my-sm" />
         </div>
@@ -160,6 +164,9 @@ export default {
       loading: false,
       exportFile: null,
       newProgram: {
+        metadata: {
+          name: 'My program'
+        },
         isFile: false,
         file: null,
         entrypoint: 'app',
@@ -326,6 +333,7 @@ async def root():
         on: {
           http: true
         },
+        metadata: this.newProgram.metadata,
         environment: {
           reproducible: false,
           internet: true,
