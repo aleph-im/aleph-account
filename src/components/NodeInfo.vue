@@ -200,8 +200,8 @@
           </div>
 
           <q-select
-            label="Mode: 'add-unique'"
-            filled
+            label="Authorized addresses"
+            stack-label standout
             v-model="authorized"
             use-input
             use-chips
@@ -209,7 +209,7 @@
             hide-dropdown-icon
             input-debounce="0"
             new-value-mode="add-unique"
-            style="width: 250px"
+            style="width: auto"
           />
 
         </template>
