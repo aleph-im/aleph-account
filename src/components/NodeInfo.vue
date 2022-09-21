@@ -89,7 +89,7 @@
         stack-label standout
         class="q-my-sm" />
         <q-input v-model="manager" label="Manager" stack-label standout class="q-my-sm" />
-        <q-input :disable="locked" v-model="registration_url" label="Registration URL" stack-label standout class="q-my-sm" />
+        <q-input :disable="!locked" v-model="registration_url" label="Registration URL" stack-label standout class="q-my-sm" />
         <q-input v-model="description" label="Description" hint="optional"
         stack-label standout type="textarea"
         class="q-my-sm" />
