@@ -82,7 +82,7 @@
 
 <script>
 
-import { convertTimestamp } from '../helpers/utilities'
+import { convertTimestamp, ellipseAddress } from '../helpers/utilities'
 import { copyToClipboard } from 'quasar'
 
 export default {
@@ -94,6 +94,7 @@ export default {
   data () {
     return {
       convertTimestamp: convertTimestamp,
+      ellipseAddress: ellipseAddress,
       copyToClipboard: copyToClipboard,
       filter: '',
       columns: [
@@ -135,12 +136,12 @@ export default {
 
     getProgramLabel (program) {
       if (!('extra_fields' in program.content)) {
-        return program.item_hash
-      } else if (!('program_name' in program.content.extra_fields)) {
-        return program.item_hash
-      } else if (program.content.extra_fields.program_name.length === 0) {
-        return program.item_hash
-      }
+        if (program.content?.metadata?.name) {
+          return `${program.content?.metadata?.name} (${ellipseAddress(program.item_hash)})`
+        } else {
+          return program.item_hash
+        }
+      } 
       return program.content.extra_fields.program_name
     }
   }
