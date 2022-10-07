@@ -353,7 +353,7 @@ async def root():
 
       await sleep(1000)
 
-      await this.send(message).catch((response) => {  
+      await this.send(message).catch((response) => {
         this.loading = false
       })
 

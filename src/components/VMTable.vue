@@ -106,7 +106,6 @@ export default {
       ]
     }
   },
-
   methods: {
     openExplorer (message) {
       const explorerURL = `https://explorer.aleph.im/address/ETH/${this.account.address}/message/PROGRAM/${message.item_hash}`
@@ -141,7 +140,7 @@ export default {
         } else {
           return program.item_hash
         }
-      } 
+      }
       return program.content.extra_fields.program_name
     }
   }
