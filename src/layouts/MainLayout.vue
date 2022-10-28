@@ -22,6 +22,10 @@
               </q-card-section>
 
               <q-card-section class="q-pt-none">
+                <div class="q-my-md">
+                  <div class="text-subtitle-1">Ethereum</div>
+                  <q-separator dark inset/>
+                </div>
                 <div class="row">
                   <div class="col">
                     <q-btn outline left @click="web3Connect('metamask')">
@@ -37,6 +41,20 @@
                         <img :src="require('../assets/walletconnect-circle-blue.svg')">
                       </q-avatar>
                       Wallet Connect
+                    </q-btn>
+                  </div>
+                </div>
+                <div class="q-my-md">
+                  <div class="text-subtitle-1">Solana </div>
+                  <q-separator dark inset=""/>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <q-btn outline left @click="web3Connect('phantom')">
+                      <q-avatar size="sm" square class="q-mr-sm">
+                        <img :src="require('../assets/phantom-icon-purple.svg')">
+                      </q-avatar>
+                      Phantom
                     </q-btn>
                   </div>
                 </div>
@@ -124,7 +142,7 @@ import WalletConnectProvider from '@walletconnect/web3-provider'
 
 import { mapState } from 'vuex'
 import {
-  ethereum, posts
+  ethereum, solana, posts
 } from 'aleph-js'
 
 export default {
@@ -290,6 +308,7 @@ export default {
     async web3Connect (wallet) {
       let provider = null
       let web3Provider = null
+      this.$store.commit('set_balance_info', 0)
       if (wallet === 'walletconnect') {
         try {
           const wc = new WalletConnectProvider({
@@ -329,6 +348,31 @@ export default {
           })
           console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
           return
+        }
+      } else if (wallet === 'phantom') {
+        const isPhantomInstalled = window.phantom?.solana?.isPhantom
+        if (isPhantomInstalled) {
+          const getProvider = () => {
+            if ('phantom' in window) {
+              provider = window.phantom?.solana
+              if (provider?.isPhantom) {
+                return provider
+              }
+            }
+            window.open('https://phantom.app/', '_blank')
+          }
+          provider = getProvider() // see "Detecting the Provider"
+          try {
+            await provider.connect()
+            let account = await solana.from_provider(provider)
+            this.$store.commit('set_account', account)
+            this.web3ConnectModal = false
+          } catch (err) {
+            this.$q.notify({
+              type: 'negative',
+              message: err.message
+            })
+          }
         }
       }
 
