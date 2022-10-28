@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import { LocalStorage } from 'quasar'
 import { posts, aggregates, messages } from 'aleph-js'
 import {
-  get_nuls_balance_info, get_neo_balance_info
+  get_nuls_balance_info, get_neo_balance_info, get_solana_balance_info
 } from '../services/balances'
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
@@ -23,6 +23,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     erc20_address: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
+    splToken_address: '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
     // monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2', // test
     monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
     sender_address: '0x3a5CC6aBd06B601f4654035d125F9DD2FC992C25',
@@ -236,6 +237,14 @@ export default new Vuex.Store({
           commit('set_balance_info', await get_neo_balance_info(
             state.account.address, 'https://api.neoscan.io'
           ))
+        } else if (state.account.type === 'SOL') {
+          let val = await get_solana_balance_info(state.account.address,
+            'https://solana-api.projectserum.com',
+            state.splToken_address
+          )
+          commit('set_balance_info', {
+            ALEPH: parseFloat(val.ALEPH)
+          })
         }
       }
     },
