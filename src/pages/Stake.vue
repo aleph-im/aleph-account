@@ -217,6 +217,7 @@ async function node_action (action, ref) {
       api_server: store.state.api_server,
       account: store.state.account,
       channel: store.state.channel,
+      chain: store.state.chain,
       ref: ref
     })
 }
