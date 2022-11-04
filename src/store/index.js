@@ -27,7 +27,7 @@ export default new Vuex.Store({
     // monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2', // test
     monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
     sender_address: '0x3a5CC6aBd06B601f4654035d125F9DD2FC992C25',
-    api_server: 'https://api1.aleph.im',
+    api_server: 'https://api2.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
     ipfs_gateway: 'https://ipfs.io/ipfs/',
     account: null,

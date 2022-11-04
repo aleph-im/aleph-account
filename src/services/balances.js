@@ -47,12 +47,20 @@ export async function get_solana_balance_info (address, explorer_url, contract_a
   const connection = new solanaWeb3.Connection(explorer_url, 'confirmed')
   // ALEPH mint address
   const ALEPH_MINT_ADDRESS = new solanaWeb3.PublicKey(contract_address)
+  console.log(new solanaWeb3.PublicKey(address))
   // user account
   const userAccount = new solanaWeb3.PublicKey(address)
-  let data = await connection.getTokenAccountsByOwner(userAccount, { mint: ALEPH_MINT_ADDRESS })
-  let _userAlephAccountAddress = data.value[0].pubkey
-  let data2 = await connection.getTokenAccountBalance(_userAlephAccountAddress)
-  balance_info.ALEPH = data2.value.uiAmountString
+  let data
+  try {
+    data = await connection.getTokenAccountsByOwner(userAccount, { mint: ALEPH_MINT_ADDRESS })
+  } catch (error) {
+    console.log(error)
+  }
+  if (data.value.length > 0) {
+    let _userAlephAccountAddress = data.value[0].pubkey
+    let data2 = await connection.getTokenAccountBalance(_userAlephAccountAddress)
+    balance_info.ALEPH = data2.value.uiAmountString
+  }
   return balance_info
 }
 
