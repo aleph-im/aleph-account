@@ -47,7 +47,6 @@ export async function get_solana_balance_info (address, explorer_url, contract_a
   const connection = new solanaWeb3.Connection(explorer_url, 'confirmed')
   // ALEPH mint address
   const ALEPH_MINT_ADDRESS = new solanaWeb3.PublicKey(contract_address)
-  console.log(new solanaWeb3.PublicKey(address))
   // user account
   const userAccount = new solanaWeb3.PublicKey(address)
   let data
