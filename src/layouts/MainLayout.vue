@@ -57,6 +57,14 @@
                       Phantom
                     </q-btn>
                   </div>
+                  <div class="col">
+                    <q-btn outline left @click="web3Connect('solflare')">
+                      <q-avatar size="sm" square class="q-mr-sm">
+                        <img :src="require('../assets/solflare.svg')">
+                      </q-avatar>
+                      Solflare
+                    </q-btn>
+                  </div>
                 </div>
               </q-card-section>
 
@@ -349,30 +357,45 @@ export default {
           console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
           return
         }
-      } else if (wallet === 'phantom') {
-        const isPhantomInstalled = window.phantom?.solana?.isPhantom
-        if (isPhantomInstalled) {
-          const getProvider = () => {
-            if ('phantom' in window) {
-              provider = window.phantom?.solana
-              if (provider?.isPhantom) {
-                return provider
-              }
+      } else if (wallet === 'phantom' || wallet === 'solflare') {
+        const providers = {
+          phantom: () => {
+            return {
+              url: 'https://phantom.app/',
+              provider: wallet === 'phantom' ? window.phantom?.solana : null,
+              installed: window.phantom?.solana?.isPhantom
             }
-            window.open('https://phantom.app/', '_blank')
+          },
+          solflare: () => {
+            return {
+              url: 'https://solflare.com',
+              provider: wallet === 'solflare' ? window.solflare : null,
+              installed: window.solflare?.isSolflare
+            }
           }
-          provider = getProvider() // see "Detecting the Provider"
-          try {
-            await provider.connect()
-            let account = await solana.from_provider(provider)
-            this.$store.commit('set_account', account)
-            this.web3ConnectModal = false
-          } catch (err) {
-            this.$q.notify({
-              type: 'negative',
-              message: err.message
-            })
+        }
+        const providerInfo = providers[wallet]()
+
+        const getProvider = () => {
+          if (wallet in window) {
+            if (providerInfo.installed) {
+              return providerInfo.provider
+            }
           }
+          window.open(providerInfo.url, '_blank')
+        }
+        provider = getProvider() // see "Detecting the Provider"
+        try {
+          await provider.connect()
+          let account = await solana.from_provider(provider)
+          this.$store.commit('set_account', account)
+          this.web3ConnectModal = false
+          window.solana_account = account
+        } catch (err) {
+          this.$q.notify({
+            type: 'negative',
+            message: err.message
+          })
         }
       }
 
