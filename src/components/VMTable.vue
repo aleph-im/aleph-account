@@ -150,7 +150,7 @@ export default {
       req.send()
     },
 
-    getProgramLabel (program, ellipse=false) {
+    getProgramLabel (program, ellipse = false) {
       if (!('extra_fields' in program.content)) {
         if (program.content?.metadata?.name) {
           return `${program.content?.metadata?.name} (${ellipseAddress(program.item_hash)})`
