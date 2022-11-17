@@ -359,22 +359,18 @@ export default {
         }
       } else if (wallet === 'phantom' || wallet === 'solflare') {
         const providers = {
-          phantom: () => {
-            return {
-              url: 'https://phantom.app/',
-              provider: wallet === 'phantom' ? window.phantom?.solana : null,
-              installed: window.phantom?.solana?.isPhantom
-            }
+          phantom: {
+            url: 'https://phantom.app/',
+            provider: wallet === 'phantom' ? window.phantom?.solana : null,
+            installed: window.phantom?.solana?.isPhantom
           },
-          solflare: () => {
-            return {
-              url: 'https://solflare.com',
-              provider: wallet === 'solflare' ? window.solflare : null,
-              installed: window.solflare?.isSolflare
-            }
+          solflare: {
+            url: 'https://solflare.com',
+            provider: wallet === 'solflare' ? window.solflare : null,
+            installed: window.solflare?.isSolflare
           }
         }
-        const providerInfo = providers[wallet]()
+        const providerInfo = providers[wallet]
 
         const getProvider = () => {
           if (wallet in window) {
