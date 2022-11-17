@@ -11,14 +11,31 @@
         :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
         flat
       >
+      <template v-slot:header>
+        <q-item-section avatar>
+          <q-icon name="computer" />
+        </q-item-section>
+        <q-item-section>
+          <span class="lt-md">{{getProgramLabel(item, true)}}</span>
+          <span class="gt-sm">{{getProgramLabel(item)}}</span>
+        </q-item-section>
+      </template>
         <q-card  class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
           <q-card-section horizontal>
             <q-list class="col q-my-sm">
+              <q-item v-show="!('extra_fields' in item.content) && item.content?.metadata?.name">
+                <q-item-section>
+                  <q-item-label caption>Name</q-item-label>
+                  <q-item-label>
+                    {{item.content?.metadata?.name}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
               <q-item>
                 <q-item-section>
                   <q-item-label caption>Item Hash</q-item-label>
                   <q-item-label>
-                    {{item.item_hash}}
+                    {{ellipseAddress(item.item_hash)}}
                     <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
                   </q-item-label>
                 </q-item-section>
@@ -133,11 +150,14 @@ export default {
       req.send()
     },
 
-    getProgramLabel (program) {
+    getProgramLabel (program, ellipse=false) {
       if (!('extra_fields' in program.content)) {
         if (program.content?.metadata?.name) {
           return `${program.content?.metadata?.name} (${ellipseAddress(program.item_hash)})`
         } else {
+          if (ellipse) {
+            return ellipseAddress(program.item_hash)
+          }
           return program.item_hash
         }
       }
