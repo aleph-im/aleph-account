@@ -120,7 +120,7 @@
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
             <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
             v-else-if="coreNodeMode" :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<750000))" outline
-            @click="$emit('node-action', 'stake-split', props.row.hash)">
+            @click="!!(account&&(balance_info.ALEPH >= 10000)) && $emit('node-action', 'stake-split', props.row.hash)">
             <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
             stake
             </q-btn>
@@ -132,7 +132,7 @@
             @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
 
             <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
-            @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
+            @click="!!Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3))) && $emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
             <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">Info</q-btn>
           </q-td>
