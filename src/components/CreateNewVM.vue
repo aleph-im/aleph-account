@@ -205,7 +205,7 @@ async def root():
 
     addVolume (isPersistent) {
       var volume = {
-        comment: '',
+        comment: ''
       }
       if (isPersistent) {
         volume.persistence = 'host'
