@@ -87,10 +87,7 @@
           <q-btn class="q-mr-xs" @click="addVolume(false)" icon="add" outline color="primary" label="Add Volume"/>
           <q-btn @click="addVolume(true)" icon="add" outline color="primary" label="Add Persistent Volume"/>
         </div>
-        <q-card class="col-12 q-pa-sm" v-for="(volume, i) in newProgram.volumes" :key="volume.name">
-          <div class="q-ml-sm">
-            <div class="text-h6">{{i}}</div>
-          </div>
+        <q-card class="col-12 q-pa-sm" v-for="(volume, i) in newProgram.volumes" :key="i">
           <div class="q-ml-sm">
             <div class="text-h6">{{volume.persistence ? 'Persistent Volume' : 'Volume'}}</div>
           </div>
