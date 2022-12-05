@@ -48,6 +48,8 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04
+    needs: [lint,tests]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -62,6 +64,11 @@ jobs:
 
       - name: Build
         run: npx quasar build
+
+      - name: Upload the build on an IPFS node
+        run: |
+          pip install 'aioipfs>=0.6.2'
+          python3 ./upload_build.py
 
       - uses: actions/upload-artifact@v3
         with:
