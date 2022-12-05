@@ -1,6 +1,6 @@
-# aleph.im account (aleph-account)
+# Aleph.im's Account management dApp 
 
-aleph.im account manager on https://account.aleph.im/
+This is the account management dApp for Aleph.im, available on https://account.aleph.im/
 
 ## Install the dependencies
 
