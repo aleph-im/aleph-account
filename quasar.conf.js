@@ -8,7 +8,15 @@
 /* eslint-env node */
 
 const { execSync } = require('child_process')
-const GIT_DESCRIBE_TAGS = execSync('git describe --tags').toString()
+
+const getGitDescription = () => {
+  try {
+    return execSync('git describe --tags').toString()
+  } catch (error) {
+    return null
+  }
+}
+
 const webpack = require('webpack')
 
 module.exports = function (/* ctx */) {
@@ -75,7 +83,7 @@ module.exports = function (/* ctx */) {
 
         cfg.plugins.push(
           new webpack.DefinePlugin({
-            GIT_DESCRIBE_TAGS: JSON.stringify(GIT_DESCRIBE_TAGS)
+            GIT_DESCRIBE_TAGS: JSON.stringify(getGitDescription())
           })
         )
 

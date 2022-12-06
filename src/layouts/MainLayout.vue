@@ -11,15 +11,17 @@
             <span class="q-ml-sm">
                 aleph.im
                 <span class="text-subtitle2">
-                  &nbsp;
-                  <template v-if="last_release_is_a_tag()">
-                    <a :class="($q.dark.isActive?'text-white':'text-black')"
-                      :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
+                  <template v-if="app_version">
+                    &nbsp;
+                    <template v-if="last_release_is_a_tag()">
+                      <a :class="($q.dark.isActive?'text-white':'text-black')"
+                        :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
+                        {{ app_version }}
+                      </a>
+                    </template>
+                    <template v-else>
                       {{ app_version }}
-                    </a>
-                  </template>
-                  <template v-else>
-                    {{ app_version }}
+                    </template>
                   </template>
                 </span>
             </span>
@@ -445,6 +447,13 @@ export default {
     this.$store.dispatch('connect_provider')
     this.update_distributions()
     this.prepare_distributions_feed()
+
+    if(!GIT_DESCRIBE_TAGS){
+      console.warn(`
+No build version detected.
+This bundle was probably not built from a git repository,
+or your build process might be broken! `)
+    }
   }
 }
 </script>
