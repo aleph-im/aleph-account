@@ -12,10 +12,15 @@
                 aleph.im
                 <span class="text-subtitle2">
                   &nbsp;
-                  <a :class="($q.dark.isActive?'text-white':'text-black')"
-                     :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
-                     {{ app_version }}
-                  </a>
+                  <template v-if="last_release_is_a_tag()">
+                    <a :class="($q.dark.isActive?'text-white':'text-black')"
+                      :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
+                      {{ app_version }}
+                    </a>
+                  </template>
+                  <template v-else>
+                    {{ app_version }}
+                  </template>
                 </span>
             </span>
         </q-toolbar-title>
@@ -296,6 +301,9 @@ export default {
         console.error('Socket encountered error: ', err.message, 'Closing socket')
         statusSocket.close()
       }
+    },
+    last_release_is_a_tag () {
+      return /\d+-.[0-9A-F]{7}$/i.test(this.app_version)
     },
     async update_distributions () {
       let result = await posts.get_posts(
