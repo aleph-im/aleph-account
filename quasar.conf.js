@@ -71,9 +71,8 @@ module.exports = function (/* ctx */) {
 
       // https://quasar.dev/quasar-cli/handling-webpack
       extendWebpack (cfg) {
-        if(!cfg.plugins)
-          cfg.plugins = []
-        
+        if (!cfg.plugins) { cfg.plugins = [] }
+
         cfg.plugins.push(
           new webpack.DefinePlugin({
             GIT_DESCRIBE_TAGS: JSON.stringify(GIT_DESCRIBE_TAGS)
