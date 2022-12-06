@@ -130,18 +130,6 @@
               <q-linear-progress :value="total_used / allowance" class="q-my-sm" rounded />
             </q-item-section>
           </q-item>
-          <q-item v-if="app_version">
-            <q-item-label caption v-if="last_release_is_a_tag()">
-              <a style="color:inherit"
-                :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
-                v{{ app_version }}
-              </a>
-            </q-item-label>
-            <q-item-label caption v-else>
-              v{{ app_version }}
-            </q-item-label>
-            &nbsp;
-          </q-item>
         </q-list>
       </div>
     </q-drawer>
@@ -151,7 +139,20 @@
 
     <q-footer :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm q-pt-lg'">
       <p style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">
-        Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.
+        <span>
+          Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.
+        </span>
+        <span v-if="app_version">
+          <a v-if="last_release_is_a_tag()"
+             :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)"
+             :class="($q.dark.isActive?'text-white':'text-black')"
+          >
+             v{{ app_version }}
+          </a>
+          <span v-else>
+            v{{ app_version }}
+          </span>
+        </span>
       </p>
     </q-footer>
 
