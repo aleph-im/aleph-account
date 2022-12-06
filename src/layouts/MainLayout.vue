@@ -448,7 +448,7 @@ export default {
     this.update_distributions()
     this.prepare_distributions_feed()
 
-    if(!GIT_DESCRIBE_TAGS){
+    if (!GIT_DESCRIBE_TAGS) {
       console.warn(`
 No build version detected.
 This bundle was probably not built from a git repository,
