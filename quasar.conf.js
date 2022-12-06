@@ -7,6 +7,10 @@
 // https://quasar.dev/quasar-cli/quasar-conf-js
 /* eslint-env node */
 
+const { execSync } = require('child_process')
+const GIT_DESCRIBE_TAGS = execSync('git describe --tags').toString()
+const webpack = require('webpack')
+
 module.exports = function (/* ctx */) {
   return {
     // https://quasar.dev/quasar-cli/supporting-ts
@@ -67,6 +71,15 @@ module.exports = function (/* ctx */) {
 
       // https://quasar.dev/quasar-cli/handling-webpack
       extendWebpack (cfg) {
+        if(!cfg.plugins)
+          cfg.plugins = []
+        
+        cfg.plugins.push(
+          new webpack.DefinePlugin({
+            GIT_DESCRIBE_TAGS: JSON.stringify(GIT_DESCRIBE_TAGS)
+          })
+        )
+
         cfg.module.rules.push({
           enforce: 'pre',
           test: /\.(js|vue)$/,

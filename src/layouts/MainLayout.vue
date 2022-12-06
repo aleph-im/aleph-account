@@ -10,6 +10,13 @@
             <img v-if="(!left)&&$q.dark.isActive" src="~/assets/logo-white.svg" height="32">
             <span class="q-ml-sm">
                 aleph.im
+                <span class="text-subtitle2">
+                  &nbsp;
+                  <a :class="($q.dark.isActive?'text-white':'text-black')"
+                     :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
+                     {{ app_version }}
+                  </a>
+                </span>
             </span>
         </q-toolbar-title>
         <q-space />
@@ -197,6 +204,7 @@ export default {
   },
   data () {
     return {
+      app_version: GIT_DESCRIBE_TAGS,
       web3ConnectModal: false,
       ellipseAddress: ellipseAddress,
       left: false,
