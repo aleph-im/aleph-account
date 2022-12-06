@@ -10,20 +10,6 @@
             <img v-if="(!left)&&$q.dark.isActive" src="~/assets/logo-white.svg" height="32">
             <span class="q-ml-sm">
                 aleph.im
-                <span class="text-subtitle2">
-                  <template v-if="app_version">
-                    &nbsp;
-                    <template v-if="last_release_is_a_tag()">
-                      <a :class="($q.dark.isActive?'text-white':'text-black')"
-                        :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
-                        {{ app_version }}
-                      </a>
-                    </template>
-                    <template v-else>
-                      {{ app_version }}
-                    </template>
-                  </template>
-                </span>
             </span>
         </q-toolbar-title>
         <q-space />
@@ -144,6 +130,18 @@
               <q-linear-progress :value="total_used / allowance" class="q-my-sm" rounded />
             </q-item-section>
           </q-item>
+          <q-item v-if="app_version">
+            <q-item-label caption v-if="last_release_is_a_tag()">
+              <a style="color:inherit"
+                :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
+                v{{ app_version }}
+              </a>
+            </q-item-label>
+            <q-item-label caption v-else>
+              v{{ app_version }}
+            </q-item-label>
+            &nbsp;
+          </q-item>
         </q-list>
       </div>
     </q-drawer>
@@ -152,7 +150,9 @@
     </q-page-container>
 
     <q-footer :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm q-pt-lg'">
-      <p style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.</p>
+      <p style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">
+        Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.
+      </p>
     </q-footer>
 
   </q-layout>
