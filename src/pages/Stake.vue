@@ -128,9 +128,9 @@
       <!-- start: all nodes -->
       <q-tab-panel name="core" >
         <nodes-table
-          v-if="my_nodes.length"
+          v-if="my_core_nodes.length"
           title="My Nodes"
-          :values="my_nodes"
+          :values="my_core_nodes"
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
@@ -144,7 +144,7 @@
         </nodes-table>
         <nodes-table
           title="All Core Nodes"
-          :values="values"
+          :values="core_nodes_list"
           :loading="loading"
           :user_node="user_node"
           :user_stakes="user_stakes"
@@ -229,10 +229,22 @@ export default {
     node_post_type: 'node_post_type',
     ws_api_server: 'ws_api_server',
     monitor_address: 'monitor_address',
-    values (state) {
+    my_core_nodes (state) {
+      let nodes = []
+      if (state.account && state.nodes) {
+        nodes = state.nodes.filter(node => node.manager === state.account.address)
+        if (this.user_stakes.length) {
+          nodes = nodes.concat(this.user_stakes)
+        } else if (this.user_node) {
+          nodes.push(this.user_node)
+        }
+      }
+      return nodes
+    },
+    core_nodes_list (state) {
       if (state.nodes) {
         return state.nodes.filter((node) => {
-          return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0)
+          return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0) && (!state.account || (node.manager !== state.account.address))
         }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
       } else {
         return []
@@ -271,7 +283,7 @@ export default {
     resource_nodes_list (state) {
       if (state.resource_nodes && state.account) {
         return state.resource_nodes.filter((node) => {
-          return (node.owner !== state.account.address)
+          return (node.owner !== state.account.address || node.manager !== state.account.address)
         }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
       } else if (state.resource_nodes) {
         console.log(state.resource_nodes)
@@ -279,17 +291,6 @@ export default {
       } else {
         return []
       }
-    },
-    my_nodes (state) {
-      let nodes = []
-      if (state.account) {
-        if (this.user_stakes.length) {
-          nodes = nodes.concat(this.user_stakes)
-        } else if (this.user_node) {
-          nodes.push(this.user_node)
-        }
-      }
-      return nodes
     },
     active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
     linked_nodes: (state) => state.resource_nodes.filter((node) => node.parent).length,
@@ -370,26 +371,6 @@ export default {
       displayed_node: null,
       displayed_node_type: null,
       calculator_staked: 10000
-      // values: [
-      //   {
-      //     id: 'node-id-123456',
-      //     name: '<Name>',
-      //     staked: 321000,
-      //     status: 'waiting',
-      //     uptime: 0,
-      //     creationDate: new Date(2020, 11, 18, 11, 18, 31, 255),
-      //     starred: false
-      //   },
-      //   {
-      //     id: 'node-id-123457',
-      //     name: '<Name>',
-      //     staked: 589253,
-      //     status: 'active',
-      //     uptime: 100,
-      //     creationDate: new Date(2020, 11, 17, 10, 14, 28, 255),
-      //     starred: false
-      //   }
-      // ]
     }
   },
   methods: {

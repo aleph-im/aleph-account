@@ -1,5 +1,32 @@
 <template>
   <div>
+    <q-dialog v-model="registration_modal_open">
+      <q-card class="bg-dark-60 q-pa-md">
+        <q-card-section>
+          <div class="text-h5 text-center text-weight-bold">Redirected to registration</div>
+        </q-card-section>
+
+        <q-card-section class="text-center">
+          <q-icon name="gpp_maybe" color="warning" size="5rem" />
+        </q-card-section>
+
+        <q-card-section>
+          You will be redirected away from our application. <br />
+          Make sure to trust the node operator before preceding.
+        </q-card-section>
+
+        <q-card-section>
+          <q-btn color="primary" class="full-width q-pa-sm text-weight-bold" rel="noopener noreferrer" target="_blank" @click="close_registration_modal()" :href="registration_modal_url">
+              Yes, I'm sure to proceed
+          </q-btn>
+        </q-card-section>
+
+        <div style="text-align:center;text-decoration: underline;margin:-5px 0 15px 0">
+          <a @click="close_registration_modal()" style="cursor:pointer" class="text-grey">Cancel</a>
+        </div>
+      </q-card>
+    </q-dialog>
+
     <q-table
     :title="title"
     :data="values"
@@ -111,6 +138,7 @@
               <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="18" class="vertical-middle q-pb-xs">
               <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
             </span>
+
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-if="account&&(account.address == props.row.owner)" type="a"
             @click="$emit('node-action', 'drop-node', props.row.hash)">drop node</q-btn>
@@ -118,12 +146,32 @@
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
             v-else-if="account&&user_stakes&&(user_stakes.indexOf(props.row) >= 0)" type="a"
             @click="$emit('node-action', 'unstake', props.row.hash)">unstake</q-btn>
-            <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
-            v-else-if="coreNodeMode" :disabled="!(account&&(balance_info.ALEPH >= 10000)&&(!user_node)&&(!props.row.locked)&&(props.row.total_staked<750000))" outline
-            @click="$emit('node-action', 'stake-split', props.row.hash)">
-            <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
-            stake
-            </q-btn>
+
+            <template v-else-if="coreNodeMode">
+              <template v-if="is_kyc_required(props.row) && !is_kyc_cleared(props.row)">
+                <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
+                 :disabled="!is_stakeable(props.row)" outline
+                 @click="open_registration_modal(props.row.registration_url)">
+                <q-tooltip>
+                  {{
+                    is_stakeable(props.row) ? 'This node requires KYC authentication'
+                    : 'This nodes has too many stakers'
+                  }}
+                </q-tooltip>
+                register
+                </q-btn>
+              </template>
+
+              <template v-else>
+                <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
+                 :disabled="is_locked(props.row) || !is_stakeable(props.row)" outline
+                 @click="$emit('node-action', 'stake-split', props.row.hash)">
+                <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
+                stake
+                </q-btn>
+            </template>
+          </template>
+
             <!-- Unlink if user is the core owner or (core owner and compute owner) -->
             <q-btn size="sm" v-if="(!coreNodeMode)&&account&&user_node&&(user_node.hash === props.row.parent)" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
@@ -133,8 +181,12 @@
 
             <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
-            <q-btn size="sm" color="primary" outline class="q-ml-sm" type="a"
-            @click="$emit('node-info', props.row)">Info</q-btn>
+            <q-btn size="sm" :color="is_editable(props.row) ? 'secondary' : 'primary'" outline class="q-ml-sm" type="a"
+            @click="$emit('node-info', props.row)">
+            {{
+              is_editable(props.row) ? 'edit' : 'info'
+            }}
+            </q-btn>
           </q-td>
         </q-tr>
       </template>
@@ -207,6 +259,8 @@ export default {
     return {
       filter: '',
       tab: 'all_nodes',
+      registration_modal_url: null,
+      registration_modal_open: false,
       columns: [
         {
           name: 'picture'
@@ -272,7 +326,51 @@ export default {
       } else {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
       }
+    },
+    open_registration_modal (url) {
+      // [^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)] returns a linter error
+      const sanitized = url.replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;]/gi, '')
+        .replace('(', '')
+        .replace(')', '')
+      this.registration_modal_url = sanitized
+      this.registration_modal_open = true
+    },
+    close_registration_modal () {
+      this.registration_modal_url = null
+      this.registration_modal_open = false
+    },
+    is_stakeable (node) {
+      return (
+        this.account &&
+        node.total_staked < 750_000 &&
+        !this.user_node &&
+        this.balance_info?.ALEPH >= 10_000
+      )
+    },
+
+    is_kyc_required (node) {
+      return node.registration_url !== undefined && node.registration_url !== ''
+    },
+
+    is_editable (node) {
+      return this.account && (node.owner === this.account.address || node.manager === this.account.address)
+    },
+
+    is_kyc_cleared (node) {
+      return this.account && node.authorized?.includes(this.account.address)
+    },
+
+    is_locked (node) {
+      if (node.locked) {
+        if (this.is_kyc_required(node) && this.is_kyc_cleared(node)) {
+          return false
+        }
+        return true
+      }
+
+      return false
     }
+
   }
 }
 </script>
