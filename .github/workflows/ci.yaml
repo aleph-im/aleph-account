@@ -4,6 +4,7 @@ name: Tests
 on:
   push:
     branches: ["*"]
+    tags: '*'
   pull_request:
     branches: ["*"]
 
@@ -53,6 +54,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      
+      - name: Get git context
+        run: git fetch --prune --unshallow
 
       - name: Setup node
         uses: actions/setup-node@v3

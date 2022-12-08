@@ -130,6 +130,7 @@
               <q-linear-progress :value="total_used / allowance" class="q-my-sm" rounded />
             </q-item-section>
           </q-item>
+
         </q-list>
       </div>
     </q-drawer>
@@ -137,8 +138,22 @@
       <router-view />
     </q-page-container>
 
-    <q-footer :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm q-pt-lg'">
-      <p style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.</p>
+    <q-footer :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm q-pt-lg row justify-between'"
+              style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">
+      <p>
+        Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.
+      </p>
+      <p v-if="app_version">
+        <span caption v-if="last_release_is_a_tag()">
+          <a style="color:inherit" :href="('https://github.com/aleph-im/aleph-account/tree/' + app_version)">
+            v{{ app_version }}
+          </a>
+        </span>
+        <span caption v-else>
+          v{{ app_version }}
+        </span>
+        &nbsp;
+      </p>
     </q-footer>
 
   </q-layout>
@@ -197,6 +212,7 @@ export default {
   },
   data () {
     return {
+      app_version: GIT_DESCRIBE_TAGS,
       web3ConnectModal: false,
       ellipseAddress: ellipseAddress,
       left: false,
@@ -288,6 +304,9 @@ export default {
         console.error('Socket encountered error: ', err.message, 'Closing socket')
         statusSocket.close()
       }
+    },
+    last_release_is_a_tag () {
+      return /\d+-.[0-9A-F]{7}$/i.test(this.app_version)
     },
     async update_distributions () {
       let result = await posts.get_posts(
@@ -429,6 +448,13 @@ export default {
     this.$store.dispatch('connect_provider')
     this.update_distributions()
     this.prepare_distributions_feed()
+
+    if (!GIT_DESCRIBE_TAGS) {
+      console.warn(`
+No build version detected.
+This bundle was probably not built from a git repository,
+or your build process might be broken! `)
+    }
   }
 }
 </script>
