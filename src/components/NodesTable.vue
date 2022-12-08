@@ -165,7 +165,7 @@
               <template v-else>
                 <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
                  :disabled="is_locked(props.row) || !is_stakeable(props.row)" outline
-                 @click="(is_stakeable(props.row) && !is_locked(props.row)) && $emit('node-action', 'stake-split', props.row.hash)">
+                 @click="$emit('node-action', 'stake-split', props.row.hash)">
                 <q-tooltip>{{stake_tooltip(props.row)}}</q-tooltip>
                 stake
                 </q-btn>
@@ -180,8 +180,7 @@
             @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
 
             <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
-            @click="is_linkable(props.row) && $emit('node-action', 'link', props.row.hash)"
-            :disabled="!is_linkable(props.row)">Link</q-btn>
+            @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
             <q-btn size="sm" :color="is_editable(props.row) ? 'secondary' : 'primary'" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">
             {{
@@ -347,10 +346,6 @@ export default {
         !this.user_node &&
         this.balance_info?.ALEPH >= 10_000
       )
-    },
-
-    is_linkable (node) {
-      return !(node.locked | (this.user_node && (this.user_node.resource_nodes.length >= 3)))
     },
 
     is_kyc_required (node) {
