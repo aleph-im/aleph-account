@@ -41,7 +41,7 @@ async def upload_site(files: list[Path], multiaddr: Multiaddr) -> CID:
 
 
 async def publish_site(multiaddr: Multiaddr) -> CID:
-    path = Path(__file__).parent.parent / "dist/spa"
+    path = Path(__file__).parent / "dist/spa"
     cid = await upload_site(files=[path], multiaddr=multiaddr)
     return cid
 
