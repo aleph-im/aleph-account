@@ -49,8 +49,6 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04
-    needs: [lint,tests]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -68,6 +66,24 @@ jobs:
 
       - name: Build
         run: npx quasar build
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aleph-account
+          path: dist/spa
+
+  upload:
+    runs-on: ubuntu-22.04
+    needs: [lint,tests,build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: aleph-account
 
       - name: Upload the build on an IPFS node
         run: |
