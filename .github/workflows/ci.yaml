@@ -87,6 +87,7 @@ jobs:
 
       - name: Upload the build on an IPFS node
         run: |
+          find .
           pip install 'aioipfs>=0.6.2'
           python3 ./upload_build.py
           export IPFS_CID=$(python3 ./upload_build.py)
