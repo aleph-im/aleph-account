@@ -84,6 +84,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: aleph-account
+          path: dist/spa
 
       - name: Upload the build on an IPFS node
         run: |
@@ -99,8 +100,3 @@ jobs:
         with:
           message: |
             Deployed (not pinned) on https://ipfs-2.aleph.im/ipfs/${{ env.ipfs_cid }}
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: aleph-account
-          path: dist/spa
