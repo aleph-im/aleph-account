@@ -13,13 +13,15 @@ defaults:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - name: Install dependencies
         run: yarn install
@@ -28,13 +30,15 @@ jobs:
         run: yarn lint
 
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - name: Install dependencies
         run: yarn install
@@ -43,19 +47,28 @@ jobs:
         run: yarn test
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    needs: [lint,tests]
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - name: Install dependencies
         run: yarn install
 
       - name: Build
         run: npx quasar build
+
+      - name: Upload the build on an IPFS node
+        run: |
+          pip install 'aioipfs>=0.6.2'
+          python3 ./upload_build.py
 
       - uses: actions/upload-artifact@v3
         with:

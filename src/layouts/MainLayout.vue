@@ -28,7 +28,7 @@
                 </div>
                 <div class="row">
                   <div class="col">
-                    <q-btn outline left @click="web3Connect('metamask')">
+                    <q-btn outline left @click="ethWeb3Connect('metamask')">
                       <q-avatar size="sm" square class="q-mr-sm">
                         <img :src="require('../assets/metamask.svg')">
                       </q-avatar>
@@ -36,7 +36,7 @@
                     </q-btn>
                   </div>
                   <div class="col">
-                    <q-btn outline left @click="web3Connect('walletconnect')">
+                    <q-btn outline left @click="ethWeb3Connect('walletconnect')">
                       <q-avatar size="sm" square class="q-mr-sm">
                         <img :src="require('../assets/walletconnect-circle-blue.svg')">
                       </q-avatar>
@@ -50,11 +50,19 @@
                 </div>
                 <div class="row">
                   <div class="col">
-                    <q-btn outline left @click="web3Connect('phantom')">
+                    <q-btn outline left @click="solWeb3Connect('phantom')">
                       <q-avatar size="sm" square class="q-mr-sm">
                         <img :src="require('../assets/phantom-icon-purple.svg')">
                       </q-avatar>
                       Phantom
+                    </q-btn>
+                  </div>
+                  <div class="col">
+                    <q-btn outline left @click="solWeb3Connect('solflare')">
+                      <q-avatar size="sm" square class="q-mr-sm">
+                        <img :src="require('../assets/solflare.svg')">
+                      </q-avatar>
+                      Solflare
                     </q-btn>
                   </div>
                 </div>
@@ -305,7 +313,7 @@ export default {
       let account = await ethereum.from_provider(provider)
       this.$store.commit('set_account', account)
     },
-    async web3Connect (wallet) {
+    async ethWeb3Connect (wallet) {
       let provider = null
       let web3Provider = null
       this.$store.commit('set_balance_info', 0)
@@ -349,31 +357,6 @@ export default {
           console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
           return
         }
-      } else if (wallet === 'phantom') {
-        const isPhantomInstalled = window.phantom?.solana?.isPhantom
-        if (isPhantomInstalled) {
-          const getProvider = () => {
-            if ('phantom' in window) {
-              provider = window.phantom?.solana
-              if (provider?.isPhantom) {
-                return provider
-              }
-            }
-            window.open('https://phantom.app/', '_blank')
-          }
-          provider = getProvider() // see "Detecting the Provider"
-          try {
-            await provider.connect()
-            let account = await solana.from_provider(provider)
-            this.$store.commit('set_account', account)
-            this.web3ConnectModal = false
-          } catch (err) {
-            this.$q.notify({
-              type: 'negative',
-              message: err.message
-            })
-          }
-        }
       }
 
       provider.on('network', async (newNetwork, oldNetwork) => {
@@ -387,7 +370,46 @@ export default {
         await this.update_distributions()
       })
     },
+    async solWeb3Connect (wallet) {
+      let providerInfo = {}
 
+      if (wallet === 'phantom') {
+        providerInfo = {
+          url: 'https://phantom.app/',
+          provider: wallet === 'phantom' ? window.phantom?.solana : null,
+          installed: window.phantom?.solana?.isPhantom
+        }
+      } else if (wallet === 'solflare') {
+        providerInfo = {
+          url: 'https://solflare.com',
+          provider: wallet === 'solflare' ? window.solflare : null,
+          installed: window.solflare?.isSolflare
+        }
+      }
+
+      const getProvider = () => {
+        if (wallet in window) {
+          if (providerInfo.installed) {
+            return providerInfo.provider
+          }
+        }
+        window.open(providerInfo.url, '_blank')
+      }
+      const provider = getProvider() // see "Detecting the Provider"
+
+      try {
+        await provider.connect()
+        let account = await solana.from_provider(provider)
+        this.$store.commit('set_account', account)
+        this.web3ConnectModal = false
+        window.solana_account = account
+      } catch (err) {
+        this.$q.notify({
+          type: 'negative',
+          message: err.message
+        })
+      }
+    },
     async web3Logout () {
       const wc = new WalletConnectProvider({
         infuraId: this.infura_key
