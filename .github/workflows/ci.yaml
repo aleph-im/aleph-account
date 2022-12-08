@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      
+
       - name: Get git context
         run: git fetch --prune --unshallow
 
@@ -72,7 +72,14 @@ jobs:
       - name: Upload the build on an IPFS node
         run: |
           pip install 'aioipfs>=0.6.2'
-          python3 ./upload_build.py
+          export IPFS_CID=$(python3 ./upload_build.py)
+          echo "ipfs_cid=$IPFS_CID" >> $GITHUB_ENV
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Deployed (not pinned) on https://ipfs-2.aleph.im/ipfs/${{ env.ipfs_cid }}
 
       - uses: actions/upload-artifact@v3
         with:
