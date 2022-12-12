@@ -44,7 +44,8 @@ module.exports = {
     __statics: true,
     process: true,
     Capacitor: true,
-    chrome: true
+    chrome: true,
+    GIT_DESCRIBE_TAGS: true
   },
 
   // add your custom rules here
