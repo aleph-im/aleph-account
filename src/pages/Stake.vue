@@ -105,11 +105,7 @@
         </q-tabs>
       </div>
       <div>
-<<<<<<< HEAD
-        <q-btn-dropdown  size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
-=======
         <q-btn-dropdown :disabled="!(account)" size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
->>>>>>> e162812 (work in progress)
           <!-- start: dropdown item list  -->
           <q-list>
             <q-item clickable v-close-popup @click="showCCNDialog(true)" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
