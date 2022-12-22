@@ -155,6 +155,7 @@
                 <q-tooltip>
                   {{
                     is_stakeable(props.row) ? 'This node requires KYC authentication'
+                    : !account ? 'You should be logged in to register'
                     : 'This nodes has too many stakers'
                   }}
                 </q-tooltip>
