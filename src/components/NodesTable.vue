@@ -151,10 +151,11 @@
               <template v-if="is_kyc_required(props.row) && !is_kyc_cleared(props.row)">
                 <q-btn size="sm" :loading="loading==props.row.hash" color="primary" type="a"
                  :disabled="!is_stakeable(props.row)" outline
-                 @click="open_registration_modal(props.row.registration_url)">
+                 @click="account && open_registration_modal(props.row.registration_url)">
                 <q-tooltip>
                   {{
                     is_stakeable(props.row) ? 'This node requires KYC authentication'
+                    : !account ? 'You should be logged in to register'
                     : 'This nodes has too many stakers'
                   }}
                 </q-tooltip>
