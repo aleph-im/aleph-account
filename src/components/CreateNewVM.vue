@@ -80,7 +80,7 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
-            <q-input v-model="newProgram.metadata.name" label="Name your VM"
+            <q-input v-model="newProgram.metadata.name" label="Name your Program"
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
