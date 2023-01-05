@@ -124,9 +124,6 @@
               </div>
             </div>
           </q-td>
-          <q-td key="uptime" :props="props">
-            <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
-          </q-td>
           <q-td key="score" :props="props">
             <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
               <q-tooltip>
@@ -236,7 +233,6 @@ export default {
             'picture',
             'name',
             'total_staked',
-            'uptime',
             'linked',
             'score',
             'time',
@@ -248,7 +244,6 @@ export default {
             'picture',
             'name',
             'linked',
-            'uptime',
             'score',
             'time',
             'stared',
@@ -309,11 +304,6 @@ export default {
           label: 'Linked',
           align: 'right',
           field: props => props.parent
-        },
-        {
-          name: 'uptime',
-          label: 'Up-Time',
-          field: 'uptime'
         },
         {
           name: 'score',
