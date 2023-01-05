@@ -30,6 +30,7 @@ export default new Vuex.Store({
     api_server: 'https://api2.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
     ipfs_gateway: 'https://ipfs.io/ipfs/',
+    solana_rpc: 'https://api.mainnet-beta.solana.com',
     account: null,
     profiles: {},
     last_broadcast: null,
@@ -239,7 +240,7 @@ export default new Vuex.Store({
           ))
         } else if (state.account.type === 'SOL') {
           let val = await get_solana_balance_info(state.account.address,
-            'https://solana-api.projectserum.com',
+            state.solana_rpc,
             state.splToken_address
           )
           commit('set_balance_info', {
