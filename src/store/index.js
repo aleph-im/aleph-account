@@ -86,6 +86,22 @@ export default new Vuex.Store({
     set_resource_nodes (state, nodes) {
       state.resource_nodes = nodes
     },
+    set_node_scores (state, nodesScores) {
+      [['nodes', 'ccn'], ['resource_nodes', 'crn']]
+        .forEach(([stateNodeType, messageNodeType]) => {
+          const nodeScores = nodesScores[messageNodeType]
+          state[stateNodeType] = state[stateNodeType].map(node => {
+            const nodeScore = nodeScores.find(f => f.node_id === node.hash)
+            if (nodeScore) {
+              return {
+                ...node,
+                score: nodeScore
+              }
+            }
+            return node
+          })
+        })
+    },
     set_stored (state, stored) {
       state.stored = stored
     },

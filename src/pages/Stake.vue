@@ -388,6 +388,18 @@ export default {
             (data.content.content.nodes !== undefined)) {
           this.$store.commit('set_nodes', data.content.content.nodes)
           this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
+          try {
+            posts.get_posts('test-aleph-scoring-scores', {
+              pagination: 1,
+              page: 1
+            })
+              .then(results => {
+                const nodeScores = results.posts[0].content.scores
+                this.$store.commit('set_node_scores', nodeScores)
+              })
+          } catch (err) {
+            console.log(err)
+          }
         }
       }.bind(this)
 

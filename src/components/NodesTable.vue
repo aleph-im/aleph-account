@@ -127,6 +127,28 @@
           <q-td key="uptime" :props="props">
             <strong>{{ props.row.uptime === undefined ? '100' : props.row.uptime }}</strong> %
           </q-td>
+          <q-td key="score" :props="props">
+            <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
+              <q-tooltip>
+                <template v-if="props.row?.score?.total_score !== undefined">
+                <ul>
+                  <li>Aggregate latency: {{ display_metric(props.row?.score?.aggregate_latency) }}</li>
+                  <li>Base latency: {{ display_metric(props.row?.score?.base_latency) }}</li>
+                  <li>File download latency: {{ display_metric(props.row?.score?.file_download_latency) }}</li>
+                  <li>Metrics endpoint latency: {{ display_metric(props.row?.score?.metrics_endpoint_latency) }}</li>
+                </ul>
+
+                <ul>
+                  <li>Decentralization: {{ display_metric(props.row?.score?.decentralization) }}</li>
+                  <li>Eth height remaining: {{ display_metric(props.row?.score?.eth_height_remaining) }}</li>
+                  <li>Pending messages: {{ display_metric(props.row?.score?.pending_messages) }}</li>
+                </ul>
+                </template>
+                <template v-else>No metrics available</template>
+              </q-tooltip>
+              {{ display_metric(props.row?.score?.total_score) }}
+            </strong>
+          </q-td>
           <q-td key="time" :props="props">
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
@@ -216,6 +238,7 @@ export default {
             'total_staked',
             'uptime',
             'linked',
+            'score',
             'time',
             'stared',
             'actions'
@@ -226,6 +249,7 @@ export default {
             'name',
             'linked',
             'uptime',
+            'score',
             'time',
             'stared',
             'actions'
@@ -292,6 +316,12 @@ export default {
           field: 'uptime'
         },
         {
+          name: 'score',
+          label: 'Score',
+          field: props => props?.score?.total_score || 0,
+          sortable: true
+        },
+        {
           name: 'time',
           label: 'Creation Date',
           field: 'time'
@@ -326,6 +356,21 @@ export default {
       } else {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
       }
+    },
+    get_hsl (percent) {
+      if (!percent) { return '#FFFFFF77' }
+
+      const sinV = Math.sin(percent * Math.PI)
+      const hue = percent ** 3 * 115
+      const sat = 100 - sinV * 50
+      const light = 55 - sinV * 20
+
+      return `hsl(${hue}, ${sat}%, ${light}%)`
+    },
+    display_metric (value) {
+      if (!value) { return 'n/a' }
+
+      return Number(Number(value) * 100).toFixed(1) + '%'
     },
     open_registration_modal (url) {
       // [^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)] returns a linter error
