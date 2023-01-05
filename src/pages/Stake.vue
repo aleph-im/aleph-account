@@ -374,6 +374,13 @@ export default {
     }
   },
   methods: {
+    async getScores () {
+      const scoreMessage = await posts.get_posts('test-aleph-scoring-scores', {
+        pagination: 1,
+        page: 1
+      })
+      this.$store.commit('set_node_scores', scoreMessage.posts[0].content.scores)
+    },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(
         `${this.ws_api_server}/api/ws0/messages?msgType=AGGREGATE&addresses=` +
@@ -388,18 +395,7 @@ export default {
             (data.content.content.nodes !== undefined)) {
           this.$store.commit('set_nodes', data.content.content.nodes)
           this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
-          try {
-            posts.get_posts('test-aleph-scoring-scores', {
-              pagination: 1,
-              page: 1
-            })
-              .then(results => {
-                const nodeScores = results.posts[0].content.scores
-                this.$store.commit('set_node_scores', nodeScores)
-              })
-          } catch (err) {
-            console.log(err)
-          }
+          this.$store.commit('merge_node_scores')
         }
       }.bind(this)
 
@@ -453,6 +449,7 @@ export default {
   },
   async mounted () {
     await this.update()
+    await this.getScores()
     await this.prepare_nodes_feed()
   },
   async unmounted () {
