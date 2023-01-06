@@ -221,6 +221,7 @@ async function node_action (action, ref) {
 export default {
   name: 'StakePage',
   computed: mapState({
+    scoring_address: 'scoring_address',
     account: state => state.account,
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
@@ -375,9 +376,10 @@ export default {
   },
   methods: {
     async getScores () {
-      const scoreMessage = await posts.get_posts('test-aleph-scoring-scores', {
+      const scoreMessage = await posts.get_posts('aleph-scoring-scores', {
         pagination: 1,
-        page: 1
+        page: 1,
+        addresses: [this.scoring_address]
       })
       this.$store.commit('set_node_scores', scoreMessage.posts[0].content.scores)
     },
