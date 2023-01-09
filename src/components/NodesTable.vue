@@ -128,10 +128,11 @@
             <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
               <q-tooltip>
                 <template v-if="props.row?.score?.total_score !== undefined">
-                  <ul style="list-style: none;">
+                  Details:<br />
+                  <ul style="list-style:none; padding:0; margin:0">
                     <li v-for="stat in stats_in_tooltip" :key="stat.accessor">
-                      {{ stat.accessor.replace('_', ' ') }}:
-                      {{ stat.formatter(props.row?.score[stat.accessor]) }}
+                      {{ stat.accessor.replace(/_/gi, ' ') }}:
+                      <strong>&nbsp;{{ stat.formatter(props.row?.score[stat.accessor]) }}</strong>
                     </li>
                   </ul>
                 </template>
