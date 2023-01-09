@@ -61,6 +61,13 @@ export async function copyToClipboard (text) {
   return Notify.create(notifyOptions)
 }
 
+export function scaleNodeQuality (node_score, thresholds = [0, 0.5, 0.85]) {
+  return thresholds.reduce((ac, cv) => {
+    if (node_score > cv) { ac++ }
+    return ac
+  }, 0)
+}
+
 export function nullButNot0 (input) {
   return (
     input === undefined || input === null || input === '' || input?.length > 0

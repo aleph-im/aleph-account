@@ -125,21 +125,20 @@
             </div>
           </q-td>
           <q-td key="score" :props="props">
-            <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
+            <signal-quality :score="props.row?.score?.total_score || 0">
               <q-tooltip>
                 <template v-if="props.row?.score?.total_score !== undefined">
                   Details:<br />
                   <ul style="list-style:none; padding:0; margin:0">
                     <li v-for="stat in stats_in_tooltip" :key="stat.accessor">
                       {{ stat.accessor.replace(/_/gi, ' ') }}:
-                      <strong>&nbsp;{{ stat.formatter(props.row?.score[stat.accessor]) }}</strong>
+                      <strong>&nbsp;{{ stat.formatter(props.row?.metrics[stat.accessor]) }}</strong>
                     </li>
                   </ul>
                 </template>
                 <template v-else>No metrics available</template>
               </q-tooltip>
-              {{ display_metric(props.row?.score?.total_score) }}
-            </strong>
+            </signal-quality>
           </q-td>
           <q-td key="time" :props="props">
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
@@ -212,6 +211,7 @@
 import { mapState } from 'vuex'
 import CoreNodeName from './CoreNodeName'
 import { nullButNot0 } from '../helpers/utilities'
+import SignalQuality from './SignalQuality.vue'
 
 export default {
   name: 'nodes-table',
@@ -258,7 +258,8 @@ export default {
     ])
   },
   components: {
-    CoreNodeName
+    CoreNodeName,
+    SignalQuality
   },
   props: [
     'values',
@@ -277,12 +278,12 @@ export default {
       registration_modal_url: null,
       registration_modal_open: false,
       stats_in_tooltip: [
-        { accessor: 'aggregate_latency', formatter: this.display_metric },
-        { accessor: 'base_latency', formatter: this.display_metric },
-        { accessor: 'file_download_latency', formatter: this.display_metric },
-        { accessor: 'metrics_endpoint_latency', formatter: this.display_metric },
-        { accessor: 'decentralization', formatter: this.display_metric },
-        { accessor: 'eth_height_remaining', formatter: this.display_metric },
+        { accessor: 'version', formatter: x => x },
+        { accessor: 'aggregate_latency', formatter: this.display_latency },
+        { accessor: 'base_latency', formatter: this.display_latency },
+        { accessor: 'file_download_latency', formatter: this.display_latency },
+        { accessor: 'metrics_endpoint_latency', formatter: this.display_latency },
+        { accessor: 'eth_height_remaining', formatter: x => x },
         { accessor: 'pending_messages', formatter: x => x }
       ],
       columns: [
@@ -352,20 +353,15 @@ export default {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
       }
     },
-    get_hsl (percent) {
-      if (nullButNot0(percent)) { return '#FFFFFF77' }
-
-      const sinV = Math.sin(percent * Math.PI)
-      const hue = percent ** 3 * 115
-      const sat = 100 - sinV * 50
-      const light = 55 - sinV * 20
-
-      return `hsl(${hue}, ${sat}%, ${light}%)`
-    },
-    display_metric (value) {
+    display_percentage (value) {
       if (nullButNot0(value)) { return 'n/a' }
 
       return Number(Number(value) * 100).toFixed(1) + '%'
+    },
+    display_latency (value) {
+      if (nullButNot0(value)) { return 'n/a' }
+
+      return (Number(value) * 1000 | 0) + 'ms'
     },
     open_registration_modal (url) {
       // [^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)] returns a linter error

@@ -381,7 +381,14 @@ export default {
         page: 1,
         addresses: [this.scoring_address]
       })
-      this.$store.commit('set_node_scores', scoreMessage.posts[0].content.scores)
+
+      const { scores, metrics_post } = scoreMessage.posts[0].content
+      this.$store.commit('set_node_scores', scores)
+
+      const metricsMessage = await posts.get_posts('aleph-scoring-metrics', {
+        hashes: [metrics_post]
+      })
+      this.$store.commit('set_node_metrics', metricsMessage.posts[0].content.metrics)
     },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(

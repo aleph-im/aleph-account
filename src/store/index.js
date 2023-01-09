@@ -57,7 +57,8 @@ export default new Vuex.Store({
     // tags: ['mainnet-test'], // test
     tags: ['mainnet'],
     node_post_type: 'corechan-operation',
-    node_scores: { ccn: [], crn: [] }
+    node_scores: { ccn: [], crn: [] },
+    node_metrics: { ccn: [], crn: [] }
   },
   mutations: {
     set_account (state, account) {
@@ -91,22 +92,28 @@ export default new Vuex.Store({
     set_node_scores (state, node_scores) {
       state.node_scores = node_scores
     },
+    set_node_metrics (state, node_metrics) {
+      state.node_metrics = node_metrics
+    },
     merge_node_scores (state) {
       [['nodes', 'ccn'], ['resource_nodes', 'crn']]
         .forEach(([stateNodeType, messageNodeType]) => {
           const nodeScores = state.node_scores[messageNodeType]
+          const nodeMetrics = state.node_metrics[messageNodeType]
+
           state[stateNodeType] = state[stateNodeType].map(node => {
             if (node.score === undefined) {
               const score = nodeScores.find(f => f.node_id === node.hash)
-              if (score) {
-                return {
-                  ...node,
-                  score
-                }
-              }
+              const metrics = nodeMetrics.find(f => f.node_id === node.hash)
+
+              const _node = { ...node }
+              if (score) { _node.score = score }
+              if (metrics) { _node.metrics = metrics }
+              return _node
             }
             return node
           })
+          console.log(state[stateNodeType])
         })
     },
     set_stored (state, stored) {
