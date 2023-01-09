@@ -60,3 +60,9 @@ export async function copyToClipboard (text) {
 
   return Notify.create(notifyOptions)
 }
+
+export function nullButNot0 (input) {
+  return (
+    input === undefined || input === null || input === '' || input?.length > 0
+  )
+}

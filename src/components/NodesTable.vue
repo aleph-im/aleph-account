@@ -128,18 +128,12 @@
             <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
               <q-tooltip>
                 <template v-if="props.row?.score?.total_score !== undefined">
-                <ul>
-                  <li>Aggregate latency: {{ display_metric(props.row?.score?.aggregate_latency) }}</li>
-                  <li>Base latency: {{ display_metric(props.row?.score?.base_latency) }}</li>
-                  <li>File download latency: {{ display_metric(props.row?.score?.file_download_latency) }}</li>
-                  <li>Metrics endpoint latency: {{ display_metric(props.row?.score?.metrics_endpoint_latency) }}</li>
-                </ul>
-
-                <ul>
-                  <li>Decentralization: {{ display_metric(props.row?.score?.decentralization) }}</li>
-                  <li>Eth height remaining: {{ display_metric(props.row?.score?.eth_height_remaining) }}</li>
-                  <li>Pending messages: {{ display_metric(props.row?.score?.pending_messages) }}</li>
-                </ul>
+                  <ul style="list-style: none;">
+                    <li v-for="stat in stats_in_tooltip" :key="stat.accessor">
+                      {{ stat.accessor.replace('_', ' ') }}:
+                      {{ stat.formatter(props.row?.score[stat.accessor]) }}
+                    </li>
+                  </ul>
                 </template>
                 <template v-else>No metrics available</template>
               </q-tooltip>
@@ -216,6 +210,7 @@
 <script>
 import { mapState } from 'vuex'
 import CoreNodeName from './CoreNodeName'
+import { nullButNot0 } from '../helpers/utilities'
 
 export default {
   name: 'nodes-table',
@@ -280,6 +275,15 @@ export default {
       tab: 'all_nodes',
       registration_modal_url: null,
       registration_modal_open: false,
+      stats_in_tooltip: [
+        { accessor: 'aggregate_latency', formatter: this.display_metric },
+        { accessor: 'base_latency', formatter: this.display_metric },
+        { accessor: 'file_download_latency', formatter: this.display_metric },
+        { accessor: 'metrics_endpoint_latency', formatter: this.display_metric },
+        { accessor: 'decentralization', formatter: this.display_metric },
+        { accessor: 'eth_height_remaining', formatter: this.display_metric },
+        { accessor: 'pending_messages', formatter: x => x }
+      ],
       columns: [
         {
           name: 'picture'
@@ -348,7 +352,7 @@ export default {
       }
     },
     get_hsl (percent) {
-      if (!percent) { return '#FFFFFF77' }
+      if (nullButNot0(percent)) { return '#FFFFFF77' }
 
       const sinV = Math.sin(percent * Math.PI)
       const hue = percent ** 3 * 115
@@ -358,7 +362,7 @@ export default {
       return `hsl(${hue}, ${sat}%, ${light}%)`
     },
     display_metric (value) {
-      if (!value) { return 'n/a' }
+      if (nullButNot0(value)) { return 'n/a' }
 
       return Number(Number(value) * 100).toFixed(1) + '%'
     },
