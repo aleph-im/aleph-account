@@ -14,7 +14,7 @@
         </q-toolbar-title>
         <q-space />
         <q-btn-group class="shadow-1 bg-aleph-radial">
-          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="web3ConnectModal = true">Connect to a wallet</q-btn>
+          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="ethWeb3Connect('metamask')">Connect to a wallet</q-btn>
           <q-dialog v-model="web3ConnectModal">
             <q-card style="width: 550px">
               <q-card-section>
