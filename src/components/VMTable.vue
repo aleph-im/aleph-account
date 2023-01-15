@@ -4,7 +4,7 @@
       <q-expansion-item
         v-for="item of data"
         class="overflow-hidden rounded-borders q-mb-md"
-        :key="item.item_hash"
+        :key="item?.item_hash"
         :label="getProgramLabel(item)"
         icon="computer"
         expand-icon-class="text-white"
@@ -23,11 +23,11 @@
         <q-card  class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
           <q-card-section horizontal>
             <q-list class="col q-my-sm">
-              <q-item v-show="!('extra_fields' in item.content) && item.content?.metadata?.name">
+              <q-item v-show="item.content && !('extra_fields' in item?.content) && item.content?.metadata?.name">
                 <q-item-section>
                   <q-item-label caption>Name</q-item-label>
                   <q-item-label>
-                    {{item.content?.metadata?.name}}
+                    {{item?.content?.metadata?.name}}
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -53,7 +53,7 @@
                 <q-item-section>
                   <q-item-label caption>Size</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
-                    {{item.storeObj ? item.storeObj.size : 'Null' }} B
+                    {{item?.storeObj ? item?.storeObj.size : 'Null' }} B
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -83,7 +83,7 @@
                 <q-btn flat icon="link" align="left" label="View Explorer"
                       @click="openExplorer(item)" />
                 <q-btn flat icon="upload_file" align="left" label="Download Program File"
-                      @click="downloadFile(item.storeObj.item_hash)" />
+                      @click="downloadFile(item?.storeObj.item_hash)" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -151,8 +151,9 @@ export default {
     },
 
     getProgramLabel (program, ellipse = false) {
+      if (!program.content) return program.item_hash
       if (!('extra_fields' in program.content)) {
-        if (program.content?.metadata?.name) {
+        if (program?.content?.metadata?.name) {
           return `${program.content?.metadata?.name} (${ellipseAddress(program.item_hash)})`
         } else {
           if (ellipse) {
