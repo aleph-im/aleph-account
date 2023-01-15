@@ -18,16 +18,22 @@
     </div>
     <div class="q-mb-md" v-if="account">
       <div class="row justify-end">
-        <q-input standout v-model="search" @keydown.enter.prevent="reloadVM()" dense label="Search program"
-          class="q-mr-md">
-          <template v-slot:prepend>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-        <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" :disabled="loading" :loading="loading" label="Reload"
-          @click="reloadVM()" />
-        <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true"
-          :disabled="balance_info.ALEPH < 1" />
+        <div class="column">
+        <div class="row">
+          <q-input standout v-model="search" @keydown.enter.prevent="reloadVM()" dense label="Search program"
+            class="q-mr-md">
+            <template v-slot:prepend>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" :disabled="loading" :loading="loading"
+            label="Reload" @click="reloadVM()" />
+          <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true"
+            :disabled="balance_info.ALEPH < 1" />
+        </div>
+        <div class="row justify-end q-mt-md"><q-pagination push v-model="current_page" :max="pagination.pages" direction-links flat color="grey"
+        active-color="primary" /></div>
+      </div>
       </div>
     </div>
     <div v-if="account">
@@ -35,8 +41,10 @@
       <VMTable :data="programs" :account="account" :loading="loading">
       </VMTable>
       <!-- end: actives vm -->
+      <div class="row justify-end">
       <q-pagination v-model="current_page" :max="pagination.pages" direction-links flat color="grey"
         active-color="primary" />
+      </div>
     </div>
   </q-page>
 </template>
