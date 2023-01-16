@@ -375,6 +375,17 @@ export default {
     }
   },
   methods: {
+    async getLatestCCNVersion () {
+      try {
+        const req = await fetch('https://api.github.com/repos/aleph-im/pyaleph/releases')
+        const res = await req.json()
+        const { name, published_at } = res[0]
+
+        this.$store.commit('set_latest_ccn_version', { name, published_at })
+      } catch (error) {
+        console.log('Could not retrieve latest CCN version from Github')
+      }
+    },
     async getScores () {
       const scoreMessage = await posts.get_posts('aleph-scoring-scores', {
         pagination: 1,
@@ -457,6 +468,7 @@ export default {
     }
   },
   async mounted () {
+    this.getLatestCCNVersion()
     await this.update()
     await this.getScores()
     await this.prepare_nodes_feed()

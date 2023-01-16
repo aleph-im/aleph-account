@@ -58,7 +58,9 @@ export default new Vuex.Store({
     tags: ['mainnet'],
     node_post_type: 'corechan-operation',
     node_scores: { ccn: [], crn: [] },
-    node_metrics: { ccn: [], crn: [] }
+    node_metrics: { ccn: [], crn: [] },
+    latest_ccn_version: null,
+    latest_ccn_timestamp: null
   },
   mutations: {
     set_account (state, account) {
@@ -88,6 +90,10 @@ export default new Vuex.Store({
     },
     set_resource_nodes (state, nodes) {
       state.resource_nodes = nodes
+    },
+    set_latest_ccn_version (state, { name, published_at }) {
+      state.latest_ccn_version = name
+      state.latest_ccn_timestamp = published_at
     },
     set_node_scores (state, node_scores) {
       state.node_scores = node_scores
@@ -119,7 +125,7 @@ export default new Vuex.Store({
                 ]
                 score.total_score = relevant_fields.reduce((ac, cv) => (ac *= score[cv]), 1) ** (1 / relevant_fields.length)
                 // END OF BLOCK
-                
+
                 _node.score = score
               }
               if (metrics) { _node.metrics = metrics }

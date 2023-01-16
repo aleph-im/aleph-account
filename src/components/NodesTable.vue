@@ -60,7 +60,14 @@
             <q-icon v-if="props.row.picture" :name="`img:${api_server}/api/v0/storage/raw/${props.row.picture}`" class="rounded-borders" />
           </q-td>
           <q-td key="name" :props="props">
+            <div>
+              <q-badge rounded color="negative" class="q-pl-sm q-pr-sm" v-if="is_node_outdated(props.row)">
+                <q-icon name="gpp_maybe" color="white" class="q-pr-sm" />
+                Outdated node version
+              </q-badge>
+            </div>
             <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
+            <q-icon name="gpp_maybe" color="negative" class="q-pa-sm" v-if="is_node_outdated(props.row)" />
             <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
             <q-icon name="lock" v-if="props.row.locked">
@@ -255,7 +262,9 @@ export default {
       'api_server',
       'tags',
       'node_post_type',
-      'balance_info'
+      'balance_info',
+      'latest_ccn_version',
+      'latest_ccn_release_date'
     ])
   },
   components: {
@@ -359,6 +368,11 @@ export default {
         return 'Add this node to your staking (each node will have an equal part of your total balance staked)'
       } else {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
+      }
+    },
+    is_node_outdated (node) {
+      if (this.latest_ccn_version && node?.metrics) {
+        return node?.metrics.version === this.latest_ccn_version
       }
     },
     display_percentage (value) {
