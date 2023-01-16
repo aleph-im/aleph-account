@@ -64,10 +64,18 @@
               <q-badge rounded color="negative" class="q-pl-sm q-pr-sm" v-if="is_node_outdated(props.row)">
                 <q-icon name="gpp_maybe" color="white" class="q-pr-sm" />
                 Outdated node version
+                <q-tooltip>
+                  <div>
+                    You are on version <strong>{{ props.row.metrics.version }}</strong>
+                  </div>
+                  <div>
+                    Latest version is <strong>{{ latest_ccn_version }}</strong> from {{ display_elapsed(latest_ccn_timestamp) }}
+                  </div>
+                  <div>Please update soon</div>
+                </q-tooltip>
               </q-badge>
             </div>
             <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
-            <q-icon name="gpp_maybe" color="negative" class="q-pa-sm" v-if="is_node_outdated(props.row)" />
             <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
             <q-icon name="lock" v-if="props.row.locked">
@@ -264,7 +272,7 @@ export default {
       'node_post_type',
       'balance_info',
       'latest_ccn_version',
-      'latest_ccn_release_date'
+      'latest_ccn_timestamp'
     ])
   },
   components: {
@@ -371,9 +379,14 @@ export default {
       }
     },
     is_node_outdated (node) {
-      if (this.latest_ccn_version && node?.metrics) {
-        return node?.metrics.version === this.latest_ccn_version
+      if (this.latest_ccn_version && node?.metrics && this.account && this.account.address === node.owner) {
+        return node?.metrics.version !== this.latest_ccn_version
       }
+    },
+    display_elapsed (t) {
+      if (!t) { return 'n/a' }
+
+      return Math.floor(this.latest_ccn_timestamp / 86400000) + ' days ago'
     },
     display_percentage (value) {
       if (nullButNot0(value)) { return 'n/a' }

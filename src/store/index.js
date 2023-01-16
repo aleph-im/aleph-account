@@ -93,7 +93,7 @@ export default new Vuex.Store({
     },
     set_latest_ccn_version (state, { name, published_at }) {
       state.latest_ccn_version = name
-      state.latest_ccn_timestamp = published_at
+      state.latest_ccn_timestamp = published_at ? Date.now() - new Date(published_at).getTime() : null
     },
     set_node_scores (state, node_scores) {
       state.node_scores = node_scores
