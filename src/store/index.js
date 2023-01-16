@@ -119,8 +119,7 @@ export default new Vuex.Store({
                 ]
                 score.total_score = relevant_fields.reduce((ac, cv) => (ac *= score[cv]), 1) ** (1 / relevant_fields.length)
                 // END OF BLOCK
-
-                console.log(score.total_score)
+                
                 _node.score = score
               }
               if (metrics) { _node.metrics = metrics }
