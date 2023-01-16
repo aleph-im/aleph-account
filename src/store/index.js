@@ -107,7 +107,22 @@ export default new Vuex.Store({
               const metrics = nodeMetrics.find(f => f.node_id === node.hash)
 
               const _node = { ...node }
-              if (score) { _node.score = score }
+              if (score) {
+                // FIXME
+                // Once node score can fully be trusted comment this block
+                const relevant_fields = [
+                  'aggregate_latency',
+                  'base_latency',
+                  'file_download_latency',
+                  'metrics_endpoint_latency',
+                  'eth_height_remaining'
+                ]
+                score.total_score = relevant_fields.reduce((ac, cv) => (ac *= score[cv]), 1) ** (1 / relevant_fields.length)
+                // END OF BLOCK
+
+                console.log(score.total_score)
+                _node.score = score
+              }
               if (metrics) { _node.metrics = metrics }
               return _node
             }

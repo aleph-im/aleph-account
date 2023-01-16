@@ -125,7 +125,8 @@
             </div>
           </q-td>
           <q-td key="score" :props="props">
-            <signal-quality :score="props.row?.score?.total_score || 0">
+            <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
+              {{ display_metric(props.row?.score?.total_score) }}
               <q-tooltip>
                 <template v-if="props.row?.score?.total_score !== undefined">
                   Details:<br />
@@ -138,7 +139,7 @@
                 </template>
                 <template v-else>No metrics available</template>
               </q-tooltip>
-            </signal-quality>
+            </strong>
           </q-td>
           <q-td key="time" :props="props">
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
@@ -212,7 +213,6 @@
 import { mapState } from 'vuex'
 import CoreNodeName from './CoreNodeName'
 import { nullButNot0 } from '../helpers/utilities'
-import SignalQuality from './SignalQuality.vue'
 
 export default {
   name: 'nodes-table',
@@ -259,8 +259,7 @@ export default {
     ])
   },
   components: {
-    CoreNodeName,
-    SignalQuality
+    CoreNodeName
   },
   props: [
     'values',
@@ -371,6 +370,19 @@ export default {
       if (nullButNot0(value)) { return 'n/a' }
 
       return (Number(value) * 1000 | 0) + 'ms'
+    },
+    display_metric (value) {
+      if (!value) { return 'n/a' }
+      return Number(Number(value) * 100).toFixed(1) + '%'
+    },
+    get_hsl (percent) {
+      if (!percent) { return '#FFFFFF77' }
+
+      const sinV = Math.sin(percent * Math.PI)
+      const hue = percent ** 3 * 115
+      const sat = 100 - sinV * 50
+      const light = 55 - sinV * 20
+      return `hsl(${hue}, ${sat}%, ${light}%)`
     },
     open_registration_modal (url) {
       // [^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)] returns a linter error
