@@ -14,7 +14,7 @@
         </q-toolbar-title>
         <q-space />
         <q-btn-group class="shadow-1 bg-aleph-radial">
-          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="ethWeb3Connect('metamask')">Connect to a wallet</q-btn>
+          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="web3ConnectModal = true">Connect to a wallet</q-btn>
           <q-dialog v-model="web3ConnectModal">
             <q-card style="width: 550px">
               <q-card-section>
@@ -44,28 +44,30 @@
                     </q-btn>
                   </div>
                 </div>
-                <div class="q-my-md">
-                  <div class="text-subtitle-1">Solana </div>
-                  <q-separator dark inset=""/>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <q-btn outline left @click="solWeb3Connect('phantom')">
-                      <q-avatar size="sm" square class="q-mr-sm">
-                        <img :src="require('../assets/phantom-icon-purple.svg')">
-                      </q-avatar>
-                      Phantom
-                    </q-btn>
+                <template v-if="feature_enabled?.solana">
+                  <div class="q-my-md">
+                    <div class="text-subtitle-1">Solana </div>
+                    <q-separator dark inset="" />
                   </div>
-                  <div class="col">
-                    <q-btn outline left @click="solWeb3Connect('solflare')">
-                      <q-avatar size="sm" square class="q-mr-sm">
-                        <img :src="require('../assets/solflare.svg')">
-                      </q-avatar>
-                      Solflare
-                    </q-btn>
+                  <div class="row">
+                    <div class="col">
+                      <q-btn outline left @click="solWeb3Connect('phantom')">
+                        <q-avatar size="sm" square class="q-mr-sm">
+                          <img :src="require('../assets/phantom-icon-purple.svg')">
+                        </q-avatar>
+                        Phantom
+                      </q-btn>
+                    </div>
+                    <div class="col">
+                      <q-btn outline left @click="solWeb3Connect('solflare')">
+                        <q-avatar size="sm" square class="q-mr-sm">
+                          <img :src="require('../assets/solflare.svg')">
+                        </q-avatar>
+                        Solflare
+                      </q-btn>
+                    </div>
                   </div>
-                </div>
+                </template>
               </q-card-section>
 
               <q-card-actions align="left">
@@ -181,6 +183,7 @@ export default {
     mb_per_aleph: state => state.mb_per_aleph,
     sender_address: state => state.sender_address,
     monitor_address: state => state.monitor_address,
+    feature_enabled: state => state.feature_enabled,
     ws_api_server: 'ws_api_server',
 
     allowance: function () {
