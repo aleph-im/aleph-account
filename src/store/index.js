@@ -56,7 +56,10 @@ export default new Vuex.Store({
     ethereum_provider: null,
     // tags: ['mainnet-test'], // test
     tags: ['mainnet'],
-    node_post_type: 'corechan-operation'
+    node_post_type: 'corechan-operation',
+    feature_enabled: {
+      solana: false
+    }
   },
   mutations: {
     set_account (state, account) {
