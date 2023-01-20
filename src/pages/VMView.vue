@@ -93,7 +93,7 @@ export default {
 
     async getMessages () {
       this.loading = true
-      var params = {
+      let params = {
         addresses: [this.account.address],
         pagination: this.pagination.per_page,
         page: this.current_page,
@@ -102,15 +102,15 @@ export default {
       if (this.search.length > 0) {
         params.hashes = [this.search]
       }
-      await messages.get_messages(params).then(async (response) => {
+      messages.get_messages(params).then(async (response) => {
         this.pagination.total = response.pagination_total
         this.pagination.pages = Math.ceil(response.pagination_total / this.pagination.per_page)
-        var programsTmp = response.messages
+        let programsTmp = response.messages
         for (var i = 0; i < programsTmp.length; i++) {
           let tx = programsTmp[i].content?.code.ref
           // retrieve store messages
           if (tx & !programsTmp[i].forgotten_by) {
-            await messages.get_messages({
+            messages.get_messages({
               addresses: [this.account.address],
               hashes: [tx]
             }).then(async (response) => {
