@@ -157,15 +157,16 @@
 </template>
 
 <script>
+
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import { store, broadcast, aggregates, ethereum, solana } from 'aleph-js'
 import { format, copyToClipboard } from 'quasar'
-const { humanStorageSize } = format
-
 import IPFS from 'ipfs'
-const shajs = require('sha.js')
-const isIPFS = require('is-ipfs')
+import { sha256 as Sha256 } from 'sha.js'
+import isIPFS from 'is-ipfs'
+
+const { humanStorageSize } = format
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -381,8 +382,7 @@ export default {
         } else {
           message.item_type = 'inline'
           message.item_content = serialized
-          // eslint-disable-next-line no-use-before-define
-          message.item_hash = new shajs.sha256().update(serialized).digest('hex') // eslint-disable-line no-use-before-define
+          message.item_hash = new Sha256().update(serialized).digest('hex') // eslint-disable-line no-use-before-define
         }
       }
     },
