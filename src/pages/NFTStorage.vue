@@ -31,8 +31,8 @@
                  class="full-width" controls autoplay loop
                  v-else-if="item.content.metadata.animation_url" />
 
-            <q-card-section v-if="item.content.metadata.name">
-              <div class="text-h6">{{item.content.metadata.name.substring(0, 100)}}</div>
+            <q-card-section :style="'overflow-wrap: break-word;'" v-if="item.content.metadata.name">
+              <div class="text-h6"> {{item.content.metadata.name.substring(0, 100)}}</div>
               <div class="text-subtitle2">
                 Snapshot from {{new Date(item.time*1000).toLocaleDateString()}}
               </div>
