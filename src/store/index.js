@@ -7,6 +7,7 @@ import {
 } from '../services/balances'
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
+import { getBool } from 'src/helpers/utilities'
 
 var providers = require('ethers').providers
 
@@ -58,7 +59,7 @@ export default new Vuex.Store({
     tags: ['mainnet'],
     node_post_type: 'corechan-operation',
     feature_enabled: {
-      solana: false
+      solana: getBool(process.env.FEATURE_SOLANA)
     }
   },
   mutations: {

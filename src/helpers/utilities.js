@@ -60,3 +60,13 @@ export async function copyToClipboard (text) {
 
   return Notify.create(notifyOptions)
 }
+
+/**
+ * Takes a string ("0" or "1" as a parameter) and returns the boolean equivalent
+ *
+ * @param {String} value
+ * @returns {Boolean}
+ */
+export function getBool (value) {
+  return Boolean(parseInt(value))
+}
