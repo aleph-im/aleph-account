@@ -90,8 +90,8 @@ jobs:
         run: |
           find .
           pip install 'aioipfs>=0.6.2'
-          python3 ./upload_build.py
-          export IPFS_CID=$(python3 ./upload_build.py)
+          python3 ./scripts/upload_build.py
+          export IPFS_CID=$(python3 ./scripts/upload_build.py)
           echo "ipfs_cid=$IPFS_CID" >> $GITHUB_ENV
 
       - name: Comment PR

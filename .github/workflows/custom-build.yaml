@@ -1,0 +1,65 @@
+# Creates a build with different feature flags
+
+name: Custom build
+on:
+  workflow_dispatch:
+      inputs:
+        feature_flags:
+          description: 'A string of feature flags to hand to the build script (ex: FEATURE_ABC=1 FEATURE_XYZ=0)'
+          required: false
+          default: ''
+        IPFS_push:
+          description: 'Publish build on IPFS (0: false, 1: true)'
+          required: true
+          default: 0
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get git context
+        run: git fetch --prune --unshallow
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: ${github.event.inputs.feature_flags} npx quasar build
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aleph-account
+          path: dist/spa
+    
+  upload:
+    runs-on: ubuntu-22.04
+    needs: [build]
+    if: github.event.inputs.IPFS_push == '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: aleph-account
+          path: dist/spa
+
+      - name: Upload the build on an IPFS node
+        run: |
+          find .
+          pip install 'aioipfs>=0.6.2'
+          python3 ./scripts/upload_build.py
