@@ -223,7 +223,8 @@ import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
 import ResourceNodeName from './ResourceNodeName.vue'
 import CoreNodeName from './CoreNodeName.vue'
-import { copyToClipboard, ellipseAddress } from '../helpers/utilities'
+import { ellipseAddress } from '../helpers/utilities'
+import { copyToClipboard } from 'quasar'
 
 export default {
   components: { ResourceNodeName, CoreNodeName },
