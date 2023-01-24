@@ -156,7 +156,6 @@ import { store, aggregates } from 'aleph-js'
 import { format, copyToClipboard } from 'quasar'
 const { humanStorageSize } = format
 
-import IPFS from 'ipfs'
 const isIPFS = require('is-ipfs')
 
 function sleep (ms) {
@@ -358,7 +357,7 @@ export default {
     this.$store.dispatch('update_store_info')
   },
   async created () {
-    this.node = await IPFS.create()
+    this.node = this.$ipfs
   },
   watch: {
     account (account) {
