@@ -162,11 +162,9 @@ import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
 import { store, broadcast, aggregates, ethereum, solana } from 'aleph-js'
 import { format, copyToClipboard } from 'quasar'
-import IPFS from 'ipfs'
 import { sha256 as Sha256 } from 'sha.js'
 import isIPFS from 'is-ipfs'
 
-const { humanStorageSize } = format
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -443,7 +441,7 @@ export default {
     this.$store.dispatch('update_store_info')
   },
   async created () {
-    this.node = await IPFS.create()
+    this.node = this.$ipfs
   },
   watch: {
     account (account) {

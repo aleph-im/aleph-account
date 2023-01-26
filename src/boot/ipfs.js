@@ -2,8 +2,10 @@ import IPFS from 'ipfs'
 import Vue from 'vue'
 
 const plugin = {
-  install (Vue, opts = {}) {
-    Vue.prototype.$ipfs = IPFS.create(opts)
+
+  async install (Vue, opts = {}) {
+    const IPFS_instance = await IPFS.create(opts)
+    Vue.prototype.$ipfs = IPFS_instance
   }
 }
 

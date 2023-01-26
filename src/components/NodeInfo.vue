@@ -89,7 +89,7 @@
         stack-label standout
         class="q-my-sm" />
         <q-input v-model="manager" label="Manager" stack-label standout class="q-my-sm" />
-        <q-input :disable="!locked" v-model="registration_url" label="Registration URL" stack-label standout class="q-my-sm" />
+        <q-input v-if="nodeType!=='resource'" :disable="!locked" v-model="registration_url" label="Registration URL" stack-label standout class="q-my-sm" />
         <q-input v-model="description" label="Description" hint="optional"
         stack-label standout type="textarea"
         class="q-my-sm" />
@@ -223,7 +223,8 @@ import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
 import ResourceNodeName from './ResourceNodeName.vue'
 import CoreNodeName from './CoreNodeName.vue'
-import { copyToClipboard, ellipseAddress } from '../helpers/utilities'
+import { ellipseAddress } from '../helpers/utilities'
+import { copyToClipboard } from 'quasar'
 
 export default {
   components: { ResourceNodeName, CoreNodeName },
