@@ -91,9 +91,9 @@
           <q-btn class="q-mr-xs" @click="addVolume(false)" icon="add" outline color="primary" label="Add Volume"/>
           <q-btn @click="addVolume(true)" icon="add" outline color="primary" label="Add Persistent Volume"/>
         </div>
-        <q-card class="col-12 q-pa-sm" v-for="volume in newProgram.volumes" :key="volume.id">
+        <q-card class="col-12 q-pa-sm" v-for="(volume, i) in newProgram.volumes" :key="i">
           <div class="q-ml-sm">
-            <div class="text-h6">{{volume.isPersistent ? 'Persistent Volume' : 'Volume'}}</div>
+            <div class="text-h6">{{volume.persistence ? 'Persistent Volume' : 'Volume'}}</div>
           </div>
           <div class="col-12">
             <q-input v-model="volume.comment" placeholder="Basic description of your volume" label="Description"
@@ -103,25 +103,25 @@
             <q-input v-model="volume.mount" label="Mount"
               stack-label standout class="q-my-sm" />
           </div>
-          <div v-show="!volume.isPersistent">
+          <div v-show="!volume.persistence">
             <q-input v-model="volume.ref" label="Ref"
               stack-label standout class="q-my-sm" />
           </div>
-          <div v-show="!volume.isPersistent">
+          <div v-show="!volume.persistence">
             <span>Use latest version?</span>
             <q-radio v-model="volume.use_latest" :val="true" label="Yes" />
             <q-radio v-model="volume.use_latest" :val="false" label="No" />
           </div>
-          <div v-show="volume.isPersistent">
+          <div v-show="volume.persistence">
             <q-input v-model="volume.name" label="Volume name"
               stack-label standout class="q-my-sm" />
           </div>
-          <div v-show="volume.isPersistent">
-            <q-input v-model="volume.size_mib" label="Size (MiB)"
+          <div v-show="volume.persistence">
+            <q-input v-model.number="volume.size_mib" type="number" label="Size (MiB)"
               stack-label standout class="q-my-sm" />
           </div>
           <q-card-actions align="right">
-            <q-btn @click="deleteVolume(volume)" color="red" label="Delete" class="q-ml-sm" />
+            <q-btn @click="deleteVolume(i)" color="red" label="Delete" class="q-ml-sm" />
           </q-card-actions>
         </q-card>
       </div>
@@ -210,25 +210,21 @@ async def root():
       return cmOption
     },
 
-    addVolume (isPersistent) {
-      if (isPersistent) {
-        this.newProgram.volumes.push({
-          id: (Math.random() + 1).toString(36).substring(7),
-          comment: '',
-          isPersistent: true,
-          persistence: 'host'
-        })
-      } else {
-        this.newProgram.volumes.push({
-          id: (Math.random() + 1).toString(36).substring(7),
-          comment: '',
-          isPersistent: false,
-          use_latest: false
-        })
+    addVolume (persistence) {
+      var volume = {
+        comment: ''
       }
+      if (persistence) {
+        volume.persistence = 'host'
+        volume.name = (Math.random() + 1).toString(36).substring(7)
+      } else {
+        volume.use_latest = false
+        volume.ref = this.newProgram.refRuntime
+      }
+      this.newProgram.volumes.push(volume)
     },
-    deleteVolume (volume) {
-      this.newProgram.volumes.splice(this.newProgram.volumes.findIndex(v => v.id === volume.id), 1)
+    deleteVolume (index) {
+      this.newProgram.volumes.splice(index, 1)
     },
     backStep (step) {
       this.step = step
@@ -331,7 +327,8 @@ async def root():
           use_latest: true
         },
         on: {
-          http: true
+          http: true,
+          persistent: this.newProgram.volumes.length > 0
         },
         metadata: this.newProgram.metadata,
         environment: {
