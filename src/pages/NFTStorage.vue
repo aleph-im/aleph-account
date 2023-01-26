@@ -70,7 +70,6 @@ import { posts } from 'aleph-js'
 import { update_post } from '../services/posts'
 const { humanStorageSize } = format
 
-import IPFS from 'ipfs'
 import NftSnapshot from 'src/components/NftSnapshot.vue'
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -176,7 +175,7 @@ export default {
     this.update()
   },
   async created () {
-    this.node = await IPFS.create()
+    this.node = this.$ipfs
   },
   watch: {
     account (account) {
