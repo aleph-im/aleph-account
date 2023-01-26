@@ -327,8 +327,7 @@ async def root():
           use_latest: true
         },
         on: {
-          http: true,
-          persistent: this.newProgram.volumes.length > 0
+          http: true
         },
         metadata: this.newProgram.metadata,
         environment: {
