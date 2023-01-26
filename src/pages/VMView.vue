@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-md">
-        <!-- start: create vm dialog -->
+    <!-- start: create vm dialog -->
     <q-dialog v-model="showCreateProgram">
       <CreateNewVM :account="account" :api_server="api_server" @created="uploadVM" />
     </q-dialog>
@@ -17,21 +17,34 @@
       Please connect.
     </div>
     <div class="q-mb-md" v-if="account">
-    <div class="row justify-end">
-        <q-input standout v-model="search" @keydown.enter.prevent="reloadVM()" dense label="Search program" class="q-mr-md">
-          <template v-slot:prepend>
-          <q-icon name="search"/>
-        </template>
-        </q-input>
-        <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" :disabled="loading" :loading="loading" label="Reload" @click="reloadVM()"/>
-        <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true" :disabled="balance_info.ALEPH < 1"/>
-    </div>
+      <div class="row justify-end">
+        <div class="column">
+        <div class="row">
+          <q-input standout v-model="search" @keydown.enter.prevent="reloadVM()" dense label="Search program"
+            class="q-mr-md">
+            <template v-slot:prepend>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn icon="refresh" class="q-mr-md" color="aleph-radial" :disabled="loading" :loading="loading"
+            label="Reload" @click="reloadVM()" />
+          <q-btn icon="add" color="aleph-radial" label="Create program" @click="showCreateProgram = true"
+            :disabled="balance_info.ALEPH < 1" />
+        </div>
+        <div class="row justify-end q-mt-md"><q-pagination push v-model="current_page" :max="pagination.pages" direction-links flat color="grey"
+        active-color="primary" /></div>
+      </div>
+      </div>
     </div>
     <div v-if="account">
       <!-- start: active vm -->
-      <VMTable :data="programs" :account="account" :loading="loading" >
+      <VMTable :data="programs" :account="account" :loading="loading">
       </VMTable>
       <!-- end: actives vm -->
+      <div class="row justify-end">
+      <q-pagination v-model="current_page" :max="pagination.pages" direction-links flat color="grey"
+        active-color="primary" />
+      </div>
     </div>
   </q-page>
 </template>
@@ -58,6 +71,12 @@ export default {
   data () {
     return {
       loading: true,
+      current_page: 1,
+      pagination: {
+        total: 0,
+        pages: 1,
+        per_page: 20
+      },
       programs: [],
       search: '',
       showCreateProgram: false,
@@ -74,28 +93,33 @@ export default {
 
     async getMessages () {
       this.loading = true
-      var params = {
+      let params = {
         addresses: [this.account.address],
-        pagination: 1000,
+        pagination: this.pagination.per_page,
+        page: this.current_page,
         message_type: 'PROGRAM'
       }
       if (this.search.length > 0) {
         params.hashes = [this.search]
       }
-      await messages.get_messages(params).then(async (response) => {
-        var programsTmp = response.messages
+      messages.get_messages(params).then(async (response) => {
+        this.pagination.total = response.pagination_total
+        this.pagination.pages = Math.ceil(response.pagination_total / this.pagination.per_page)
+        let programsTmp = response.messages
         for (var i = 0; i < programsTmp.length; i++) {
-          let tx = programsTmp[i].content.code.ref
+          let tx = programsTmp[i].content?.code.ref
           // retrieve store messages
-          await messages.get_messages({
-            addresses: [this.account.address],
-            hashes: [tx]
-          }).then(async (response) => {
-            let storeObj = response.messages[0].content
-            programsTmp[i].storeObj = storeObj
-          }).catch(() => {
-            this.loading = false
-          })
+          if (tx & !programsTmp[i].forgotten_by) {
+            messages.get_messages({
+              addresses: [this.account.address],
+              hashes: [tx]
+            }).then(async (response) => {
+              let storeObj = response.messages[0].content
+              programsTmp[i].storeObj = storeObj
+            }).catch(() => {
+              this.loading = false
+            })
+          }
         }
         this.programs = programsTmp
         this.loading = false
@@ -112,6 +136,10 @@ export default {
     account (account) {
       this.$store.dispatch('update_stored')
       this.getMessages()
+    },
+    current_page (value) {
+      this.pagination.current = value
+      this.getMessages()
     }
   },
   async mounted () {
@@ -121,4 +149,5 @@ export default {
 </script>
 
 <style lang="scss">
+
 </style>
