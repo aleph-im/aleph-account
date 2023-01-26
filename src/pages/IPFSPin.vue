@@ -27,7 +27,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog v-model="delete_prompt">
+    <q-dialog v-model="delete_prompt" persistent>
       <q-card style="min-width: 400px">
         <q-card-section>
           <div class="text-h6">Are you sure?</div>
@@ -48,7 +48,7 @@
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="Cancel" color="grey" v-close-popup />
+          <q-btn flat label="Cancel" color="grey" @click="closePopup()" />
           <q-btn color="aleph-radial" label="Delete" :disable="delete_field !== 'DELETE'" :loading="loading"
             @click="forgetMessage(selected_message)" />
         </q-card-actions>
@@ -247,12 +247,12 @@ export default {
     }
   },
   methods: {
+    closePopup () {
+      this.delete_field = ''
+      this.delete_prompt = false
+    },
     delete_rules (val) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve(!!val & val === 'DELETE' || 'please enter DELETE in capital letters')
-        }, 500)
-      })
+      return !!val & val === 'DELETE' || 'please enter DELETE in capital letters'
     },
     show_delete_prompt (message) {
       this.delete_prompt = true
