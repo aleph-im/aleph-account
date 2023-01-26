@@ -165,6 +165,7 @@ import { format, copyToClipboard } from 'quasar'
 import { sha256 as Sha256 } from 'sha.js'
 import isIPFS from 'is-ipfs'
 
+const { humanStorageSize } = format
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
