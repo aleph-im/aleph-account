@@ -94,7 +94,7 @@ export default new Vuex.Store({
     },
     set_stored (state, { files, total }) {
       state.stored = files
-      state.stored_total = total || files.reduce((ac, cv) => (ac += cv?.content?.size || 0), 0)
+      state.stored_total = total
     },
     update_note (state, new_note) {
       for (const note of state.notes) {
@@ -324,7 +324,12 @@ export default new Vuex.Store({
               api_server: state.api_server
               // channel: 'PINNING'
             })
-          if (items.messages) { commit('set_stored', items.messages) }
+          if (items.messages) {
+            commit('set_stored', {
+              files: items.messages,
+              total: items.messages.reduce((ac, cv) => (ac += cv?.content?.size || 0), 0)
+            })
+          }
         }
       }
     }
