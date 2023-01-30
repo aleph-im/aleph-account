@@ -308,28 +308,46 @@ export default new Vuex.Store({
     },
     async update_stored ({ state, commit }) {
       if (state.account !== null) {
+        let total_size
+        let items = await messages.get_messages({
+          message_type: 'STORE',
+          addresses: [state.account.address],
+          pagination: 1000,
+          api_server: state.api_server,
+          channel: 'PINNING'
+        })
+
+        let files = items?.messages || []
+
         try {
           // Postgres API
           const { data } = await axios.get(`${state.api_server}/api/v0/addresses/${state.account.address}/files?pagination=1000`)
-          commit('set_stored', { files: data.files, total: data.total_size })
+          total_size = data?.total_size
+          const stack = [...data.files]
+          files = files.map(file => {
+            const stackIndex = stack.findIndex(fileInStack => fileInStack.item_hash === file.item_hash)
+            let size = 0
+            if (stackIndex !== -1) {
+              size = stack[stackIndex]?.size
+              stack.splice(stackIndex, 1)
+            }
+            return {
+              ...file,
+              content: {
+                ...file.content,
+                size
+              }
+            }
+          })
+          console.log(files)
         } catch (error) {
           console.log('Files API is not yet implemented on the node')
-          console.log('Fallback...')
-
-          let items = await messages.get_messages(
-            {
-              message_type: 'STORE',
-              addresses: [state.account.address],
-              pagination: 1000,
-              api_server: state.api_server
-              // channel: 'PINNING'
-            })
-          if (items.messages) {
-            commit('set_stored', {
-              files: items.messages,
-              total: items.messages.reduce((ac, cv) => (ac += cv?.content?.size || 0), 0)
-            })
-          }
+        }
+        if (items.messages) {
+          commit('set_stored', {
+            files,
+            total: total_size || items.messages.reduce((ac, cv) => (ac += cv?.content?.size || 0), 0)
+          })
         }
       }
     }

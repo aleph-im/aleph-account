@@ -20,7 +20,6 @@
 
         <q-card-section v-if="cid_info">
           <b>Type:</b> {{cid_info.type}}<br />
-          <b>Size:</b> {{humanStorageSize(cid_info.cumulativeSize)}}
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
@@ -186,6 +185,7 @@ export default {
       let ipfs_stores = this.stored.filter(
         item => item.content?.item_type === 'ipfs'
       )
+
       if (this.tab === 'active') {
         return ipfs_stores.filter(
           item => (
