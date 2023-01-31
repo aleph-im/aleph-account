@@ -8,6 +8,7 @@ import {
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
 import axios from 'axios'
+import { hashmapReplace } from 'src/helpers/utilities'
 
 var providers = require('ethers').providers
 
@@ -323,22 +324,32 @@ export default new Vuex.Store({
           // Postgres API
           const { data } = await axios.get(`${state.api_server}/api/v0/addresses/${state.account.address}/files?pagination=1000`)
           total_size = data?.total_size
-          const stack = [...data.files]
-          files = files.map(file => {
-            const stackIndex = stack.findIndex(fileInStack => fileInStack.item_hash === file.item_hash)
-            let size = 0
-            if (stackIndex !== -1) {
-              size = stack[stackIndex]?.size
-              stack.splice(stackIndex, 1)
-            }
-            return {
-              ...file,
-              content: {
-                ...file.content,
-                size
-              }
+          // const stack = [...data.files]
+          // files = files.map(file => {
+          //   const stackIndex = stack.findIndex(fileInStack => fileInStack.item_hash === file.item_hash)
+          //   let size = 0
+          //   if (stackIndex !== -1) {
+          //     size = stack[stackIndex]?.size
+          //     stack.splice(stackIndex, 1)
+          //   }
+          //   return {
+          //     ...file,
+          //     content: {
+          //       ...file.content,
+          //       size
+          //     }
+          //   }
+          // })
+          // console.log(files)
+          const getItemHash = x => x.item_hash
+          const replacementCallback = (from, to) => ({
+            ...to,
+            content: {
+              ...to.content,
+              size: from.size || 0
             }
           })
+          files = hashmapReplace(data.files, getItemHash, files, getItemHash, replacementCallback)
           console.log(files)
         } catch (error) {
           console.log('Files API is not yet implemented on the node')

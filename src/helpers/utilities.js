@@ -40,3 +40,26 @@ export function convertTimestamp (timestamp) {
 export function ellipseAddress (address, width = 10) {
   return `${address.slice(0, width)}...${address.slice(-width)}`
 }
+
+/**
+ * Use to copy an element from on array to the other based on a key.
+ * Transforms a O(n^2) into a O(2n) operation
+ *
+ * @param {Array} replaceFrom An array to copy value from
+ * @param {Function} accessorFrom A function that retrieves a key in `replaceFrom`
+ * @param {Array} replaceInto The copy destination
+ * @param {Function} accessorInto A function that retrieves a key in `replaceTo`
+ * @param {Function} replacementCallback A function that should output an object
+ */
+export function hashmapReplace (replaceFrom, accessorFrom, replaceInto, accessorInto, replacementCallback) {
+  const hashMap = {}
+  for (const i of replaceFrom) {
+    const hashMapKey = accessorFrom(i)
+    hashMap[hashMapKey] = i
+  }
+
+  return replaceInto.map((x, i) => {
+    const hashMapKey = accessorInto(x)
+    return replacementCallback(hashMap[hashMapKey], x, hashMapKey, i)
+  })
+}
