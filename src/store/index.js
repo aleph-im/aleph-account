@@ -8,7 +8,7 @@ import {
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
 import axios from 'axios'
-import { hashmapReplace } from 'src/helpers/utilities'
+import { joinArrays } from 'src/helpers/utilities'
 
 var providers = require('ethers').providers
 
@@ -324,7 +324,7 @@ export default new Vuex.Store({
           // Postgres API
           const { data } = await axios.get(`${state.api_server}/api/v0/addresses/${state.account.address}/files?pagination=1000`)
           total_size = data?.total_size
-          
+
           const getItemHash = x => x.item_hash
           const replacementCallback = (from, to) => ({
             ...to,
@@ -333,7 +333,7 @@ export default new Vuex.Store({
               size: from.size || 0
             }
           })
-          files = hashmapReplace(data.files, getItemHash, files, getItemHash, replacementCallback)
+          files = joinArrays(data.files, getItemHash, files, getItemHash, replacementCallback)
         } catch (error) {
           console.log('Files API is not yet implemented on the node')
         }

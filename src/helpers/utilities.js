@@ -45,21 +45,21 @@ export function ellipseAddress (address, width = 10) {
  * Use to copy an element from on array to the other based on a key.
  * Transforms a O(n^2) into a O(2n) operation
  *
- * @param {Array} replaceFrom An array to copy value from
- * @param {Function} accessorFrom A function that retrieves a key in `replaceFrom`
- * @param {Array} replaceInto The copy destination
- * @param {Function} accessorInto A function that retrieves a key in `replaceTo`
- * @param {Function} replacementCallback A function that should output an object
+ * @param {Array} origin An array to copy value from
+ * @param {Function} originAccessor A function that retrieves a key in `origin`
+ * @param {Array} destination The copy destination
+ * @param {Function} destinationAccessor A function that retrieves a key in `replaceTo`
+ * @param {Function} joinCallback A function that takes a value with the same key from `origin` and `destination` and outputs an object
  */
-export function hashmapReplace (replaceFrom, accessorFrom, replaceInto, accessorInto, replacementCallback) {
-  const hashMap = {}
-  for (const i of replaceFrom) {
-    const hashMapKey = accessorFrom(i)
-    hashMap[hashMapKey] = i
+export function joinArrays (origin, originAccessor, destination, destinationAccessor, joinCallback) {
+  const hashMap = new Map()
+  for (const item of origin) {
+    const hashMapKey = originAccessor(item)
+    hashMap.set(hashMapKey, item)
   }
 
-  return replaceInto.map((x, i) => {
-    const hashMapKey = accessorInto(x)
-    return replacementCallback(hashMap[hashMapKey], x, hashMapKey, i)
+  return destination.map((x, i) => {
+    const hashMapKey = destinationAccessor(x)
+    return joinCallback(hashMap.get(hashMapKey), x, hashMapKey, i)
   })
 }
