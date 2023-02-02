@@ -220,12 +220,8 @@ export default {
       }
       return 0
     },
-    total_used () {
-      let value = 0
-      for (let item of this.stored) {
-        value = value + item.content.size
-      }
-      return value / (1024 ** 2)
+    total_used (state) {
+      return state.stored_total / (1024 ** 2)
     },
     to_store_size () {
       let size = 0

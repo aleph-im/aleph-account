@@ -189,18 +189,13 @@ export default {
       return 0
     },
     total_used (state) {
-      let value = 0
-      for (let item of state.stored) {
-        if (item.content) {
-          value += (item.content.size ? item.content.size : 0)
-        }
-      }
-      return value / (1024 ** 2)
+      return state.stored_total / (1024 ** 2)
     },
     displayed_stores (state) {
       let ipfs_stores = this.stored.filter(
         item => item.content?.item_type === 'ipfs'
       )
+
       if (this.tab === 'active') {
         return ipfs_stores.filter(
           item => (
