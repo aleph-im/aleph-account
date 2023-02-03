@@ -106,10 +106,10 @@ export default {
         this.pagination.total = response.pagination_total
         this.pagination.pages = Math.ceil(response.pagination_total / this.pagination.per_page)
         let programsTmp = response.messages
-        for (var i = 0; i < programsTmp.length; i++) {
+        for (let i = 0; i < programsTmp.length; i++) {
           let tx = programsTmp[i].content?.code.ref
           // retrieve store messages
-          if (tx & !programsTmp[i].forgotten_by) {
+          if (tx && !programsTmp[i].forgotten_by) {
             messages.get_messages({
               addresses: [this.account.address],
               hashes: [tx]
