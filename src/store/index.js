@@ -7,6 +7,8 @@ import {
 } from '../services/balances'
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
+import axios from 'axios'
+import { joinArrays } from 'src/helpers/utilities'
 
 var providers = require('ethers').providers
 
@@ -31,6 +33,7 @@ export default new Vuex.Store({
     api_server: 'https://api2.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
     ipfs_gateway: 'https://ipfs.io/ipfs/',
+    solana_rpc: 'https://api.mainnet-beta.solana.com',
     account: null,
     profiles: {},
     last_broadcast: null,
@@ -45,6 +48,7 @@ export default new Vuex.Store({
     nodes: [],
     resource_nodes: [],
     stored: [],
+    stored_total: 0,
     mb_per_aleph: 3,
     balance_info: {
       ALEPH: 0
@@ -60,7 +64,10 @@ export default new Vuex.Store({
     node_scores: { ccn: [], crn: [] },
     node_metrics: { ccn: [], crn: [] },
     latest_ccn_version: null,
-    latest_ccn_timestamp: null
+    latest_ccn_timestamp: null,
+    feature_enabled: {
+      solana: false
+    }
   },
   mutations: {
     set_account (state, account) {
@@ -122,8 +129,9 @@ export default new Vuex.Store({
           console.log(state[stateNodeType])
         })
     },
-    set_stored (state, stored) {
-      state.stored = stored
+    set_stored (state, { files, total }) {
+      state.stored = files
+      state.stored_total = total
     },
     update_note (state, new_note) {
       for (const note of state.notes) {
@@ -275,7 +283,7 @@ export default new Vuex.Store({
           ))
         } else if (state.account.type === 'SOL') {
           let val = await get_solana_balance_info(state.account.address,
-            'https://solana-api.projectserum.com',
+            state.solana_rpc,
             state.splToken_address
           )
           commit('set_balance_info', {
@@ -337,16 +345,40 @@ export default new Vuex.Store({
     },
     async update_stored ({ state, commit }) {
       if (state.account !== null) {
-        let items = await messages.get_messages(
-          {
-            message_type: 'STORE',
-            addresses: [state.account.address],
-            pagination: 1000,
-            api_server: state.api_server,
-            channel: 'PINNING'
-          })
+        let total_size
+        let items = await messages.get_messages({
+          message_type: 'STORE',
+          addresses: [state.account.address],
+          pagination: 1000,
+          api_server: state.api_server,
+          channel: 'PINNING'
+        })
 
-        if (items.messages) { commit('set_stored', items.messages) }
+        let files = items?.messages || []
+
+        try {
+          // Postgres API
+          const { data } = await axios.get(`${state.api_server}/api/v0/addresses/${state.account.address}/files?pagination=1000`)
+          total_size = data?.total_size
+
+          const getItemHash = x => x.item_hash
+          const replacementCallback = (from, to) => ({
+            ...to,
+            content: {
+              ...to.content,
+              size: from.size || 0
+            }
+          })
+          files = joinArrays(data.files, getItemHash, files, getItemHash, replacementCallback)
+        } catch (error) {
+          console.log('Files API is not yet implemented on the node')
+        }
+        if (items.messages) {
+          commit('set_stored', {
+            files,
+            total: total_size || items.messages.reduce((ac, cv) => (ac += cv?.content?.size || 0), 0)
+          })
+        }
       }
     }
     // async update_pages({ state, commit }) {

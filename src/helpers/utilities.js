@@ -1,5 +1,3 @@
-import { Notify } from 'quasar'
-
 // FIXME
 // Potential dupplicate of "text-overflow: ellipsis" property
 // https://developer.mozilla.org/en-US/docs/Web/CSS/text-overflow
@@ -43,22 +41,27 @@ export function ellipseAddress (address, width = 10) {
   return `${address.slice(0, width)}...${address.slice(-width)}`
 }
 
-export async function copyToClipboard (text) {
-  const clipboardPermission = await navigator.permissions.query({ name: 'clipboard-write' })
-  const notifyOptions = {
-    position: 'top',
-    timeout: 5000,
-    message: 'Copied to clipboard'
+/**
+ * Use to copy an element from on array to the other based on a key.
+ * Transforms a O(n^2) into a O(2n) operation
+ *
+ * @param {Array} origin An array to copy value from
+ * @param {Function} originAccessor A function that retrieves a key in `origin`
+ * @param {Array} destination The copy destination
+ * @param {Function} destinationAccessor A function that retrieves a key in `replaceTo`
+ * @param {Function} joinCallback A function that takes a value with the same key from `origin` and `destination` and outputs an object
+ */
+export function joinArrays (origin, originAccessor, destination, destinationAccessor, joinCallback) {
+  const hashMap = new Map()
+  for (const item of origin) {
+    const hashMapKey = originAccessor(item)
+    hashMap.set(hashMapKey, item)
   }
 
-  if (clipboardPermission.state === 'granted' || clipboardPermission.state === 'prompt') {
-    await navigator.clipboard.writeText(text)
-  } else {
-    notifyOptions.message = 'Unable to access the clipboard'
-    notifyOptions.color = 'negative'
-  }
-
-  return Notify.create(notifyOptions)
+  return destination.map((x, i) => {
+    const hashMapKey = destinationAccessor(x)
+    return joinCallback(hashMap.get(hashMapKey), x, hashMapKey, i)
+  })
 }
 
 export function nullButNot0 (input) {

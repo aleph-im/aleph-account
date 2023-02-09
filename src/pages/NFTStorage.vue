@@ -31,8 +31,8 @@
                  class="full-width" controls autoplay loop
                  v-else-if="item.content.metadata.animation_url" />
 
-            <q-card-section v-if="item.content.metadata.name">
-              <div class="text-h6">{{item.content.metadata.name.substring(0, 100)}}</div>
+            <q-card-section :style="'overflow-wrap: break-word;'" v-if="item.content.metadata.name">
+              <div class="text-h6"> {{item.content.metadata.name.substring(0, 100)}}</div>
               <div class="text-subtitle2">
                 Snapshot from {{new Date(item.time*1000).toLocaleDateString()}}
               </div>
@@ -70,7 +70,6 @@ import { posts } from 'aleph-js'
 import { update_post } from '../services/posts'
 const { humanStorageSize } = format
 
-import IPFS from 'ipfs'
 import NftSnapshot from 'src/components/NftSnapshot.vue'
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -104,11 +103,7 @@ export default {
       return 0
     },
     total_used (state) {
-      let value = 0
-      for (let item of state.stored) {
-        value = value + item.content.size
-      }
-      return value / (1024 ** 2)
+      return state.stored_total / (1024 ** 2)
     }
   }),
   components: {
@@ -176,7 +171,7 @@ export default {
     this.update()
   },
   async created () {
-    this.node = await IPFS.create()
+    this.node = this.$ipfs
   },
   watch: {
     account (account) {

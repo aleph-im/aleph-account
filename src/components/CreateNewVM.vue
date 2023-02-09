@@ -80,6 +80,10 @@
             stack-label standout class="q-my-sm" />
         </div>
         <div class="col-12">
+            <q-input v-model="newProgram.metadata.name" label="Name your Program"
+            stack-label standout class="q-my-sm" />
+        </div>
+        <div class="col-12">
             <q-input v-model="newProgram.refRuntime" label="Ref of runtime"
             stack-label standout class="q-my-sm" />
         </div>
@@ -131,7 +135,7 @@
 
 <script>
 /* eslint new-cap: ["error", { "newIsCap": false }] */
-
+import dedent from 'dedent'
 import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
@@ -160,20 +164,36 @@ export default {
       loading: false,
       exportFile: null,
       newProgram: {
+        metadata: {
+          name: 'My program'
+        },
         isFile: false,
         file: null,
         entrypoint: 'app',
         filename: 'main',
-        code: `from fastapi import FastAPI
-app = FastAPI()
-@app.get("/")
-async def root():
-  return {"message": "Hello World"}`,
+        code: dedent`from fastapi import FastAPI
+
+        app = FastAPI()
+
+        @app.get("/")
+        async def root():
+          return {"message": "Hello World"}`,
         refRuntime: 'bd79839bf96e595a06da5ac0b6ba51dea6f7e2591bb913deccded04d831d29f4',
         volumes: []
       },
       languages: [
-        { label: 'Python 3', value: 'python', available: true, code: '' },
+        {
+          label: 'Python 3',
+          value: 'python',
+          available: true,
+          code: dedent`from fastapi import FastAPI
+
+          app = FastAPI()
+
+          @app.get("/")
+          async def root():
+            return {"message": "Hello World"}`
+        },
         { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
       selectedLanguage: { label: 'Python 3', value: 'python', available: true },
@@ -192,6 +212,7 @@ async def root():
       var cmOption = {
         tabSize: 4,
         mode: `${selectedLanguage.value}`,
+        lineNumbers: true,
         line: true,
         theme: this.$q.dark.isActive ? 'blackboard' : 'lucario',
         readOnly: !selectedLanguage.available,
@@ -326,6 +347,7 @@ async def root():
         on: {
           http: true
         },
+        metadata: this.newProgram.metadata,
         environment: {
           reproducible: false,
           internet: true,
@@ -352,6 +374,11 @@ async def root():
       this.$emit('created', false)
       this.loading = false
     }
+  },
+  mounted () {
+    setTimeout(() => {
+      this.newProgram.code += ' '
+    }, 1000)
   }
 }
 </script>

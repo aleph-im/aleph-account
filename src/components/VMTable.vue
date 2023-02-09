@@ -4,21 +4,38 @@
       <q-expansion-item
         v-for="item of data"
         class="overflow-hidden rounded-borders q-mb-md"
-        :key="item.item_hash"
+        :key="item?.item_hash"
         :label="getProgramLabel(item)"
         icon="computer"
         expand-icon-class="text-white"
         :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
         flat
       >
+      <template v-slot:header>
+        <q-item-section avatar>
+          <q-icon name="computer" />
+        </q-item-section>
+        <q-item-section>
+          <span class="lt-md">{{getProgramLabel(item, true)}}</span>
+          <span class="gt-sm">{{getProgramLabel(item)}}</span>
+        </q-item-section>
+      </template>
         <q-card  class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
           <q-card-section horizontal>
             <q-list class="col q-my-sm">
+              <q-item v-show="item.content && !('extra_fields' in item?.content) && item.content?.metadata?.name">
+                <q-item-section>
+                  <q-item-label caption>Name</q-item-label>
+                  <q-item-label>
+                    {{item?.content?.metadata?.name}}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
               <q-item>
                 <q-item-section>
                   <q-item-label caption>Item Hash</q-item-label>
                   <q-item-label>
-                    {{item.item_hash}}
+                    {{ellipseAddress(item.item_hash)}}
                     <q-btn @click="copyToClipboard(item.item_hash)" flat round icon="content_copy" size="sm"/>
                   </q-item-label>
                 </q-item-section>
@@ -36,7 +53,7 @@
                 <q-item-section>
                   <q-item-label caption>Size</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
-                    {{item.storeObj ? item.storeObj.size : 'Null' }} B
+                    {{item?.storeObj ? item?.storeObj.size : 'Null' }} B
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -66,7 +83,7 @@
                 <q-btn flat icon="link" align="left" label="View Explorer"
                       @click="openExplorer(item)" />
                 <q-btn flat icon="upload_file" align="left" label="Download Program File"
-                      @click="downloadFile(item.storeObj.item_hash)" />
+                      @click="downloadFile(item?.storeObj.item_hash)" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -82,7 +99,7 @@
 
 <script>
 
-import { convertTimestamp } from '../helpers/utilities'
+import { convertTimestamp, ellipseAddress } from '../helpers/utilities'
 import { copyToClipboard } from 'quasar'
 
 export default {
@@ -94,6 +111,7 @@ export default {
   data () {
     return {
       convertTimestamp: convertTimestamp,
+      ellipseAddress: ellipseAddress,
       copyToClipboard: copyToClipboard,
       filter: '',
       columns: [
@@ -105,7 +123,6 @@ export default {
       ]
     }
   },
-
   methods: {
     openExplorer (message) {
       const explorerURL = `https://explorer.aleph.im/address/ETH/${this.account.address}/message/PROGRAM/${message.item_hash}`
@@ -133,13 +150,17 @@ export default {
       req.send()
     },
 
-    getProgramLabel (program) {
+    getProgramLabel (program, ellipse = false) {
+      if (!program.content) return program.item_hash
       if (!('extra_fields' in program.content)) {
-        return program.item_hash
-      } else if (!('program_name' in program.content.extra_fields)) {
-        return program.item_hash
-      } else if (program.content.extra_fields.program_name.length === 0) {
-        return program.item_hash
+        if (program?.content?.metadata?.name) {
+          return `${program.content?.metadata?.name} (${ellipseAddress(program.item_hash)})`
+        } else {
+          if (ellipse) {
+            return ellipseAddress(program.item_hash)
+          }
+          return program.item_hash
+        }
       }
       return program.content.extra_fields.program_name
     }
