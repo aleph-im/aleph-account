@@ -135,7 +135,7 @@ export default {
     },
 
     downloadFile (item_hash) {
-      const urlToSend = `http://api2.aleph.im/api/v0/storage/raw/${item_hash}`
+      const urlToSend = `https://api2.aleph.im/api/v0/storage/raw/${item_hash}`
       var req = new XMLHttpRequest()
       req.open('GET', urlToSend, true)
       req.responseType = 'blob'
