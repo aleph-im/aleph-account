@@ -114,19 +114,29 @@ export default new Vuex.Store({
           const nodeScores = state.node_scores[messageNodeType]
           const nodeMetrics = state.node_metrics[messageNodeType]
 
-          state[stateNodeType] = state[stateNodeType].map(node => {
-            if (node.score === undefined) {
-              const score = nodeScores.find(f => f.node_id === node.hash)
-              const metrics = nodeMetrics.find(f => f.node_id === node.hash)
+          let joinedNodes = state[stateNodeType]
+          joinedNodes = joinArrays(
+            nodeScores,
+            x => x.node_id,
+            joinedNodes,
+            x => x.hash,
+            (from, to) => ({
+              ...to,
+              score: from
+            })
+          )
+          joinedNodes = joinArrays(
+            nodeMetrics,
+            x => x.node_id,
+            joinedNodes,
+            x => x.hash,
+            (from, to) => ({
+              ...to,
+              metrics: from
+            })
+          )
 
-              const _node = { ...node }
-              if (score) { _node.score = score }
-              if (metrics) { _node.metrics = metrics }
-              return _node
-            }
-            return node
-          })
-          console.log(state[stateNodeType])
+          state[stateNodeType] = joinedNodes
         })
     },
     set_stored (state, { files, total }) {
