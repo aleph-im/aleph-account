@@ -379,7 +379,7 @@ export default {
       }
     },
     is_node_outdated (node) {
-      if (node.type === "compute" && this.latest_ccn_version && node?.metrics && this.account && this.account.address === node.owner) {
+      if (node.type === 'compute' && this.latest_ccn_version && node?.metrics && this.account && this.account.address === node.owner) {
         return node?.metrics.version !== this.latest_ccn_version
       }
     },
