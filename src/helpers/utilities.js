@@ -50,3 +50,26 @@ export function ellipseAddress (address, width = 10) {
 export function getBool (value) {
   return Boolean(parseInt(value))
 }
+
+/**
+ * Use to copy an element from on array to the other based on a key.
+ * Transforms a O(n^2) into a O(2n) operation
+ *
+ * @param {Array} origin An array to copy value from
+ * @param {Function} originAccessor A function that retrieves a key in `origin`
+ * @param {Array} destination The copy destination
+ * @param {Function} destinationAccessor A function that retrieves a key in `replaceTo`
+ * @param {Function} joinCallback A function that takes a value with the same key from `origin` and `destination` and outputs an object
+ */
+export function joinArrays (origin, originAccessor, destination, destinationAccessor, joinCallback) {
+  const hashMap = new Map()
+  for (const item of origin) {
+    const hashMapKey = originAccessor(item)
+    hashMap.set(hashMapKey, item)
+  }
+
+  return destination.map((x, i) => {
+    const hashMapKey = destinationAccessor(x)
+    return joinCallback(hashMap.get(hashMapKey), x, hashMapKey, i)
+  })
+}
