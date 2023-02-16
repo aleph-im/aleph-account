@@ -108,7 +108,10 @@
               stack-label standout class="q-my-sm" />
           </div>
           <div v-show="!volume.isPersistent">
-            <span>Use latest version?</span>
+            <div class="q-ml-sm">
+              Use latest version
+              <q-icon name="help"  style="font-size: 20px;" class="q-ml-sm"><q-tooltip v-model="showingTooltip">Supervisor will download the new version of the volume and restart the VM.</q-tooltip></q-icon>
+            </div>
             <q-radio v-model="volume.use_latest" :val="true" label="Yes" />
             <q-radio v-model="volume.use_latest" :val="false" label="No" />
           </div>
@@ -198,7 +201,8 @@ export default {
       ],
       selectedLanguage: { label: 'Python 3', value: 'python', available: true },
       step: 1,
-      tab: false
+      tab: false,
+      showingTooltip: false
     }
   },
   computed: {
