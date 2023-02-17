@@ -422,7 +422,7 @@ export default {
         .then(() => {
           this.getIpfsNodeInfo()
           this.$store.dispatch('update_stored')
-          this.delete_prompt = false
+          this.closePopup()
         })
         .catch((response) => {
           this.loading = false
