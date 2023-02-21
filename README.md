@@ -44,3 +44,18 @@ Feature flags are defined in [quasar.conf.js](./quasar.conf.js) (in `build>env`)
 To enable a certain feature you'll have to set the according environment variable before building the assets. ex: `FEATURE_SOLANA=1 yarn dev` will launch a development server with the solana login enabled, and `FEATURE_SOLANA=1 npx quasar build` will build the application with the solana login. Valid values for feature flags are : `1` = enabled, `0` = disabled.
 
 Calling the scripts with no environment variables will use the default value set in `quasar.conf.js`
+
+
+## Contributing to this repository
+
+We use [husky](https://typicode.github.io/husky/) to ensure that the code is properly linted before it is commited. Each time you'll try to commit, a git hook is triggered that will run the linter, if the code you're trying to commit is not properly linted the process will exit. 
+
+In order to enable Husky on your system, run:
+```shell
+npx husky install
+```
+
+Although not reccomended you can still bypass the pre-commit hook by using the `--no-verify` option.
+```shell
+git commit -m 'message' --no-verify
+```
