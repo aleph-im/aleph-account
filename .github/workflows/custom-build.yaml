@@ -3,15 +3,15 @@
 name: Custom build
 on:
   workflow_dispatch:
-      inputs:
-        feature_flags:
-          description: 'A string of feature flags to hand to the build script (ex: FEATURE_ABC=1 FEATURE_XYZ=0)'
-          required: false
-          default: ''
-        IPFS_push:
-          description: 'Publish build on IPFS (0: false, 1: true)'
-          required: true
-          default: 0
+    inputs:
+      enable_solana:
+        description: "Enable Solana login feature (0: disabled, 1: enabled)"
+        required: true
+        default: 0
+      IPFS_push:
+        description: "Publish build on IPFS (0: false, 1: true)"
+        required: true
+        default: 0
 
 defaults:
   run:
@@ -36,13 +36,15 @@ jobs:
         run: yarn install
 
       - name: Build
-        run: ${github.event.inputs.feature_flags} npx quasar build
+        run: npx quasar build
+        env:
+          FEATURE_SOLANA: ${{ github.event.inputs.enable_solana }}
 
       - uses: actions/upload-artifact@v3
         with:
           name: aleph-account
           path: dist/spa
-    
+
   upload:
     runs-on: ubuntu-22.04
     needs: [build]
