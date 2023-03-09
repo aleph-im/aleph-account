@@ -107,8 +107,11 @@
             <q-input v-model="volume.ref" label="Ref"
               stack-label standout class="q-my-sm" />
           </div>
-          <div v-show="!volume.persistence">
-            <span>Use latest version?</span>
+          <div v-show="!volume.isPersistent">
+            <div class="q-ml-sm">
+              Use latest version
+              <q-icon name="help"  style="font-size: 20px;" class="q-ml-sm"><q-tooltip v-model="showingTooltip">Supervisor will download the new version of the volume and restart the VM.</q-tooltip></q-icon>
+            </div>
             <q-radio v-model="volume.use_latest" :val="true" label="Yes" />
             <q-radio v-model="volume.use_latest" :val="false" label="No" />
           </div>
@@ -135,7 +138,7 @@
 
 <script>
 /* eslint new-cap: ["error", { "newIsCap": false }] */
-
+import dedent from 'dedent'
 import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/blackboard.css'
@@ -171,21 +174,35 @@ export default {
         file: null,
         entrypoint: 'app',
         filename: 'main',
-        code: `from fastapi import FastAPI
-app = FastAPI()
-@app.get("/")
-async def root():
-  return {"message": "Hello World"}`,
+        code: dedent`from fastapi import FastAPI
+
+        app = FastAPI()
+
+        @app.get("/")
+        async def root():
+          return {"message": "Hello World"}`,
         refRuntime: 'bd79839bf96e595a06da5ac0b6ba51dea6f7e2591bb913deccded04d831d29f4',
         volumes: []
       },
       languages: [
-        { label: 'Python 3', value: 'python', available: true, code: '' },
+        {
+          label: 'Python 3',
+          value: 'python',
+          available: true,
+          code: dedent`from fastapi import FastAPI
+
+          app = FastAPI()
+
+          @app.get("/")
+          async def root():
+            return {"message": "Hello World"}`
+        },
         { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
       selectedLanguage: { label: 'Python 3', value: 'python', available: true },
       step: 1,
-      tab: false
+      tab: false,
+      showingTooltip: false
     }
   },
   computed: {
@@ -199,6 +216,7 @@ async def root():
       var cmOption = {
         tabSize: 4,
         mode: `${selectedLanguage.value}`,
+        lineNumbers: true,
         line: true,
         theme: this.$q.dark.isActive ? 'blackboard' : 'lucario',
         readOnly: !selectedLanguage.available,
@@ -356,6 +374,11 @@ async def root():
       this.$emit('created', false)
       this.loading = false
     }
+  },
+  mounted () {
+    setTimeout(() => {
+      this.newProgram.code += ' '
+    }, 1000)
   }
 }
 </script>

@@ -10,43 +10,56 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-input dense v-model="cid_name"
-                   label="Name (optional)"  />
-          <q-input dense v-model="cid_input"
-                   autofocus label="Content Hash (CID)" @keyup="fetch_cid_info"
-                   @keyup.enter="upload_cid"
-                   @change="fetch_cid_info" />
+          <q-input dense v-model="cid_name" label="Name (optional)" />
+          <q-input dense v-model="cid_input" autofocus label="Content Hash (CID)" @keyup="fetch_cid_info"
+            @keyup.enter="upload_cid" @change="fetch_cid_info" />
         </q-card-section>
 
         <q-card-section v-if="cid_info">
-          <b>Type:</b> {{cid_info.type}}<br />
-          <b>Size:</b> {{humanStorageSize(cid_info.cumulativeSize)}}
+          <b>Type:</b> {{ cid_info.type }}<br />
+          <b>Size:</b> {{ humanStorageSize(cid_info.cumulativeSize) }}
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
           <q-btn flat label="Cancel" v-close-popup />
-          <q-btn :disable="cid_info === null"
-          color="aleph-radial" label="Pin content" @click="upload_cid"
-          v-close-popup />
+          <q-btn :disable="cid_info === null" color="aleph-radial" label="Pin content" @click="upload_cid"
+            v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="delete_prompt" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">Are you sure?</div>
+          <div class="text-body2 q-mt-md">You are about to delete a file with the following CID:</div>
+          <div class="text-body1 text-weight-bold q-my-md">{{ selected_message.content?.item_hash }}</div>
+          <div class="text-body2">This file stored on IPFS will be unpinned from the node.</div>
+          <div class="text-body2 q-my-md">Leave a note for future reference. (Optional)</div>
+          <div class="text-body2">
+            <q-input ref="delete_field" standout v-model="selected_message.reason" label="Enter note" />
+          </div>
+          <div class="text-body2 q-mt-md">In order to confirm your action, please enter <span class="text-weight-bold">
+              DELETE</span> in capital letters.</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input ref="delete_field" standout v-model="delete_field" label="Type DELETE here"
+            :rules="[delete_rules]" />
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="Cancel" color="grey" @click="closePopup()" />
+          <q-btn color="aleph-radial" label="Delete" :disable="delete_field !== 'DELETE'" :loading="loading"
+            @click="forgetMessage(selected_message)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
     <div v-if="account" class="q-mb-md">
-      <input type="file"
-             style="display: none"
-             ref="finput"
-             @change="do_upload"
-              />
-      <input type="file"
-             style="display: none"
-             ref="folinput"
-             @change="do_upload_folder"
-             webkitdirectory />
+      <input type="file" style="display: none" ref="finput" @change="do_upload" />
+      <input type="file" style="display: none" ref="folinput" @change="do_upload_folder" webkitdirectory />
 
       <div class="row justify-between">
-        <q-tabs
-          v-model="tab"
-        >
+        <q-tabs v-model="tab">
           <q-tab name="active" label="Active" />
           <q-tab name="archived" label="Archived" />
         </q-tabs>
@@ -90,16 +103,10 @@
       Please connect.
     </div>
     <div v-if="account">
-      <q-expansion-item
-        v-for="item of displayed_stores"
-        class="overflow-hidden rounded-borders q-mb-md"
-        :icon="item.content.content_type === 'directory' ? 'folder' : 'attachment'"
-        :key="item.hash"
-        :label="item.content.name ? item.content.name : item.content.item_hash"
-        expand-icon-class="text-white"
-        :header-class="'bg-expand text-white ' + ($q.dark.isActive?'bg-dark-40':'bg-aleph-radial')"
-        flat
-      >
+      <q-expansion-item v-for="item of displayed_stores" class="overflow-hidden rounded-borders q-mb-md"
+        :icon="item.content.content_type === 'directory' ? 'folder' : 'attachment'" :key="item.hash"
+        :label="item.content.name ? item.content.name : item.content.item_hash" expand-icon-class="text-white"
+        :header-class="'bg-expand text-white ' + ($q.dark.isActive ? 'bg-dark-40' : 'bg-aleph-radial')" flat>
         <q-card class="bg-card-expand rounded-borders" :bordered="!$q.dark.isActive">
           <q-card-section horizontal>
             <q-list class="col q-my-sm">
@@ -107,9 +114,8 @@
                 <q-item-section>
                   <q-item-label caption>CID</q-item-label>
                   <q-item-label>
-                    {{item.content.item_hash}}
-                    <q-btn flat round icon="content_copy" size="sm"
-                           @click="copyToClipboard(item.content.item_hash)" />
+                    {{ item.content.item_hash }}
+                    <q-btn flat round icon="content_copy" size="sm" @click="copyToClipboard(item.content.item_hash)" />
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -117,7 +123,7 @@
                 <q-item-section>
                   <q-item-label caption>Size</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
-                    {{humanStorageSize(item.content.size)}}
+                    {{ humanStorageSize(item.content?.size) }}
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -125,7 +131,7 @@
                 <q-item-section>
                   <q-item-label caption>Date pinned</q-item-label>
                   <q-item-label class="text-body2 overflow-hidden">
-                    {{new Date(item.time*1000).toLocaleDateString()}}
+                    {{ new Date(item.time * 1000).toLocaleDateString() }}
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -134,13 +140,14 @@
             <q-separator vertical />
 
             <q-card-actions vertical class="justify-start q-px-md">
-              <q-btn flat icon="link" label="Direct link"
-                     @click="copyToClipboard(`https://ipfs.io/ipfs/${item.content.item_hash}`)" />
-
-              <q-btn flat icon="archive" label="Archive" v-if="tab === 'active'"
-                     @click="change_item_metadata(item, {status: 'archived'})" />
-              <q-btn flat icon="unarchive" label="Recover" v-if="tab === 'archived'"
-                     @click="change_item_metadata(item, {status: 'active'})" />
+              <q-btn flat icon="link" align="left" label="Direct link"
+                @click="copyToClipboard(`https://ipfs.io/ipfs/${item.content.item_hash}`)" />
+              <q-btn flat icon="archive" align="left" label="Archive" v-if="tab === 'active'"
+                @click="change_item_metadata(item, { status: 'archived' })" />
+              <q-btn flat icon="unarchive" align="left" label="Recover" v-if="tab === 'archived'"
+                @click="change_item_metadata(item, { status: 'active' })" />
+              <q-btn flat icon="delete" align="left" label="Delete" v-if="tab === 'archived'"
+                @click="show_delete_prompt(item)" />
             </q-card-actions>
           </q-card-section>
         </q-card>
@@ -150,13 +157,15 @@
 </template>
 
 <script>
+
 import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 import { mapState } from 'vuex'
-import { store, aggregates } from 'aleph-js'
+import { store, broadcast, aggregates, ethereum, solana } from 'aleph-js'
 import { format, copyToClipboard } from 'quasar'
-const { humanStorageSize } = format
+import { sha256 as Sha256 } from 'sha.js'
+import isIPFS from 'is-ipfs'
 
-const isIPFS = require('is-ipfs')
+const { humanStorageSize } = format
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -180,16 +189,13 @@ export default {
       return 0
     },
     total_used (state) {
-      let value = 0
-      for (let item of state.stored) {
-        value = value + item.content.size
-      }
-      return value / (1024 ** 2)
+      return state.stored_total / (1024 ** 2)
     },
     displayed_stores (state) {
       let ipfs_stores = this.stored.filter(
         item => item.content?.item_type === 'ipfs'
       )
+
       if (this.tab === 'active') {
         return ipfs_stores.filter(
           item => (
@@ -227,10 +233,26 @@ export default {
       cid_prompt: false,
       cid_input: '',
       cid_info: null,
-      cid_name: ''
+      cid_name: '',
+      selected_message: {
+        reason: 'None'
+      },
+      delete_prompt: false,
+      delete_field: ''
     }
   },
   methods: {
+    closePopup () {
+      this.delete_field = ''
+      this.delete_prompt = false
+    },
+    delete_rules (val) {
+      return !!val & val === 'DELETE' || 'please enter DELETE in capital letters'
+    },
+    show_delete_prompt (message) {
+      this.delete_prompt = true
+      this.selected_message = message
+    },
     async change_item_metadata (item, updates) {
       let curmetadata = {}
       if (this.store_info[item.item_hash] !== undefined) {
@@ -286,7 +308,6 @@ export default {
       }
     },
     async do_upload_folder (evt) {
-      const ipfs = this.ipfs
       let content = []
       let total_size = 0
       for (let file of evt.target.files) {
@@ -296,11 +317,7 @@ export default {
         })
         total_size = total_size + file.size
       }
-      console.log(total_size)
       let result = null
-      for await (result of ipfs.addAll(content)) {
-        console.log(result)
-      }
       await this.create_store(result)
     },
     async create_store (result) {
@@ -349,6 +366,69 @@ export default {
           path: this.cid_name
         })
       }
+    },
+    async putContent (message, content, inline_requested, api_server) {
+      let inline = inline_requested
+      if (inline) {
+        let serialized = JSON.stringify(content)
+        if (serialized.length > 150000) {
+          inline = false
+        } else {
+          message.item_type = 'inline'
+          message.item_content = serialized
+          message.item_hash = new Sha256().update(serialized).digest('hex') // eslint-disable-line no-use-before-define
+        }
+      }
+    },
+    async send (message) {
+      if (this.account.type === 'ETH') {
+        message = await ethereum.sign(this.account, message)
+      } else if (this.account.type === 'SOL') {
+        message = await solana.sign(this.account, message)
+      }
+      await broadcast(message, { api_server: this.api_server })
+    },
+    async forgetMessage (item) {
+      this.loading = true
+      const timestamp = Date.now() / 1000
+      const content = {
+        address: this.account.address,
+        time: timestamp,
+        hashes: [item.item_hash],
+        reason: item.reason?.length > 0 ? item.reason : 'None'
+      }
+      const message = {
+        chain: item.chain,
+        sender: item.sender,
+        type: 'FORGET',
+        channel: item.channel,
+        confirmed: false,
+        signature: '',
+        size: 0,
+        time: timestamp,
+        item_type: item.item_type,
+        item_content: '',
+        item_hash: '',
+        content: content
+      }
+
+      await this.putContent(message, content, true, 'https://api2.aleph.im').catch((response) => {
+        this.loading = false
+      })
+
+      await sleep(1000)
+
+      await this.send(message)
+        .then(() => {
+          this.getIpfsNodeInfo()
+          this.$store.dispatch('update_stored')
+          this.closePopup()
+        })
+        .catch((response) => {
+          this.loading = false
+        })
+
+      this.loading = false
     }
   },
   mounted: function () {
@@ -363,13 +443,11 @@ export default {
     account (account) {
       this.$store.dispatch('update_stored')
       this.$store.dispatch('update_store_info')
-    },
-    balance_info (account) {
-
     }
   }
 }
 </script>
 
 <style lang="scss">
+
 </style>
