@@ -1,23 +1,13 @@
 <template>
-  <q-stepper
-        v-model="step"
+  <q-card
         header-nav
         ref="stepper"
         color="primary"
-        class="shadow-2 nftcard"
+        class="shadow-2 nftcard q-pa-lg"
         animated
       >
-    <q-step
-      :name="STEP_EDITOR"
-      title="Insert your script"
-      icon="settings"
-      :done="step > STEP_EDITOR"
-      :header-nav="step > STEP_EDITOR"
-    >
-      <div class="flex">
-        <span class="q-mr-xs"> Choose your language then copy and paste your code in the following text area</span>
-      </div>
-      <div class="row q-gutter-md q-mt-md">
+      <div class="row q-gutter-sm q-mt-md">
+        <div class="text-subtitle-1 text-weight-bold col-12">Language</div>
         <div class="col-12">
           <q-select standout v-model="selectedLanguage" :options="languages" label="Language">
             <template v-slot:selected-item="scope">
@@ -32,6 +22,38 @@
               >Soon</q-chip>
             </template>
           </q-select>
+        </div>
+        <div class="text-subtitle-1 text-weight-bold col-12">Program</div>
+        <div class="col-12">
+            <q-input v-model="newProgram.metadata.name" label="Name your program"
+            stack-label standout class="q-my-sm" />
+        </div>
+        <div class="col-12 row">
+          <div class="col-9">
+            <q-input v-model="newProgram.entrypoint" label="Your entrypoint"
+            stack-label standout class="q-mr-sm" />
+          </div>
+          <div class="col-3">
+            <q-select standout v-model="selectedVMType" :options="types_vm" label="Type:vm-function">
+              <template v-slot:selected-item="scope">
+              {{ scope.opt.label }}
+              <q-chip
+                v-if="!scope.opt.available"
+                dense
+                square
+                color="white"
+                text-color="primary"
+                class="q-my-none q-mx-xs q-mr-none"
+              >Soon</q-chip>
+            </template>
+          </q-select>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="col-12">
+            <q-input v-model="newProgram.refRuntime" label="Ref of runtime"
+            stack-label standout class="q-my-sm" />
+        </div>
         </div>
         <div class="col-12">
           <q-tabs
@@ -62,31 +84,13 @@
         </q-tab-panels>
         </div>
       </div>
-
-      <q-stepper-navigation>
-        <q-btn :loading="loading" @click="importCode()" :disable="!selectedLanguage.available" color="primary" label="Use this code"/>
-      </q-stepper-navigation>
-    </q-step>
-    <q-step
-      :name="STEP_DONE"
-      title="Settings"
-      icon="settings"
-      :done="step > STEP_DONE"
-      :header-nav="step > STEP_DONE"
-    >
-    <div class="row q-gutter-md q-mt-md">
+    <div class="row q-gutter-sm q-mt-md">
+      <div class=" col-12"><span class="text-grey-7 text-subtitle-1 text-weight-bold">Custom domain </span>(soon)</div>
         <div class="col-12">
-            <q-input v-model="newProgram.entrypoint" label="Your entrypoint"
+            <q-input :disable="true" value="yourdomain.xyz" label="Domain"
             stack-label standout class="q-my-sm" />
         </div>
-        <div class="col-12">
-            <q-input v-model="newProgram.metadata.name" label="Name your Program"
-            stack-label standout class="q-my-sm" />
-        </div>
-        <div class="col-12">
-            <q-input v-model="newProgram.refRuntime" label="Ref of runtime"
-            stack-label standout class="q-my-sm" />
-        </div>
+        <div class="text-subtitle-1 text-weight-bold col-12">Add volumes</div>
         <div class="col-12">
           <q-btn class="q-mr-xs" @click="addVolume(false)" icon="add" outline color="primary" label="Add Volume"/>
           <q-btn @click="addVolume(true)" icon="add" outline color="primary" label="Add Persistent Volume"/>
@@ -128,12 +132,10 @@
           </q-card-actions>
         </q-card>
       </div>
-      <q-stepper-navigation>
+      <div class="col-12 q-my-md">
         <q-btn :loading="loading" color="primary" label="Deploy" @click="deploy()"/>
-        <q-btn flat @click="backStep(STEP_EDITOR)" color="primary" label="Back" class="q-ml-sm" />
-      </q-stepper-navigation>
-    </q-step>
-  </q-stepper>
+      </div>
+  </q-card>
 </template>
 
 <script>
@@ -184,6 +186,18 @@ export default {
         refRuntime: 'bd79839bf96e595a06da5ac0b6ba51dea6f7e2591bb913deccded04d831d29f4',
         volumes: []
       },
+      types_vm: [
+        {
+          label: 'On-demand',
+          value: 'on-demand',
+          available: true
+        },
+        {
+          label: 'Persistent',
+          value: 'persistent',
+          available: false
+        }
+      ],
       languages: [
         {
           label: 'Python 3',
@@ -200,6 +214,7 @@ export default {
         { label: 'Javascript', value: 'javascript', available: false, code: 'console.log("coming soon")' }
       ],
       selectedLanguage: { label: 'Python 3', value: 'python', available: true },
+      selectedVMType: { label: 'On-demand', value: 'on-demand', available: true },
       step: 1,
       tab: false,
       showingTooltip: false
@@ -276,7 +291,6 @@ export default {
       }
     },
     async importCode () {
-      this.loading = true
       const zip = new JSZip()
 
       if (this.csMethodeTab === 'ide') {
@@ -287,7 +301,6 @@ export default {
       this.exportFile = await zip.generateAsync({ type: 'blob' })
 
       this.step = this.STEP_DONE
-      this.loading = false
     },
     async send (message) {
       if (this.account.type === 'ETH') {
@@ -302,6 +315,7 @@ export default {
     },
     async deploy () {
       this.loading = true
+      await this.importCode()
       let storeMessage = await store.submit(
         this.account.address,
         {
@@ -388,6 +402,26 @@ export default {
 </script>
 
 <style lang="scss">
+/* width */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #0054ff;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 .nftcard {
   width: 900px !important;
   max-width: 80vw !important;
