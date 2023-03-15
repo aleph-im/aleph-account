@@ -1,20 +1,21 @@
 <template>
   <q-layout view="lhh LpR lff">
-    <q-header :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm'">
+    <q-header :class="($q.dark.isActive ? 'text-white' : 'text-black') + ' bg-transparent q-pa-sm'">
       <q-toolbar>
 
         <q-btn dense flat round icon="menu" @click="left = !left" v-if="!left" />
 
         <q-toolbar-title class="logo flex">
-            <img v-if="(!left)&&(!$q.dark.isActive)" src="~/assets/logo-blue.svg" height="32">
-            <img v-if="(!left)&&$q.dark.isActive" src="~/assets/logo-white.svg" height="32">
-            <span class="q-ml-sm">
-                aleph.im
-            </span>
+          <img v-if="(!left) && (!$q.dark.isActive)" src="~/assets/logo-blue.svg" height="32">
+          <img v-if="(!left) && $q.dark.isActive" src="~/assets/logo-white.svg" height="32">
+          <span class="q-ml-sm">
+            aleph.im
+          </span>
         </q-toolbar-title>
         <q-space />
         <q-btn-group class="shadow-1 bg-aleph-radial">
-          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="ethWeb3Connect('metamask')">Connect to a wallet</q-btn>
+          <q-btn v-if="!account" size="md" class="bg-aleph-radial text-white" @click="web3ConnectModal = true">Connect to
+            a wallet</q-btn>
           <q-dialog v-model="web3ConnectModal">
             <q-card style="width: 550px">
               <q-card-section>
@@ -24,7 +25,7 @@
               <q-card-section class="q-pt-none">
                 <div class="q-my-md">
                   <div class="text-subtitle-1">Ethereum</div>
-                  <q-separator dark inset/>
+                  <q-separator dark inset />
                 </div>
                 <div class="row">
                   <div class="col">
@@ -76,14 +77,16 @@
             </q-card>
           </q-dialog>
           <q-btn v-if="account" class="text-white">
-            {{balance_info['ALEPH'].toFixed(2)}}
-            <span v-if="owed_rewards">&nbsp;/ {{owed_rewards.toFixed(2)}}</span> <img src="~/assets/logo-white.svg" style="height: 1.4em; margin: 0 0 .2em .4em;"/>
+            {{ balance_info['ALEPH'].toFixed(2) }}
+            <span v-if="owed_rewards">&nbsp;/ {{ owed_rewards.toFixed(2) }}</span> <img src="~/assets/logo-white.svg"
+              style="height: 1.4em; margin: 0 0 .2em .4em;" />
             <q-tooltip v-if="owed_rewards">
               <strong>Amount staked / pending rewards</strong><br />
               Rewards are sent every few days when gas is low.
             </q-tooltip>
           </q-btn>
-          <q-btn v-if="account" color="white" text-color="black" class="rounded-forced">{{ellipseAddress(account.address)}}</q-btn>
+          <q-btn v-if="account" color="white" text-color="black"
+            class="rounded-forced">{{ ellipseAddress(account.address) }}</q-btn>
           <q-btn v-if="account" class="" round icon="logout" size="sm" @click="web3Logout()"></q-btn>
         </q-btn-group>
       </q-toolbar>
@@ -99,17 +102,14 @@
         </p>
         <q-list padding class="menu">
           <template v-for="item of links">
-            <q-item-label header v-if="item.title" :key="item.title">{{item.title}}</q-item-label>
-            <q-item v-for="link of item.items"
-                    :key="link.text"
-                    clickable v-ripple
-                    :to="link.link" :exact="link.exact">
+            <q-item-label header v-if="item.title" :key="item.title">{{ item.title }}</q-item-label>
+            <q-item v-for="link of item.items" :key="link.text" clickable v-ripple :to="link.link" :exact="link.exact">
               <q-item-section avatar v-if="link.icon">
                 <q-icon :name="link.icon" />
               </q-item-section>
 
               <q-item-section>
-                {{link.text}}
+                {{ link.text }}
               </q-item-section>
             </q-item>
           </template>
@@ -128,7 +128,8 @@
           <q-separator />
           <q-item class="q-mt-sm">
             <q-item-section>
-              <q-item-label caption>{{(total_used/1024).toFixed(3)}} GB of {{(allowance/1024).toFixed(3)}} GB</q-item-label>
+              <q-item-label caption>{{ (total_used / 1024).toFixed(3) }} GB of {{ (allowance / 1024).toFixed(3) }}
+                GB</q-item-label>
               <q-linear-progress :value="total_used / allowance" class="q-my-sm" rounded />
             </q-item-section>
           </q-item>
@@ -140,10 +141,12 @@
       <router-view />
     </q-page-container>
 
-    <q-footer :class="($q.dark.isActive?'text-white':'text-black') + ' bg-transparent q-pa-sm q-pt-lg row justify-between'"
-              style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">
+    <q-footer
+      :class="($q.dark.isActive ? 'text-white' : 'text-black') + ' bg-transparent q-pa-sm q-pt-lg row justify-between'"
+      style="font-size: 0.9em; margin-bottom: 10px; opacity: 0.3;">
       <p>
-        Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive?'text-white':'text-black')">aleph.im project</a>, all rights reserved.
+        Copyright ©2020-present <a href="https://aleph.im/" :class="($q.dark.isActive ? 'text-white' : 'text-black')">aleph.im
+          project</a>, all rights reserved.
       </p>
       <p v-if="app_version">
         <span caption v-if="last_release_is_a_tag()">
@@ -158,7 +161,7 @@
       </p>
     </q-footer>
 
-  </q-layout>
+</q-layout>
 </template>
 <script>
 import { ellipseAddress } from '../helpers/utilities'
@@ -383,7 +386,7 @@ export default {
         await this.update_distributions()
       })
 
-      provider.on('accountsChanged', async (account) => {
+      web3Provider.on('accountsChanged', async (account) => {
         await this.update_eth_account(web3Provider)
         await this.update_distributions()
       })
@@ -478,9 +481,9 @@ or your build process might be broken! `)
 
 .q-list.menu {
   .q-item {
-      min-height: 36px;
-      padding-bottom: 0;
-      padding-top: 0;
+    min-height: 36px;
+    padding-bottom: 0;
+    padding-top: 0;
   }
 
   .q-item__label--header {
@@ -537,6 +540,7 @@ or your build process might be broken! `)
     :first-child {
       border-radius: 15px;
     }
+
     padding: 5px !important;
 
     .q-item.q-item--active {
@@ -548,27 +552,30 @@ or your build process might be broken! `)
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
 
-      &:before, &:after{
+      &:before,
+      &:after {
         box-sizing: content-box;
         content: '';
         position: absolute;
-        left: 100%; /* I use this instead of right: 0 to avoid 1px rounding errors */
-        margin-left: -15px; /* I use this because I am using left: 100% */
+        left: 100%;
+        /* I use this instead of right: 0 to avoid 1px rounding errors */
+        margin-left: -15px;
+        /* I use this because I am using left: 100% */
         width: 15px;
         height: 15px;
-        border-right: 15px solid #fff ;
+        border-right: 15px solid #fff;
         z-index: 10;
       }
 
       &:before {
         top: -15px;
-        border-bottom: 15px solid  #fff;
+        border-bottom: 15px solid #fff;
         border-bottom-right-radius: 30px;
       }
 
       &:after {
         bottom: -15px;
-        border-top: 15px solid  #fff;
+        border-top: 15px solid #fff;
         border-top-right-radius: 30px;
       }
     }
@@ -581,5 +588,4 @@ or your build process might be broken! `)
 
 .rounded-forced {
   border-radius: 10px !important;
-}
-</style>
+}</style>
