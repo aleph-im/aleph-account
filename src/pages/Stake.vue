@@ -200,9 +200,6 @@ import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
 import store from '../store'
 
-// function sleep (ms) {
-//   return new Promise(resolve => setTimeout(resolve, ms))
-// }
 async function node_action (action, ref) {
   await posts.submit(store.state.account.address, store.state.node_post_type,
     {
@@ -287,7 +284,6 @@ export default {
           return (node.owner !== state.account.address || node.manager !== state.account.address)
         }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
       } else if (state.resource_nodes) {
-        console.log(state.resource_nodes)
         return state.resource_nodes.filter((node) => true)
       } else {
         return []
@@ -393,13 +389,8 @@ export default {
         addresses: [this.scoring_address]
       })
 
-      const { scores, metrics_post } = scoreMessage.posts[0].content
+      const { scores } = scoreMessage.posts[0].content
       this.$store.commit('set_node_scores', scores)
-
-      const metricsMessage = await posts.get_posts('aleph-scoring-metrics', {
-        hashes: [metrics_post]
-      })
-      this.$store.commit('set_node_metrics', metricsMessage.posts[0].content.metrics)
     },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(
@@ -407,12 +398,16 @@ export default {
         `${this.monitor_address}`
       )
 
+      // Dirty hack to avoid multiple updates on the first rendering
+      let lastSocketMessage = Date.now()
       this.statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
         if ((data.content !== undefined) &&
             (data.content.address === this.monitor_address) &&
             (data.content.key === 'corechannel') &&
-            (data.content.content.nodes !== undefined)) {
+            (data.content.content.nodes !== undefined) &&
+            Date.now() - lastSocketMessage > 200) {
+          lastSocketMessage = Date.now()
           this.$store.commit('set_nodes', data.content.content.nodes)
           this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
           this.$store.commit('merge_node_scores')

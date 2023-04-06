@@ -141,14 +141,13 @@
           </q-td>
           <q-td key="score" :props="props">
             <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
-              {{ display_metric(props.row?.score?.total_score) }}
+              {{ display_percentage(props.row?.score?.total_score) }}
               <q-tooltip>
                 <template v-if="props.row?.score?.total_score !== undefined">
                   Details:<br />
                   <ul style="list-style:none; padding:0; margin:0">
                     <li v-for="stat in coreNodeMode ? stats_in_tooltip.ccn : stats_in_tooltip.crn" :key="stat.accessor">
                       {{ stat.accessor.replace(/_/gi, ' ') }}:
-                      <strong>&nbsp;{{ stat.formatter(props.row?.metrics[stat.accessor]) }}</strong>
                     </li>
                   </ul>
                 </template>
@@ -296,19 +295,12 @@ export default {
       registration_modal_open: false,
       stats_in_tooltip: {
         ccn: [
-          { accessor: 'version', formatter: x => x },
-          { accessor: 'aggregate_latency', formatter: this.display_latency },
-          { accessor: 'base_latency', formatter: this.display_latency },
-          { accessor: 'file_download_latency', formatter: this.display_latency },
-          { accessor: 'metrics_endpoint_latency', formatter: this.display_latency },
-          { accessor: 'eth_height_remaining', formatter: x => x },
-          { accessor: 'pending_messages', formatter: x => x }
+          { accessor: 'decentralization', formatter: x => x },
+          { accessor: 'performance', formatter: x => x }
         ],
         crn: [
-          { accessor: 'version', formatter: x => x },
-          { accessor: 'base_latency', formatter: this.display_latency },
-          { accessor: 'diagnostic_vm_latency', formatter: this.display_latency },
-          { accessor: 'full_check_latency', formatter: this.display_latency }
+          { accessor: 'decentralization', formatter: x => x },
+          { accessor: 'performance', formatter: x => x }
         ]
       },
       columns: [
@@ -397,10 +389,6 @@ export default {
       if (nullButNot0(value)) { return 'n/a' }
 
       return (Number(value) * 1000 | 0) + 'ms'
-    },
-    display_metric (value) {
-      if (!value) { return 'n/a' }
-      return Number(Number(value) * 100).toFixed(1) + '%'
     },
     get_hsl (percent) {
       if (!percent) { return '#FFFFFF77' }

@@ -29,7 +29,7 @@ export default new Vuex.Store({
     // monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2', // test
     monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
     sender_address: '0x3a5CC6aBd06B601f4654035d125F9DD2FC992C25',
-    scoring_address: '0x4d741d44348B21e97000A8C9f07Ee34110F7916F',
+    scoring_address: '0x4D52380D3191274a04846c89c069E6C3F2Ed94e4',
     api_server: 'https://api2.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
     ipfs_gateway: 'https://ipfs.io/ipfs/',
@@ -112,7 +112,6 @@ export default new Vuex.Store({
       [['nodes', 'ccn'], ['resource_nodes', 'crn']]
         .forEach(([stateNodeType, messageNodeType]) => {
           const nodeScores = state.node_scores[messageNodeType]
-          const nodeMetrics = state.node_metrics[messageNodeType]
 
           let joinedNodes = state[stateNodeType]
           joinedNodes = joinArrays(
@@ -123,16 +122,6 @@ export default new Vuex.Store({
             (from, to) => ({
               ...to,
               score: from
-            })
-          )
-          joinedNodes = joinArrays(
-            nodeMetrics,
-            x => x.node_id,
-            joinedNodes,
-            x => x.hash,
-            (from, to) => ({
-              ...to,
-              metrics: from
             })
           )
 
