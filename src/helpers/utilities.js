@@ -64,8 +64,28 @@ export function joinArrays (origin, originAccessor, destination, destinationAcce
   })
 }
 
+/**
+ * Check if a value is null, undefined, empty string or empty array but not 0. Prevents false positive on 0 using !value
+ *
+ * @param {any} input
+ * @returns true if value is null, undefined, empty string or empty array
+ */
 export function nullButNot0 (input) {
   return (
     input === undefined || input === null || input === '' || input?.length > 0
   )
+}
+
+/**
+ * Normalises a value between a min and max value
+ *
+ * @param {number} input
+ * @param {number} min
+ * @param {number} max
+ * @returns a number in the [min, max] interval
+ */
+export function normalizeValue (input, min, max) {
+  if (input > max) return 1
+  if (input < min) return 0
+  return (input - min) / (max - min)
 }

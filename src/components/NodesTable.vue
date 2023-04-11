@@ -31,6 +31,7 @@
     :title="title"
     :data="values"
     :columns="columns"
+    :pagination="pagination"
     :filter="filter"
     :rows-per-page-options="[0]"
     row-key="hash"
@@ -56,17 +57,22 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td key="state" :props="props">
+            <div class="row items-center">
+              <div class="status-pill q-mr-sm" :style="'background:' + get_color_from_percentage(props.row?.score?.total_score)" />
+            </div>
+          </q-td>
           <q-td key="picture" :props="props" style="font-size: 2.5em; padding-right: 0;">
             <q-icon v-if="props.row.picture" :name="`img:${api_server}/api/v0/storage/raw/${props.row.picture}`" class="rounded-borders" />
           </q-td>
           <q-td key="name" :props="props">
             <div>
-              <q-badge rounded color="negative" class="q-pl-sm q-pr-sm" v-if="is_node_outdated(props.row)">
+              <q-badge rounded color="negative" class="q-pl-sm q-pr-sm" v-if="is_node_outdated(props.row) && is_my_node(props.row)">
                 <q-icon name="gpp_maybe" color="white" class="q-pr-sm" />
                 Outdated node version
                 <q-tooltip>
                   <div>
-                    You are on version <strong>{{ props.row.metrics.version }}</strong>
+                    You are on version <strong>{{ props.row?.metrics?.version }}</strong>
                   </div>
                   <div>
                     Latest version is <strong>{{ latest_ccn_version }}</strong> from {{ display_elapsed(latest_ccn_timestamp) }}
@@ -76,7 +82,6 @@
               </q-badge>
             </div>
             <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
-            <span :class="'status-pill q-ml-sm bg-'+(props.row.status === 'active' ? 'positive': 'inactive')" :title="props.row.status"></span>
             <br />
             <q-icon name="lock" v-if="props.row.locked">
               <q-tooltip>
@@ -127,38 +132,38 @@
               <span v-if="props.row.parent === null">Unlinked</span>
               <core-node-name :node-hash="props.row.parent" node-type="core" v-else />
             </div>
-            <!-- TODO: fetch number of linked node -->
             <div v-else-if="props.row.resource_nodes !== undefined">
               <div class="row justify-end">
                 {{props.row.resource_nodes.length}} linked
               </div>
               <div class="row justify-end">
-                <span class="dot q-mr-sm" :class="props.row.resource_nodes.length>0?'green':''"></span>
-                <span class="dot q-mr-sm" :class="props.row.resource_nodes.length>1?'green':''"></span>
-                <span class="dot" :class="props.row.resource_nodes.length>2?'green':''"></span>
+                <span v-for="(_dot, i) in dots"
+                      class="dot q-mr-sm" :class="props.row.resource_nodes.at(i) !== undefined ? 'green' : ''"
+                      :key="i" />
               </div>
             </div>
-          </q-td>
-          <q-td key="score" :props="props">
-            <strong :style="`color:${get_hsl(props.row?.score?.total_score)}`">
-              {{ display_percentage(props.row?.score?.total_score) }}
-              <q-tooltip>
-                <template v-if="props.row?.score?.total_score !== undefined">
-                  Details:<br />
-                  <ul style="list-style:none; padding:0; margin:0">
-                    <li v-for="stat in coreNodeMode ? stats_in_tooltip.ccn : stats_in_tooltip.crn" :key="stat.accessor">
-                      {{ stat.accessor.replace(/_/gi, ' ') }}:
-                    </li>
-                  </ul>
-                </template>
-                <template v-else>No metrics available</template>
-              </q-tooltip>
-            </strong>
           </q-td>
           <q-td key="time" :props="props">
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
-          <q-td key="stared" :props="props">
+          <q-td key="version">
+            <template v-if="is_node_outdated(props.row)">
+              <template v-if="is_node_obsolete()">
+                Obsolete
+              </template>
+              <template v-else>
+                Outdated
+              </template>
+            </template>
+            <template v-else>
+              Latest
+            </template>
+          </q-td>
+          <q-td key="quality">
+            {{ display_percentage(props.row?.score?.total_score) }}
+          </q-td>
+          <q-td key="est_apy">
+            {{ display_estimated_apy(props.row) }}
           </q-td>
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
@@ -226,7 +231,7 @@
 <script>
 import { mapState } from 'vuex'
 import CoreNodeName from './CoreNodeName'
-import { nullButNot0 } from '../helpers/utilities'
+import { normalizeValue, nullButNot0 } from '../helpers/utilities'
 
 export default {
   name: 'nodes-table',
@@ -234,6 +239,7 @@ export default {
     visible_columns () {
       if (this.$q.screen.lt.sm) {
         return [
+          'state',
           'picture',
           'name',
           'actions'
@@ -241,38 +247,43 @@ export default {
       } else {
         if (this.coreNodeMode) {
           return [
+            'state',
             'picture',
             'name',
             'total_staked',
             'linked',
-            'score',
             'time',
-            'stared',
+            'version',
+            'quality',
+            'est_apy',
             'actions'
           ]
         } else {
           return [
+            'state',
             'picture',
             'name',
             'linked',
-            'score',
             'time',
-            'stared',
             'actions'
           ]
         }
       }
     },
-    ...mapState([
-      'account',
-      'channel',
-      'api_server',
-      'tags',
-      'node_post_type',
-      'balance_info',
-      'latest_ccn_version',
-      'latest_ccn_timestamp'
-    ])
+    ...mapState({
+      account: (state) => state.account,
+      channel: (state) => state.channel,
+      api_server: (state) => state.api_server,
+      tags: (state) => state.tags,
+      node_post_type: (state) => state.node_post_type,
+      balance_info: (state) => state.balance_info,
+      latest_ccn_version: (state) => state.latest_ccn_version,
+      latest_ccn_timestamp: (state) => state.latest_ccn_timestamp,
+      active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
+      total_staked_in_active: (state) => state.nodes.reduce(
+        (prev, cur) => prev + (cur.status === 'active' ? cur.total_staked : 0), 0
+      )
+    })
   },
   components: {
     CoreNodeName
@@ -293,6 +304,7 @@ export default {
       tab: 'all_nodes',
       registration_modal_url: null,
       registration_modal_open: false,
+      dots: new Array(3),
       stats_in_tooltip: {
         ccn: [
           { accessor: 'decentralization', formatter: x => x },
@@ -303,7 +315,18 @@ export default {
           { accessor: 'performance', formatter: x => x }
         ]
       },
+      pagination: {
+        sortBy: 'state',
+        descending: true
+      },
       columns: [
+        {
+          name: 'state',
+          label: 'State',
+          field: props => props?.score?.total_score || 0,
+          align: 'left',
+          sortable: true
+        },
         {
           name: 'picture'
         },
@@ -329,20 +352,26 @@ export default {
           field: props => props.parent
         },
         {
-          name: 'score',
-          label: 'Score',
-          field: props => props?.score?.total_score || 0,
-          sortable: true
-        },
-        {
           name: 'time',
           label: 'Creation Date',
           field: 'time'
         },
         {
-          name: 'stared',
-          label: '',
-          field: 'stared'
+          name: 'version',
+          label: 'Version',
+          field: props => props?.metrics?.version || '0.0.0',
+          sortable: true
+        },
+        {
+          name: 'quality',
+          label: 'Quality',
+          field: props => props?.score?.performance || 0,
+          sortable: true
+        },
+        {
+          name: 'est_apy',
+          label: (this.title === 'My Nodes') ? 'Est. Rewards/APY' : 'Est. Staking APY',
+          field: props => props?.score?.total_score || 0
         },
         {
           name: 'actions',
@@ -370,10 +399,25 @@ export default {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
       }
     },
+    is_my_node (node) {
+      return this.account && this.account === node.owner
+    },
     is_node_outdated (node) {
-      if (node.resource_nodes !== undefined && this.latest_ccn_version && node?.metrics && this.account && this.account.address === node.owner) {
-        return node?.metrics.version !== this.latest_ccn_version
+      if (node.resource_nodes !== undefined && this.latest_ccn_version && node?.metrics) {
+        return node?.metrics?.version !== this.latest_ccn_version
       }
+    },
+    is_node_obsolete () {
+      return Date.now() - this.latest_ccn_timestamp > 1_209_600_000
+    },
+    total_per_day () {
+      return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
+    },
+    total_per_aleph_per_day () {
+      return this.total_per_day() / this.total_staked_in_active
+    },
+    current_apy () {
+      return (((1 + this.total_per_aleph_per_day()) ** 365) - 1)
     },
     display_elapsed (t) {
       if (!t) { return 'n/a' }
@@ -385,19 +429,30 @@ export default {
 
       return Number(Number(value) * 100).toFixed(1) + '%'
     },
-    display_latency (value) {
-      if (nullButNot0(value)) { return 'n/a' }
+    display_estimated_apy (node) {
+      let est_apy = 0
+      if (node?.score?.total_score) {
+        const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
+        const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
 
-      return (Number(value) * 1000 | 0) + 'ms'
+        est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
+      }
+      return '~' + est_apy.toFixed(2) + '%'
     },
-    get_hsl (percent) {
+    get_color_from_percentage (percent) {
       if (!percent) { return '#FFFFFF77' }
+      const colors = [
+        [0.8, '#1CC272'],
+        [0.5, '#FABE23'],
+        [0.2, '#FD686A']
+      ]
 
-      const sinV = Math.sin(percent * Math.PI)
-      const hue = percent ** 3 * 115
-      const sat = 100 - sinV * 50
-      const light = 55 - sinV * 20
-      return `hsl(${hue}, ${sat}%, ${light}%)`
+      for (const [min, color] of colors) {
+        if (percent >= min) {
+          return color
+        }
+      }
+      return colors[colors.length - 1][1]
     },
     open_registration_modal (url) {
       // [^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)] returns a linter error

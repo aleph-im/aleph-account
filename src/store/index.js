@@ -112,6 +112,7 @@ export default new Vuex.Store({
       [['nodes', 'ccn'], ['resource_nodes', 'crn']]
         .forEach(([stateNodeType, messageNodeType]) => {
           const nodeScores = state.node_scores[messageNodeType]
+          const nodeMetrics = state.node_metrics[messageNodeType]
 
           let joinedNodes = state[stateNodeType]
           joinedNodes = joinArrays(
@@ -122,6 +123,16 @@ export default new Vuex.Store({
             (from, to) => ({
               ...to,
               score: from
+            })
+          )
+          joinedNodes = joinArrays(
+            nodeMetrics,
+            x => x.node_id,
+            joinedNodes,
+            x => x.hash,
+            (from, to) => ({
+              ...to,
+              metrics: from
             })
           )
 

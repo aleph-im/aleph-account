@@ -80,7 +80,7 @@
                 Current APY
               </span>
               <span style="text-transform: capitalize;">
-                {{((((1+total_per_aleph_per_day)**365)-1)*100).toFixed(2)}}%
+                {{current_apy.toFixed(2)}}%
               </span>
             </div>
           </div>
@@ -342,11 +342,14 @@ export default {
         }
       ]
     },
-    total_per_day (state) {
+    total_per_day () {
       return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
     },
-    total_per_aleph_per_day (state) {
+    total_per_aleph_per_day () {
       return this.total_per_day / this.total_staked_in_active
+    },
+    current_apy () {
+      return (((1 + this.total_per_aleph_per_day) ** 365) - 1) * 100
     },
     closeComputeDialog () {
       this.createComputeNode = false
@@ -383,14 +386,24 @@ export default {
       }
     },
     async getScores () {
-      const scoreMessage = await posts.get_posts('aleph-scoring-scores', {
+      const scoreMessage = posts.get_posts('aleph-scoring-scores', {
+        pagination: 1,
+        page: 1,
+        addresses: [this.scoring_address]
+      })
+      const metricsMessage = posts.get_posts('test-aleph-scoring-metrics', {
         pagination: 1,
         page: 1,
         addresses: [this.scoring_address]
       })
 
-      const { scores } = scoreMessage.posts[0].content
-      this.$store.commit('set_node_scores', scores)
+      Promise.all([scoreMessage, metricsMessage])
+        .then(([scoresQuery, metricsQuery]) => {
+          const { scores } = scoresQuery.posts[0].content
+          const { metrics } = metricsQuery.posts[0].content
+          this.$store.commit('set_node_scores', scores)
+          this.$store.commit('set_node_metrics', metrics)
+        })
     },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(
