@@ -435,10 +435,10 @@ export default {
       return this.account && this.account === node.owner
     },
     is_node_outdated (node, ccn) {
+      if (!node?.metrics?.version) return true
+
       const lookupVersion = ccn ? this.latest_ccn_version : this.latest_crn_version
-      if (node?.metrics) {
-        return String(node?.metrics?.version) !== String(lookupVersion)
-      }
+      return String(node?.metrics?.version) !== String(lookupVersion)
     },
     is_node_obsolete (ccn) {
       const lookupVersion = ccn ? this.latest_ccn_timestamp : this.latest_crn_timestamp
