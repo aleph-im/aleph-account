@@ -143,7 +143,7 @@
               </div>
             </div>
           </q-td>
-          <q-td key="decentralization" v-if="!coreNodeMode">
+          <q-td key="decentralization" v-if="!coreNodeMode" :props="props">
             <span v-for="(_dot, i) in new Array(normalize_decentralization(props.row))"
                   class="dot q-mr-sm"
                   :key="i" />
@@ -151,7 +151,7 @@
           <q-td key="time" :props="props">
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
-          <q-td key="version">
+          <q-td key="version" :props="props">
             <template v-if="is_node_outdated(props.row, coreNodeMode)">
               <template v-if="is_node_obsolete(coreNodeMode)">
                 Obsolete
@@ -164,11 +164,11 @@
               Latest
             </template>
           </q-td>
-          <q-td key="quality">
+          <q-td key="quality" :props="props">
             {{ display_percentage(props.row?.score?.total_score) }}
           </q-td>
-          <q-td key="est_apy">
-            <div v-if="coreNodeMode">
+          <q-td key="est_apy" :props="props">
+            <teamplate v-if="coreNodeMode">
               <template v-if="is_my_node(props.row)">
                 <div class="row items-center">
                   <div class="text-bold q-mr-sm">{{ compute_ccn_rewards(props.row) }}</div>
@@ -180,14 +180,19 @@
               <template v-else>
                 {{ compute_estimated_stakers_apy(props.row) }}
               </template>
-            </div>
-            <div v-else>
-              {{ compute_crn_rewards(props.row) }}
-            </div>
+            </teamplate>
+            <teamplate v-else>
+              <div class="row items-center justify-end">
+                <div class="text-bold q-mr-sm">{{ compute_crn_rewards(props.row) }}</div>
+                <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
+                <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
+                &nbsp;/&nbsp;mo
+              </div>
+            </teamplate>
           </q-td>
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
-              {{props.row.stakers[account.address].toFixed(2)}}
+              {{ props.row.stakers[account.address].toFixed(2) }}
               <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="14" class="vertical-middle q-pb-xs">
               <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="14" class="vertical-middle q-pb-xs">
             </span>
@@ -370,30 +375,35 @@ export default {
           name: 'decentralization',
           label: 'Decentralized',
           field: props => props?.score?.decentralization || 0,
-          sortable: true
+          sortable: true,
+          align: 'right'
         },
         {
           name: 'time',
           label: 'Creation Date',
-          field: 'time'
+          field: 'time',
+          align: 'right'
         },
         {
           name: 'version',
           label: 'Version',
           field: props => props?.metrics?.version || '0.0.0',
-          sortable: true
+          sortable: true,
+          align: 'right'
         },
         {
           name: 'quality',
           label: 'Quality',
           field: props => props?.score?.performance || 0,
-          sortable: true
+          sortable: true,
+          align: 'right'
         },
         {
           name: 'est_apy',
           label: !this.coreNodeMode ? 'Est. rewards' : (this.title === 'My Nodes') ? 'Est. Rewards/APY' : 'Est. Staking APY',
           field: props => this.compute_estimated_stakers_apy(props),
-          sortable: true
+          sortable: true,
+          align: 'right'
         },
         {
           name: 'actions',
@@ -426,7 +436,6 @@ export default {
     },
     is_node_outdated (node, ccn) {
       const lookupVersion = ccn ? this.latest_ccn_version : this.latest_crn_version
-      console.log(node?.metrics?.version, lookupVersion)
       if (node?.metrics) {
         return String(node?.metrics?.version) !== String(lookupVersion)
       }
@@ -476,16 +485,17 @@ export default {
       return '~ ' + est_rewards.toFixed(2)
     },
     compute_crn_rewards (node) {
-      return 0
+      if (!node?.score?.total_score || !node?.score?.decentralization) return 0
+      const { decentralization, total_score } = node.score
+      const maxRewards = 500 + decentralization * 2500
+
+      return '~' + (maxRewards * normalizeValue(total_score, 0.2, 0.8)).toFixed(2)
     },
     normalize_decentralization (node) {
       const decentralization = node?.score?.decentralization
       if (!decentralization) return 0
-      if (decentralization < 0.2) return 0
-      if (decentralization > 0.8) return 3
 
-      const normalized = normalizeValue(decentralization, 0.2, 0.8)
-      return [0.2, 0.5, 0.8].findIndex(x => x >= normalized) + 1
+      return [0.3, 0.6, 0.9].findIndex(x => x >= decentralization) + 1
     },
     get_color_from_percentage (percent) {
       if (!percent) { return '#FFFFFF77' }
