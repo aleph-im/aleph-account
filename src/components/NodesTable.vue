@@ -75,7 +75,7 @@
                     You are on version <strong>{{ props.row?.metrics?.version }}</strong>
                   </div>
                   <div>
-                    Latest version is <strong>{{ latest_ccn_version }}</strong> from {{ display_elapsed(latest_ccn_timestamp) }}
+                    Latest version is <strong>{{ latest_ccn_version }}</strong> from {{ display_elapsed(Date.now() - latest_ccn_timestamp) }}
                   </div>
                   <div>Please update soon</div>
                 </q-tooltip>
@@ -143,12 +143,17 @@
               </div>
             </div>
           </q-td>
+          <q-td key="decentralization" v-if="!coreNodeMode">
+            <span v-for="(_dot, i) in new Array(normalize_decentralization(props.row))"
+                  class="dot q-mr-sm"
+                  :key="i" />
+          </q-td>
           <q-td key="time" :props="props">
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
           <q-td key="version">
-            <template v-if="is_node_outdated(props.row)">
-              <template v-if="is_node_obsolete()">
+            <template v-if="is_node_outdated(props.row, coreNodeMode)">
+              <template v-if="is_node_obsolete(coreNodeMode)">
                 Obsolete
               </template>
               <template v-else>
@@ -163,13 +168,28 @@
             {{ display_percentage(props.row?.score?.total_score) }}
           </q-td>
           <q-td key="est_apy">
-            {{ display_estimated_apy(props.row) }}
+            <div v-if="coreNodeMode">
+              <template v-if="is_my_node(props.row)">
+                <div class="row items-center">
+                  <div class="text-bold q-mr-sm">{{ compute_ccn_rewards(props.row) }}</div>
+                  <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
+                  <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
+                  &nbsp;/&nbsp;mo
+                </div>
+              </template>
+              <template v-else>
+                {{ compute_estimated_stakers_apy(props.row) }}
+              </template>
+            </div>
+            <div v-else>
+              {{ compute_crn_rewards(props.row) }}
+            </div>
           </q-td>
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
               {{props.row.stakers[account.address].toFixed(2)}}
-              <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="18" class="vertical-middle q-pb-xs">
-              <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="18" class="vertical-middle q-pb-xs">
+              <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="14" class="vertical-middle q-pb-xs">
+              <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="14" class="vertical-middle q-pb-xs">
             </span>
 
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
@@ -263,8 +283,12 @@ export default {
             'state',
             'picture',
             'name',
+            'decentralization',
             'linked',
             'time',
+            'version',
+            'quality',
+            'est_apy',
             'actions'
           ]
         }
@@ -278,6 +302,7 @@ export default {
       node_post_type: (state) => state.node_post_type,
       balance_info: (state) => state.balance_info,
       latest_ccn_version: (state) => state.latest_ccn_version,
+      latest_crn_version: (state) => state.latest_crn_version,
       latest_ccn_timestamp: (state) => state.latest_ccn_timestamp,
       active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
       total_staked_in_active: (state) => state.nodes.reduce(
@@ -305,16 +330,6 @@ export default {
       registration_modal_url: null,
       registration_modal_open: false,
       dots: new Array(3),
-      stats_in_tooltip: {
-        ccn: [
-          { accessor: 'decentralization', formatter: x => x },
-          { accessor: 'performance', formatter: x => x }
-        ],
-        crn: [
-          { accessor: 'decentralization', formatter: x => x },
-          { accessor: 'performance', formatter: x => x }
-        ]
-      },
       pagination: {
         sortBy: 'state',
         descending: true
@@ -352,6 +367,12 @@ export default {
           field: props => props.parent
         },
         {
+          name: 'decentralization',
+          label: 'Decentralized',
+          field: props => props?.score?.decentralization || 0,
+          sortable: true
+        },
+        {
           name: 'time',
           label: 'Creation Date',
           field: 'time'
@@ -370,8 +391,9 @@ export default {
         },
         {
           name: 'est_apy',
-          label: (this.title === 'My Nodes') ? 'Est. Rewards/APY' : 'Est. Staking APY',
-          field: props => props?.score?.total_score || 0
+          label: !this.coreNodeMode ? 'Est. rewards' : (this.title === 'My Nodes') ? 'Est. Rewards/APY' : 'Est. Staking APY',
+          field: props => this.compute_estimated_stakers_apy(props),
+          sortable: true
         },
         {
           name: 'actions',
@@ -402,13 +424,16 @@ export default {
     is_my_node (node) {
       return this.account && this.account === node.owner
     },
-    is_node_outdated (node) {
-      if (node.resource_nodes !== undefined && this.latest_ccn_version && node?.metrics) {
-        return node?.metrics?.version !== this.latest_ccn_version
+    is_node_outdated (node, ccn) {
+      const lookupVersion = ccn ? this.latest_ccn_version : this.latest_crn_version
+      console.log(node?.metrics?.version, lookupVersion)
+      if (node?.metrics) {
+        return String(node?.metrics?.version) !== String(lookupVersion)
       }
     },
-    is_node_obsolete () {
-      return Date.now() - this.latest_ccn_timestamp > 1_209_600_000
+    is_node_obsolete (ccn) {
+      const lookupVersion = ccn ? this.latest_ccn_timestamp : this.latest_crn_timestamp
+      return Date.now() - lookupVersion > 1_209_600_000
     },
     total_per_day () {
       return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
@@ -422,14 +447,14 @@ export default {
     display_elapsed (t) {
       if (!t) { return 'n/a' }
 
-      return Math.floor(this.latest_ccn_timestamp / 86400000) + ' days ago'
+      return Math.floor((this.latest_ccn_timestamp) / 86400000) + ' days ago'
     },
     display_percentage (value) {
       if (nullButNot0(value)) { return 'n/a' }
 
       return Number(Number(value) * 100).toFixed(1) + '%'
     },
-    display_estimated_apy (node) {
+    compute_estimated_stakers_apy (node) {
       let est_apy = 0
       if (node?.score?.total_score) {
         const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
@@ -437,7 +462,30 @@ export default {
 
         est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
       }
-      return '~' + est_apy.toFixed(2) + '%'
+      return '~ ' + est_apy.toFixed(2) + '%'
+    },
+    compute_ccn_rewards (node) {
+      let est_rewards = 0
+      if (node?.score?.total_score) {
+        const pool = 15_000 / this.active_nodes
+        const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
+        const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
+
+        est_rewards = pool * normalizedScore * (1 - linkedCRNPenalty)
+      }
+      return '~ ' + est_rewards.toFixed(2)
+    },
+    compute_crn_rewards (node) {
+      return 0
+    },
+    normalize_decentralization (node) {
+      const decentralization = node?.score?.decentralization
+      if (!decentralization) return 0
+      if (decentralization < 0.2) return 0
+      if (decentralization > 0.8) return 3
+
+      const normalized = normalizeValue(decentralization, 0.2, 0.8)
+      return [0.2, 0.5, 0.8].findIndex(x => x >= normalized) + 1
     },
     get_color_from_percentage (percent) {
       if (!percent) { return '#FFFFFF77' }

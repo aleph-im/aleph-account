@@ -65,6 +65,8 @@ export default new Vuex.Store({
     node_metrics: { ccn: [], crn: [] },
     latest_ccn_version: null,
     latest_ccn_timestamp: null,
+    latest_crn_version: null,
+    latest_crn_timestamp: null,
     feature_enabled: {
       solana: false
     }
@@ -100,7 +102,11 @@ export default new Vuex.Store({
     },
     set_latest_ccn_version (state, { name, published_at }) {
       state.latest_ccn_version = name
-      state.latest_ccn_timestamp = published_at ? Date.now() - new Date(published_at).getTime() : null
+      state.latest_ccn_timestamp = new Date(published_at).getTime()
+    },
+    set_latest_crn_version (state, { name, published_at }) {
+      state.latest_crn_version = name
+      state.latest_crn_timestamp = new Date(published_at).getTime()
     },
     set_node_scores (state, node_scores) {
       state.node_scores = node_scores

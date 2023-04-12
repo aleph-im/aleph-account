@@ -199,6 +199,7 @@ import NodesTable from '../components/NodesTable'
 import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
 import store from '../store'
+import { fetchAndCache } from '../helpers/utilities'
 
 async function node_action (action, ref) {
   await posts.submit(store.state.account.address, store.state.node_post_type,
@@ -376,13 +377,38 @@ export default {
   methods: {
     async getLatestCCNVersion () {
       try {
-        const req = await fetch('https://api.github.com/repos/aleph-im/pyaleph/releases')
-        const res = await req.json()
-        const { name, published_at } = res[0]
+        // Github API is rate limited to 60 requests per hour per IP
+        const req = await fetchAndCache(
+          'https://api.github.com/repos/aleph-im/pyaleph/releases',
+          'ccn_version',
+          300_000,
+          x => {
+            const { tag_name, published_at } = x[0]
+            return { name: tag_name, published_at }
+          }
+        )
 
-        this.$store.commit('set_latest_ccn_version', { name, published_at })
+        this.$store.commit('set_latest_ccn_version', req)
       } catch (error) {
         console.log('Could not retrieve latest CCN version from Github')
+      }
+    },
+    async getLatestCRNVersion () {
+      try {
+        // Github API is rate limited to 60 requests per hour per IP
+        const req = await fetchAndCache(
+          'https://api.github.com/repos/aleph-im/aleph-vm/releases',
+          'crn_version',
+          300_000,
+          x => {
+            const { tag_name, published_at } = x[0]
+            return { name: tag_name, published_at }
+          }
+        )
+
+        this.$store.commit('set_latest_crn_version', req)
+      } catch (error) {
+        console.log('Could not retrieve latest CRN version from Github')
       }
     },
     async getScores () {
@@ -477,6 +503,7 @@ export default {
   },
   async mounted () {
     this.getLatestCCNVersion()
+    this.getLatestCRNVersion()
     await this.update()
     await this.getScores()
     await this.prepare_nodes_feed()

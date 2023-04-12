@@ -85,7 +85,41 @@ export function nullButNot0 (input) {
  * @returns a number in the [min, max] interval
  */
 export function normalizeValue (input, min, max) {
+  if (!input) return 0
   if (input > max) return 1
   if (input < min) return 0
   return (input - min) / (max - min)
+}
+
+/**
+ * Fetches a URL and caches the result in LocalStorage for a given time
+ *
+ * @param {string} url The URL to fetch
+ * @param {string} cacheKey The LocalStorage key to use for cachinng (must be unique)
+ * @param {number} cacheTime The time in ms to cache the data for (defaults to one hour)
+ * @param {function} selector A selector function to select a part of the data to cache (defaults to the full payload)
+ * @returns
+ */
+export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 * 24, selector = x => x) {
+  const cached = localStorage.getItem(cacheKey)
+  const now = Date.now()
+  if (cached) {
+    const { cachedAt, value } = JSON.parse(cached)
+    if (now - cachedAt < cacheTime) {
+      console.log(`Retrieved ${cacheKey} from cache`)
+      return value
+    }
+  }
+
+  const data = await fetch(url)
+  const value = await data.json()
+  const selectedValue = selector(value)
+
+  const toCache = JSON.stringify({
+    cachedAt: now,
+    value: selectedValue
+  })
+  localStorage.setItem(cacheKey, toCache)
+
+  return selectedValue
 }
