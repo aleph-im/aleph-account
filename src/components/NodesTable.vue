@@ -165,7 +165,7 @@
             </template>
           </q-td>
           <q-td key="quality" :props="props">
-            {{ display_percentage(props.row?.score?.total_score) }}
+            {{ display_percentage(props.row?.score?.performance) }}
           </q-td>
           <q-td key="est_apy" :props="props">
             <template v-if="coreNodeMode">
