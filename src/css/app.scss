@@ -129,9 +129,14 @@ strong {
 .status-pill {
   display: inline-block;
   border-radius: 50%;
-  width: 17px;
-  height: 17px;
+  width: 8px;
+  height: 8px;
   vertical-align: baseline;
+
+  &.big{
+    width: 17px;
+    height: 17px;
+  }
 }
 
 .q-item.standout {

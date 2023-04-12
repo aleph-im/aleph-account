@@ -59,7 +59,7 @@
         <q-tr :props="props">
           <q-td key="state" :props="props">
             <div class="row items-center">
-              <div class="status-pill q-mr-sm" :style="'background:' + get_color_from_percentage(props.row?.score?.total_score)" />
+              <div class="status-pill big q-mr-sm" :style="'background:' + get_color_from_percentage(props.row?.score?.total_score)" />
             </div>
           </q-td>
           <q-td key="picture" :props="props" style="font-size: 2.5em; padding-right: 0;">
@@ -168,7 +168,7 @@
             {{ display_percentage(props.row?.score?.total_score) }}
           </q-td>
           <q-td key="est_apy" :props="props">
-            <teamplate v-if="coreNodeMode">
+            <template v-if="coreNodeMode">
               <template v-if="is_my_node(props.row)">
                 <div class="row items-center">
                   <div class="text-bold q-mr-sm">{{ compute_ccn_rewards(props.row) }}</div>
@@ -180,15 +180,15 @@
               <template v-else>
                 {{ compute_estimated_stakers_apy(props.row) }}
               </template>
-            </teamplate>
-            <teamplate v-else>
+            </template>
+            <template v-else>
               <div class="row items-center justify-end">
                 <div class="text-bold q-mr-sm">{{ compute_crn_rewards(props.row) }}</div>
                 <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
                 <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
                 &nbsp;/&nbsp;mo
               </div>
-            </teamplate>
+            </template>
           </q-td>
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
