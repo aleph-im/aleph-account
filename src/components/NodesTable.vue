@@ -402,7 +402,7 @@ export default {
         {
           name: 'est_apy',
           label: !this.coreNodeMode ? 'Est. rewards' : (this.title === 'My Nodes') ? 'Est. Rewards/APY' : 'Est. Staking APY',
-          field: props => this.compute_estimated_stakers_apy(props),
+          field: props => this.coreNodeMode ? this.compute_estimated_stakers_apy(props) : this.compute_crn_rewards(props),
           sortable: true,
           align: 'right'
         },
