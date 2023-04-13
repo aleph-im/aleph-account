@@ -18,16 +18,12 @@ export default {
 }
 </script>
 <style lang="scss">
-body {
-  // background: #f1e9ff;
-}
-
 body.body--dark  {
   background:#1d2a31;
 }
 
 .scores_disclaimer{
-  height: 34px;
+  padding: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
