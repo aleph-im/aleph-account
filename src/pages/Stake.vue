@@ -412,21 +412,21 @@ export default {
       }
     },
     async getScores () {
-      const scoreMessage = posts.get_posts('aleph-scoring-scores', {
+      const scoreQuery = posts.get_posts('aleph-scoring-scores', {
         pagination: 1,
         page: 1,
         addresses: [this.scoring_address]
       })
-      const metricsMessage = posts.get_posts('test-aleph-scoring-metrics', {
+      const metricsQuery = posts.get_posts('aleph-scoring-metrics', {
         pagination: 1,
         page: 1,
         addresses: [this.scoring_address]
       })
 
-      Promise.all([scoreMessage, metricsMessage])
-        .then(([scoresQuery, metricsQuery]) => {
-          const { scores } = scoresQuery.posts[0].content
-          const { metrics } = metricsQuery.posts[0].content
+      Promise.all([scoreQuery, metricsQuery])
+        .then(([scoresMessage, metricsMessage]) => {
+          const { scores } = scoresMessage.posts[0].content
+          const { metrics } = metricsMessage.posts[0].content
           this.$store.commit('set_node_scores', scores)
           this.$store.commit('set_node_metrics', metrics)
         })
