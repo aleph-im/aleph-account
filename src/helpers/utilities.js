@@ -123,3 +123,41 @@ export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 *
 
   return selectedValue
 }
+
+/**
+ * Takes a list of github releases and returns the latest, the latest prerelease and a list of outdated versions
+ *
+ * @param {Array} payload A list of github releases, returned from the API (https://api.github.com/repos/[owner]/[name]/releases)
+ * @param {Number} outdatedAfter The time in ms after which a release is considered outdated (defaults to 14 days)
+ */
+export function getLatestReleases (payload, outdatedAfter = 1000 * 60 * 60 * 24 * 14) {
+  const versions = {
+    latest: null,
+    prerelease: null,
+    outdated: []
+  }
+
+  for (const item of payload) {
+    if (item.prerelease && !versions.prerelease) {
+      versions.prerelease = item.tag_name
+    }
+    if (!item.prerelease && !versions.latest) {
+      versions.latest = item.tag_name
+    }
+    if (Date.now() - item.published_at > outdatedAfter && versions.latest && versions.prerelease) {
+      versions.outdated.push(item.tag_name)
+    }
+  }
+
+  return versions
+}
+
+/**
+ * Strips away the extra commit number and hash from the "git describe --tags" output
+ *
+ * @param {String} gitTag The output of a "git describe --tags" command
+ * @returns The tag name without the extra commit number and hash
+ */
+export function stripExtraTagDescription (gitTag) {
+  return gitTag.replace(/-\d+-g\w{7}$/gi, '')
+}

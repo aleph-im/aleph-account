@@ -375,61 +375,51 @@ export default {
     }
   },
   methods: {
-    async getLatestCCNVersion () {
-      try {
-        // Github API is rate limited to 60 requests per hour per IP
-        const req = await fetchAndCache(
-          'https://api.github.com/repos/aleph-im/pyaleph/releases',
-          'ccn_version',
-          300_000,
-          x => {
-            const { tag_name, published_at } = x[0]
-            return { name: tag_name, published_at }
-          }
-        )
+    async preloadMetaInfo () {
+      // Runs the following queries in parallel:
+      // Load latest CCN and CRN versions from Github
+      // Load latest scores and metrics from aleph messages
 
-        this.$store.commit('set_latest_ccn_version', req)
-      } catch (error) {
-        console.log('Could not retrieve latest CCN version from Github')
-      }
+      const [ccn_versions, crn_versions, scores, metrics] = await Promise.all([
+        this.getLatestCCNVersion(),
+        this.getLatestCRNVersion(),
+        this.getLatestScores(),
+        this.getLatestMetrics()
+      ])
+      this.$store.commit('set_nodes_metadata', {
+        ccn_versions,
+        crn_versions,
+        scores: scores?.posts[0]?.content?.scores || { ccn: [], crn: [] },
+        metrics: metrics?.posts[0]?.content?.metrics || { ccn: [], crn: [] }
+      })
+    },
+    async getLatestCCNVersion () {
+      return fetchAndCache(
+        'https://api.github.com/repos/aleph-im/pyaleph/releases',
+        'ccn_versions',
+        300_000
+      )
     },
     async getLatestCRNVersion () {
-      try {
-        // Github API is rate limited to 60 requests per hour per IP
-        const req = await fetchAndCache(
-          'https://api.github.com/repos/aleph-im/aleph-vm/releases',
-          'crn_version',
-          300_000,
-          x => {
-            const { tag_name, published_at } = x[0]
-            return { name: tag_name, published_at }
-          }
-        )
-
-        this.$store.commit('set_latest_crn_version', req)
-      } catch (error) {
-        console.log('Could not retrieve latest CRN version from Github')
-      }
+      return fetchAndCache(
+        'https://api.github.com/repos/aleph-im/aleph-vm/releases',
+        'crn_versions',
+        300_000
+      )
     },
-    async getScores () {
-      const scoreQuery = posts.get_posts('aleph-scoring-scores', {
+    async getLatestScores () {
+      return posts.get_posts('aleph-scoring-scores', {
         pagination: 1,
         page: 1,
         addresses: [this.scoring_address]
       })
-      const metricsQuery = posts.get_posts('aleph-scoring-metrics', {
+    },
+    async getLatestMetrics () {
+      return posts.get_posts('aleph-network-metrics', {
         pagination: 1,
         page: 1,
         addresses: [this.scoring_address]
       })
-
-      Promise.all([scoreQuery, metricsQuery])
-        .then(([scoresMessage, metricsMessage]) => {
-          const { scores } = scoresMessage.posts[0].content
-          const { metrics } = metricsMessage.posts[0].content
-          this.$store.commit('set_node_scores', scores)
-          this.$store.commit('set_node_metrics', metrics)
-        })
     },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(
@@ -502,10 +492,8 @@ export default {
     }
   },
   async mounted () {
-    this.getLatestCCNVersion()
-    this.getLatestCRNVersion()
+    await this.preloadMetaInfo()
     await this.update()
-    await this.getScores()
     await this.prepare_nodes_feed()
   },
   async unmounted () {

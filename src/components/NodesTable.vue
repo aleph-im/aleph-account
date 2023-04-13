@@ -67,7 +67,7 @@
           </q-td>
           <q-td key="name" :props="props">
             <div>
-              <q-badge rounded color="negative" class="q-pl-sm q-pr-sm" v-if="is_node_outdated(props.row) && is_my_node(props.row)">
+              <q-badge rounded color="negative" class="q-pl-sm q-pr-sm" v-if="!is_node_uptodate(props.row, coreNodeMode) && is_my_node(props.row)">
                 <q-icon name="gpp_maybe" color="white" class="q-pr-sm" />
                 Outdated node version
                 <q-tooltip>
@@ -75,7 +75,9 @@
                     You are on version <strong>{{ props.row?.metrics?.version }}</strong>
                   </div>
                   <div>
-                    Latest version is <strong>{{ latest_ccn_version }}</strong> from {{ display_elapsed(Date.now() - latest_ccn_timestamp) }}
+                    Latest version is <strong>
+                      {{ coreNodeMode ? latest_releases['ccn'].latest : latest_releases['crn'].latest }}
+                    </strong>
                   </div>
                   <div>Please update soon</div>
                 </q-tooltip>
@@ -152,17 +154,18 @@
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
           <q-td key="version" :props="props">
-            <template v-if="is_node_outdated(props.row, coreNodeMode)">
-              <template v-if="is_node_obsolete(coreNodeMode)">
-                Obsolete
-              </template>
-              <template v-else>
-                Outdated
-              </template>
-            </template>
-            <template v-else>
-              Latest
-            </template>
+            <div :style="`color: ${is_node_uptodate(props.row, coreNodeMode) ? '#1CC272' : is_node_outdated(props.row, coreNodeMode) ? '#FABE23' : '#FD686A'}`">
+              <strong>
+                {{ props.row?.metrics?.version || '-' }}
+              </strong>
+            </div>
+            <small>
+              <template v-if="is_node_latest(props.row, coreNodeMode)">(latest)</template>
+              <template v-else-if="is_node_prerelease(props.row, coreNodeMode)">(prerelease)</template>
+              <template v-else-if="is_node_experimental(props.row, coreNodeMode)">(experimental)</template>
+              <template v-else-if="is_node_outdated(props.row, coreNodeMode)">(outdated)</template>
+              <template v-else>(obsolete)</template>
+            </small>
           </q-td>
           <q-td key="quality" :props="props">
             {{ display_percentage(props.row?.score?.performance) }}
@@ -256,7 +259,7 @@
 <script>
 import { mapState } from 'vuex'
 import CoreNodeName from './CoreNodeName'
-import { normalizeValue, nullButNot0 } from '../helpers/utilities'
+import { normalizeValue, nullButNot0, stripExtraTagDescription } from '../helpers/utilities'
 
 export default {
   name: 'nodes-table',
@@ -306,9 +309,7 @@ export default {
       tags: (state) => state.tags,
       node_post_type: (state) => state.node_post_type,
       balance_info: (state) => state.balance_info,
-      latest_ccn_version: (state) => state.latest_ccn_version,
-      latest_crn_version: (state) => state.latest_crn_version,
-      latest_ccn_timestamp: (state) => state.latest_ccn_timestamp,
+      latest_releases: (state) => state.github_releases_metadata,
       active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
       total_staked_in_active: (state) => state.nodes.reduce(
         (prev, cur) => prev + (cur.status === 'active' ? cur.total_staked : 0), 0
@@ -373,7 +374,7 @@ export default {
         },
         {
           name: 'decentralization',
-          label: 'Decentralized',
+          label: 'Decentralization',
           field: props => props?.score?.decentralization || 0,
           sortable: true,
           align: 'right'
@@ -393,7 +394,7 @@ export default {
         },
         {
           name: 'quality',
-          label: 'Quality',
+          label: 'Performance',
           field: props => props?.score?.performance || 0,
           sortable: true,
           align: 'right'
@@ -431,18 +432,33 @@ export default {
         return `Stake ${this.balance_info.ALEPH.toFixed(2)} ALEPH in this node`
       }
     },
+    get_node_type (isCCN) {
+      return isCCN ? 'ccn' : 'crn'
+    },
     is_my_node (node) {
       return this.account && this.account === node.owner
     },
-    is_node_outdated (node, ccn) {
-      if (!node?.metrics?.version) return true
-
-      const lookupVersion = ccn ? this.latest_ccn_version : this.latest_crn_version
-      return String(node?.metrics?.version) !== String(lookupVersion)
+    is_node_latest (node, nodeType) {
+      return node?.metrics?.version === this.latest_releases[this.get_node_type(nodeType)].latest
     },
-    is_node_obsolete (ccn) {
-      const lookupVersion = ccn ? this.latest_ccn_timestamp : this.latest_crn_timestamp
-      return Date.now() - lookupVersion > 1_209_600_000
+    is_node_prerelease (node, nodeType) {
+      return node?.metrics?.version === this.latest_releases[this.get_node_type(nodeType)].prerelease
+    },
+    is_node_experimental (node, nodeType) {
+      const closestTag = stripExtraTagDescription(node?.metrics?.version || '')
+
+      return closestTag === this.latest_releases[this.get_node_type(nodeType)].prerelease
+    },
+    is_node_uptodate (node, nodeType) {
+      return this.is_node_latest(node, nodeType) || this.is_node_prerelease(node, nodeType) || this.is_node_experimental(node, nodeType)
+    },
+    is_node_outdated (node, nodeType) {
+      return this.latest_releases[this.get_node_type(nodeType)].outdated.includes(node?.metrics?.version)
+    },
+    is_node_obsolete (node, nodeType) {
+      return !this.is_node_latest(node, nodeType) &&
+        !this.is_node_prerelease(node, nodeType) &&
+        !this.is_node_outdated(node, nodeType)
     },
     total_per_day () {
       return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
@@ -452,11 +468,6 @@ export default {
     },
     current_apy () {
       return (((1 + this.total_per_aleph_per_day()) ** 365) - 1)
-    },
-    display_elapsed (t) {
-      if (!t) { return 'n/a' }
-
-      return Math.floor((this.latest_ccn_timestamp) / 86400000) + ' days ago'
     },
     display_percentage (value) {
       if (nullButNot0(value)) { return 'n/a' }

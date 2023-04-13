@@ -8,7 +8,7 @@ import {
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
 import axios from 'axios'
-import { joinArrays } from 'src/helpers/utilities'
+import { getLatestReleases, joinArrays } from 'src/helpers/utilities'
 
 var providers = require('ethers').providers
 
@@ -63,15 +63,25 @@ export default new Vuex.Store({
     node_post_type: 'corechan-operation',
     node_scores: { ccn: [], crn: [] },
     node_metrics: { ccn: [], crn: [] },
-    latest_ccn_version: null,
-    latest_ccn_timestamp: null,
-    latest_crn_version: null,
-    latest_crn_timestamp: null,
     feature_enabled: {
       solana: false
+    },
+    github_releases_metadata: {
+      crn: { latest: '', prerelease: '', outdated: [] },
+      ccn: { latest: '', prerelease: '', outdated: [] }
     }
   },
   mutations: {
+    set_nodes_metadata (state, { ccn_versions, crn_versions, scores, metrics }) {
+      // merges all the metadata in a single mutation to avoid multiple re-renders
+      state.github_releases_metadata = {
+        ccn: getLatestReleases(ccn_versions),
+        crn: getLatestReleases(crn_versions)
+      }
+
+      state.node_scores = scores
+      state.node_metrics = metrics
+    },
     set_account (state, account) {
       if (state.account !== account) {
         state.notes = []
@@ -99,20 +109,6 @@ export default new Vuex.Store({
     },
     set_resource_nodes (state, nodes) {
       state.resource_nodes = nodes
-    },
-    set_latest_ccn_version (state, { name, published_at }) {
-      state.latest_ccn_version = name
-      state.latest_ccn_timestamp = new Date(published_at).getTime()
-    },
-    set_latest_crn_version (state, { name, published_at }) {
-      state.latest_crn_version = name
-      state.latest_crn_timestamp = new Date(published_at).getTime()
-    },
-    set_node_scores (state, node_scores) {
-      state.node_scores = node_scores
-    },
-    set_node_metrics (state, node_metrics) {
-      state.node_metrics = node_metrics
     },
     merge_node_scores (state) {
       [['nodes', 'ccn'], ['resource_nodes', 'crn']]
