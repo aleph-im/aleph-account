@@ -24,6 +24,8 @@ Vue.use(Vuex)
 // export default function (/* { ssrContext } */) {
 export default new Vuex.Store({
   state: {
+    // FIXME: dirty implem
+    _scores_grace_period_end: new Date('2023-05-04T23:59:00Z').getTime(),
     erc20_address: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
     splToken_address: '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
     // monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2', // test

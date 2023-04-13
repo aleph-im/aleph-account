@@ -2,7 +2,6 @@
   <q-layout view="lhh LpR lff">
     <q-header :class="($q.dark.isActive ? 'text-white' : 'text-black') + ' bg-transparent q-pa-sm'">
       <q-toolbar>
-
         <q-btn dense flat round icon="menu" @click="left = !left" v-if="!left" />
 
         <q-toolbar-title class="logo flex">
@@ -95,6 +94,7 @@
     <q-drawer show-if-above v-model="left" side="left" content-class="column justify-between q-pa-md" :width="250">
       <!-- drawer content -->
       <div>
+        <div style="height:40px" v-if="_scores_grace_period_end - Date.now() > 0"></div>
         <p class="q-px-md q-pb-md">
           <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="32">
           <img v-else src="~/assets/logo-white.svg" height="32">
@@ -179,6 +179,7 @@ export default {
   components: {
   },
   computed: mapState({
+    _scores_grace_period_end: state => state._scores_grace_period_end,
     account: state => state.account,
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
