@@ -154,7 +154,7 @@
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
           <q-td key="version" :props="props">
-            <div :style="`color: ${is_node_uptodate(props.row, coreNodeMode) ? '#1CC272' : is_node_outdated(props.row, coreNodeMode) ? '#FABE23' : '#FD686A'}`">
+            <div :style="`color: ${is_node_uptodate(props.row, coreNodeMode) && !is_node_experimental(props.row, coreNodeMode) ? '#1CC272' : is_node_outdated(props.row, coreNodeMode) || is_node_experimental(props.row, coreNodeMode) ? '#FABE23' : '#FD686A'}`">
               <strong>
                 {{ props.row?.metrics?.version || '-' }}
               </strong>
@@ -447,7 +447,7 @@ export default {
     is_node_experimental (node, nodeType) {
       const closestTag = stripExtraTagDescription(node?.metrics?.version || '')
 
-      return closestTag === this.latest_releases[this.get_node_type(nodeType)].prerelease
+      return closestTag !== node?.metrics?.version && closestTag === this.latest_releases[this.get_node_type(nodeType)].prerelease
     },
     is_node_uptodate (node, nodeType) {
       return this.is_node_latest(node, nodeType) || this.is_node_prerelease(node, nodeType) || this.is_node_experimental(node, nodeType)
