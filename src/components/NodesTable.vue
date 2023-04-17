@@ -58,8 +58,29 @@
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td key="state" :props="props">
+            <q-tooltip :content-style="`background-color: ${!props?.row?.score?.total_score ? '#FD686A' : ''}`">
+              <div style="font-size:larger">
+                <div>
+                  <strong v-if="!props?.row?.score">This node is unreachable</strong>
+                  <strong v-else-if="props?.row?.score?.version === 0">This node runs an unknown or obsolete version</strong>
+                </div>
+
+                <div v-if="props.row?.metrics && props.row?.score">
+                  <div v-if="coreNodeMode">
+
+                  </div>
+                  <div class="text-right">last check: {{ display_date(props.row?.metrics?.measured_at) }}</div>
+                </div>
+              </div>
+
+            </q-tooltip>
+
             <div class="row items-center">
               <div class="status-pill big q-mr-sm" :style="'background:' + get_color_from_percentage(props.row?.score?.total_score)" />
+
+              <div class="text-weight-bold">
+                <span>{{ display_percentage(props.row?.score?.total_score) }}</span>
+              </div>
             </div>
           </q-td>
           <q-td key="picture" :props="props" style="font-size: 2.5em; padding-right: 0;">
@@ -166,9 +187,6 @@
               <template v-else-if="is_node_outdated(props.row, coreNodeMode)">(outdated)</template>
               <template v-else>(obsolete)</template>
             </small>
-          </q-td>
-          <q-td key="quality" :props="props">
-            {{ display_percentage(props.row?.score?.performance) }}
           </q-td>
           <q-td key="est_apy" :props="props">
             <template v-if="coreNodeMode">
@@ -282,7 +300,6 @@ export default {
             'linked',
             'time',
             'version',
-            'quality',
             'est_apy',
             'actions'
           ]
@@ -295,7 +312,6 @@ export default {
             'linked',
             'time',
             'version',
-            'quality',
             'est_apy',
             'actions'
           ]
@@ -343,7 +359,7 @@ export default {
       columns: [
         {
           name: 'state',
-          label: 'State',
+          label: 'Score',
           field: props => props?.score?.total_score || 0,
           align: 'left',
           sortable: true
@@ -389,13 +405,6 @@ export default {
           name: 'version',
           label: 'Version',
           field: props => props?.metrics?.version || '0.0.0',
-          sortable: true,
-          align: 'right'
-        },
-        {
-          name: 'quality',
-          label: 'Performance',
-          field: props => props?.score?.performance || 0,
           sortable: true,
           align: 'right'
         },
@@ -473,6 +482,12 @@ export default {
       if (nullButNot0(value)) { return 'n/a' }
 
       return Number(Number(value) * 100).toFixed(1) + '%'
+    },
+    display_date (value) {
+      if (!value) { return 'n/a' }
+
+      const [date, time] = new Date(value * 1000).toISOString().split('T')
+      return `${date} (${time.split('.')[0]})`
     },
     compute_estimated_stakers_apy (node) {
       let est_apy = 0
@@ -597,5 +612,9 @@ export default {
 
 .dot.green {
   background-color: #1CC272;
+}
+
+.bad_metrics_reason{
+  font-weight: bold;
 }
 </style>
