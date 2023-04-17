@@ -60,6 +60,13 @@
                   <strong v-else-if="props?.row?.score?.version === 0">This node runs an unknown or obsolete version</strong>
                 </div>
 
+                <div>
+                  <strong v-if="props?.row?.score?.total_score >= 0.8">This node has no reward penalty</strong>
+                  <strong v-else-if="props?.row?.score?.total_score >= 0.4">This node has a slight reward penalty</strong>
+                  <strong v-else-if="props?.row?.score?.total_score >= 0.2">This node has a huge reward penalty</strong>
+                  <strong v-else>This node does not get any reward</strong>
+                </div>
+
                 <div v-if="props.row?.metrics && props.row?.score" class="q-pt-sm">
                   <div>ASN: <strong>{{ props.row?.metrics?.as_name }}</strong></div>
                   <div>({{ props.row?.score?.measurements?.nodes_with_identical_asn }} nodes on this ASN)</div>
