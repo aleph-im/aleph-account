@@ -48,11 +48,6 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <!-- <q-btn :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))"
-            color="aleph-radial" text-color="white"
-            class="q-ml-sm font-weight-bold" icon="add" size="sm" @click="$emit('create-node')">
-            Create node
-          </q-btn> -->
         </span>
       </template>
       <template v-slot:body="props">
@@ -65,14 +60,22 @@
                   <strong v-else-if="props?.row?.score?.version === 0">This node runs an unknown or obsolete version</strong>
                 </div>
 
-                <div v-if="props.row?.metrics && props.row?.score">
-                  <div v-if="coreNodeMode">
-
+                <div v-if="props.row?.metrics && props.row?.score" class="q-pt-sm">
+                  <div>ASN: <strong>{{ props.row?.metrics?.as_name }}</strong></div>
+                  <div>({{ props.row?.score?.measurements?.nodes_with_identical_asn }} nodes on this ASN)</div>
+                  <div v-if="coreNodeMode" class="q-pt-sm">
+                    <div>Base latency: <strong>{{ display_percentage(props.row.metrics?.base_latency) }}</strong></div>
+                    <div>Aggregate latency: <strong>{{ display_percentage(props.row.metrics?.aggregate_latency) }}</strong></div>
+                    <div>File download latency: <strong>{{ display_percentage(props.row.metrics?.file_download_latency) }}</strong></div>
+                    <div>Metrics latency: <strong>{{ display_percentage(props.row.metrics?.metrics_latency) }}</strong></div>
+                    <div>Eth height remaining: <strong>{{ props.row.metrics?.eth_height_remaining }}</strong></div>
                   </div>
-                  <div class="text-right">last check: {{ display_date(props.row?.metrics?.measured_at) }}</div>
+
+                  <div class="q-pt-sm">
+                    last check: {{ display_date(props.row?.metrics?.measured_at) }}
+                  </div>
                 </div>
               </div>
-
             </q-tooltip>
 
             <div class="row items-center">
@@ -492,7 +495,9 @@ export default {
     compute_estimated_stakers_apy (node) {
       let est_apy = 0
       if (node?.score?.total_score) {
-        const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
+        let normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
+        if (normalizedScore === 0.8) { normalizedScore = 1 } else if (normalizedScore === 0.2) { normalizedScore = 0 }
+
         const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
 
         est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
