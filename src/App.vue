@@ -1,7 +1,7 @@
 <template>
   <div id="q-app" style="padding-top:40px">
     <div class="scores_disclaimer" v-if="_scores_grace_period_end - Date.now() > 0">
-      Starting from May 4th 2023 (23:59 UTC), our new reward system will be in effect, balancing rewards based on nodes scores.
+      <a href="https://medium.com/aleph-im/new-nodes-scoring-on-aleph-network-20a0cfc305fa">Starting from May 4th 2023 (23:59 UTC), our new reward system will be in effect, balancing rewards based on nodes scores.</a>
     </div>
 
     <router-view />
@@ -35,5 +35,9 @@ body.body--dark  {
   right: 0;
   z-index: 6000;
   font-weight: bold;
+
+  a{
+    color: inherit;
+  }
 }
 </style>
