@@ -77,18 +77,25 @@ export function nullButNot0 (input) {
 }
 
 /**
- * Normalises a value between a min and max value
+ * Normalises a value between a min and max value, if floor and ceil are provided, it will return the floor or ceil if the value is outside the [min, max] interval
  *
  * @param {number} input
  * @param {number} min
  * @param {number} max
+ * @param {number} floor
+ * @param {number} ceil
  * @returns a number in the [min, max] interval
  */
-export function normalizeValue (input, min, max) {
+export function normalizeValue (input, min, max, floor, ceil) {
   if (!input) return 0
   if (input > max) return 1
   if (input < min) return 0
-  return (input - min) / (max - min)
+
+  const normalized = (input - min) / (max - min)
+  if (floor === undefined || ceil === undefined) return normalized
+  if (normalized < min) return floor
+  if (normalized > max) return ceil
+  return normalized
 }
 
 /**

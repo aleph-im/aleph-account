@@ -209,6 +209,11 @@
                 </div>
               </template>
               <template v-else>
+                <q-tooltip v-if="props.row?.resource_nodes.length < 3">
+                  <div>{{ 3 - props.row?.resource_nodes.length }} missing CRN</div>
+                  <div>Link 3 CRN to that Node to maximise its rewards</div>
+                </q-tooltip>
+                <q-icon name="warning" style="color: #FD686A" v-if="props.row?.resource_nodes.length < 3" />
                 {{ compute_estimated_stakers_apy(props.row) }}
               </template>
             </template>
@@ -502,9 +507,7 @@ export default {
     compute_estimated_stakers_apy (node) {
       let est_apy = 0
       if (node?.score?.total_score) {
-        let normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
-        if (normalizedScore === 0.8) { normalizedScore = 1 } else if (normalizedScore === 0.2) { normalizedScore = 0 }
-
+        const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8, 0, 1)
         const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
 
         est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
@@ -515,7 +518,7 @@ export default {
       let est_rewards = 0
       if (node?.score?.total_score) {
         const pool = 15_000 / this.active_nodes
-        const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8)
+        const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8, 0, 1)
         const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
 
         est_rewards = pool * normalizedScore * (1 - linkedCRNPenalty)
@@ -527,7 +530,7 @@ export default {
       const { decentralization, total_score } = node.score
       const maxRewards = 500 + decentralization * 2500
 
-      return '~' + (maxRewards * normalizeValue(total_score, 0.2, 0.8)).toFixed(2)
+      return '~' + (maxRewards * normalizeValue(total_score, 0.2, 0.8, 0, 1)).toFixed(2)
     },
     normalize_decentralization (node) {
       const decentralization = node?.score?.decentralization
