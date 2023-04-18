@@ -315,7 +315,7 @@ export default {
             'linked',
             'time',
             'version',
-            'est_apy',
+            (this._scores_grace_period_end - Date.now() < 0) && 'est_apy',
             'actions'
           ]
         } else {
@@ -327,13 +327,14 @@ export default {
             'linked',
             'time',
             'version',
-            'est_apy',
+            (this._scores_grace_period_end - Date.now() < 0) && 'est_apy',
             'actions'
           ]
         }
       }
     },
     ...mapState({
+      _scores_grace_period_end: (state) => state.scores_grace_period_end,
       account: (state) => state.account,
       channel: (state) => state.channel,
       api_server: (state) => state.api_server,
