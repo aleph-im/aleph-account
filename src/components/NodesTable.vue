@@ -57,7 +57,7 @@
               <div style="font-size:larger">
                 <div>
                   <strong v-if="!props?.row?.score">This node is unreachable</strong>
-                  <strong v-else-if="props?.row?.score?.version === 0">This node runs an unknown or obsolete version</strong>
+                  <strong v-else-if="props?.row?.metrics?.version === 0">This node runs an unknown or obsolete version</strong>
                 </div>
 
                 <div>
