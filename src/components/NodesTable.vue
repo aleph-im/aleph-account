@@ -203,8 +203,8 @@
               <template v-if="is_my_node(props.row)">
                 <div class="row items-center">
                   <div class="text-bold q-mr-sm">{{ compute_ccn_rewards(props.row) }}</div>
-                  <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
-                  <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
+                  <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
+                  <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
                   &nbsp;/&nbsp;mo
                 </div>
               </template>
@@ -220,8 +220,8 @@
             <template v-else>
               <div class="row items-center justify-end">
                 <div class="text-bold q-mr-sm">{{ compute_crn_rewards(props.row) }}</div>
-                <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
-                <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
+                <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
+                <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
                 &nbsp;/&nbsp;mo
               </div>
             </template>
@@ -229,8 +229,8 @@
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
               {{ props.row.stakers[account.address].toFixed(2) }}
-              <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="14" class="vertical-middle q-pb-xs">
-              <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="14" class="vertical-middle q-pb-xs">
+              <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="14" class="vertical-middle q-pb-xs">
+              <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="14" class="vertical-middle q-pb-xs">
             </span>
 
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
