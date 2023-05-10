@@ -507,8 +507,12 @@ export default {
     compute_estimated_stakers_apy (node) {
       let est_apy = 0
       if (node?.score?.total_score) {
+        let linkedCRN = node.resource_nodes.length
+        if (linkedCRN > 3) {
+          linkedCRN = 3
+        }
         const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8, 0, 1)
-        const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
+        const linkedCRNPenalty = (3 - linkedCRN) / 10
 
         est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
       }
@@ -517,9 +521,13 @@ export default {
     compute_ccn_rewards (node) {
       let est_rewards = 0
       if (node?.score?.total_score) {
+        let linkedCRN = node.resource_nodes.length
+        if (linkedCRN > 3) {
+          linkedCRN = 3
+        }
         const pool = 15_000 / this.active_nodes
         const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8, 0, 1)
-        const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
+        const linkedCRNPenalty = (3 - linkedCRN) / 10
 
         est_rewards = pool * normalizedScore * (1 - linkedCRNPenalty)
       }
