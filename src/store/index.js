@@ -8,7 +8,7 @@ import {
 import { decrypt_content } from '../services/encryption.js'
 import { get_erc20_balance } from '../services/erc20.js'
 import axios from 'axios'
-import { joinArrays } from 'src/helpers/utilities'
+import { getLatestReleases, joinArrays } from 'src/helpers/utilities'
 
 var providers = require('ethers').providers
 
@@ -24,11 +24,14 @@ Vue.use(Vuex)
 // export default function (/* { ssrContext } */) {
 export default new Vuex.Store({
   state: {
+    // FIXME: dirty implem
+    _scores_grace_period_end: new Date('2023-05-04T23:59:00Z').getTime(),
     erc20_address: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
     splToken_address: '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
     // monitor_address: '0x86bfBC59a1d1D82D2596fdeB02538fDe0426faD2', // test
     monitor_address: '0xa1B3bb7d2332383D96b7796B908fB7f7F3c2Be10',
     sender_address: '0x3a5CC6aBd06B601f4654035d125F9DD2FC992C25',
+    scoring_address: '0x4D52380D3191274a04846c89c069E6C3F2Ed94e4',
     api_server: 'https://api2.aleph.im',
     ws_api_server: 'wss://api1.aleph.im',
     ipfs_gateway: 'https://ipfs.io/ipfs/',
@@ -60,11 +63,27 @@ export default new Vuex.Store({
     // tags: ['mainnet-test'], // test
     tags: ['mainnet'],
     node_post_type: 'corechan-operation',
+    node_scores: { ccn: [], crn: [] },
+    node_metrics: { ccn: [], crn: [] },
     feature_enabled: {
       solana: false
+    },
+    github_releases_metadata: {
+      crn: { latest: '', prerelease: '', outdated: [] },
+      ccn: { latest: '', prerelease: '', outdated: [] }
     }
   },
   mutations: {
+    set_nodes_metadata (state, { ccn_versions, crn_versions, scores, metrics }) {
+      // merges all the metadata in a single mutation to avoid multiple re-renders
+      state.github_releases_metadata = {
+        ccn: getLatestReleases(ccn_versions),
+        crn: getLatestReleases(crn_versions)
+      }
+
+      state.node_scores = scores
+      state.node_metrics = metrics
+    },
     set_account (state, account) {
       if (state.account !== account) {
         state.notes = []
@@ -92,6 +111,37 @@ export default new Vuex.Store({
     },
     set_resource_nodes (state, nodes) {
       state.resource_nodes = nodes
+    },
+    merge_node_scores (state) {
+      [['nodes', 'ccn'], ['resource_nodes', 'crn']]
+        .forEach(([stateNodeType, messageNodeType]) => {
+          const nodeScores = state.node_scores[messageNodeType]
+          const nodeMetrics = state.node_metrics[messageNodeType]
+
+          let joinedNodes = state[stateNodeType]
+          joinedNodes = joinArrays(
+            nodeScores,
+            x => x.node_id,
+            joinedNodes,
+            x => x.hash,
+            (from, to) => ({
+              ...to,
+              score: from
+            })
+          )
+          joinedNodes = joinArrays(
+            nodeMetrics,
+            x => x.node_id,
+            joinedNodes,
+            x => x.hash,
+            (from, to) => ({
+              ...to,
+              metrics: from
+            })
+          )
+
+          state[stateNodeType] = joinedNodes
+        })
     },
     set_stored (state, { files, total }) {
       state.stored = files

@@ -80,7 +80,7 @@
                 Current APY
               </span>
               <span style="text-transform: capitalize;">
-                {{((((1+total_per_aleph_per_day)**365)-1)*100).toFixed(2)}}%
+                {{current_apy.toFixed(2)}}%
               </span>
             </div>
           </div>
@@ -199,10 +199,8 @@ import NodesTable from '../components/NodesTable'
 import NodeInfo from '../components/NodeInfo'
 import { posts } from 'aleph-js'
 import store from '../store'
+import { fetchAndCache } from '../helpers/utilities'
 
-// function sleep (ms) {
-//   return new Promise(resolve => setTimeout(resolve, ms))
-// }
 async function node_action (action, ref) {
   await posts.submit(store.state.account.address, store.state.node_post_type,
     {
@@ -221,6 +219,7 @@ async function node_action (action, ref) {
 export default {
   name: 'StakePage',
   computed: mapState({
+    scoring_address: 'scoring_address',
     account: state => state.account,
     balance_info: state => state.balance_info,
     api_server: state => state.api_server,
@@ -286,7 +285,6 @@ export default {
           return (node.owner !== state.account.address || node.manager !== state.account.address)
         }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
       } else if (state.resource_nodes) {
-        console.log(state.resource_nodes)
         return state.resource_nodes.filter((node) => true)
       } else {
         return []
@@ -345,11 +343,14 @@ export default {
         }
       ]
     },
-    total_per_day (state) {
+    total_per_day () {
       return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
     },
-    total_per_aleph_per_day (state) {
+    total_per_aleph_per_day () {
       return this.total_per_day / this.total_staked_in_active
+    },
+    current_apy () {
+      return (((1 + this.total_per_aleph_per_day) ** 365) - 1) * 100
     },
     closeComputeDialog () {
       this.createComputeNode = false
@@ -374,20 +375,71 @@ export default {
     }
   },
   methods: {
+    async preloadMetaInfo () {
+      // Runs the following queries in parallel:
+      // Load latest CCN and CRN versions from Github
+      // Load latest scores and metrics from aleph messages
+
+      const [ccn_versions, crn_versions, scores, metrics] = await Promise.all([
+        this.getLatestCCNVersion(),
+        this.getLatestCRNVersion(),
+        this.getLatestScores(),
+        this.getLatestMetrics()
+      ])
+      this.$store.commit('set_nodes_metadata', {
+        ccn_versions,
+        crn_versions,
+        scores: scores?.posts[0]?.content?.scores || { ccn: [], crn: [] },
+        metrics: metrics?.posts[0]?.content?.metrics || { ccn: [], crn: [] }
+      })
+    },
+    async getLatestCCNVersion () {
+      return fetchAndCache(
+        'https://api.github.com/repos/aleph-im/pyaleph/releases',
+        'ccn_versions',
+        300_000
+      )
+    },
+    async getLatestCRNVersion () {
+      return fetchAndCache(
+        'https://api.github.com/repos/aleph-im/aleph-vm/releases',
+        'crn_versions',
+        300_000
+      )
+    },
+    async getLatestScores () {
+      return posts.get_posts('aleph-scoring-scores', {
+        pagination: 1,
+        page: 1,
+        addresses: [this.scoring_address]
+      })
+    },
+    async getLatestMetrics () {
+      return posts.get_posts('aleph-network-metrics', {
+        pagination: 1,
+        page: 1,
+        addresses: [this.scoring_address]
+      })
+    },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(
         `${this.ws_api_server}/api/ws0/messages?msgType=AGGREGATE&addresses=` +
         `${this.monitor_address}`
       )
 
+      // Dirty hack to avoid multiple updates on the first rendering
+      let lastSocketMessage = Date.now()
       this.statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
         if ((data.content !== undefined) &&
             (data.content.address === this.monitor_address) &&
             (data.content.key === 'corechannel') &&
-            (data.content.content.nodes !== undefined)) {
+            (data.content.content.nodes !== undefined) &&
+            Date.now() - lastSocketMessage > 200) {
+          lastSocketMessage = Date.now()
           this.$store.commit('set_nodes', data.content.content.nodes)
           this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
+          this.$store.commit('merge_node_scores')
         }
       }.bind(this)
 
@@ -440,6 +492,7 @@ export default {
     }
   },
   async mounted () {
+    await this.preloadMetaInfo()
     await this.update()
     await this.prepare_nodes_feed()
   },

@@ -2,8 +2,8 @@
   <span>
     <template v-if="node !== undefined">
       <q-icon v-if="node.picture" style="font-size: 2em" :name="`img:${api_server}/api/v0/storage/raw/${node.picture}`" class="rounded-borders q-mr-sm" />
-      {{ node.name.substring(0, 30) }}
       <q-tooltip>
+        <div>{{ node.name }}</div>
         <span class="text-grey text-weight-light">CCN-ID </span> <strong>{{ node.hash.slice(-10) }}</strong>
         <span :class="'status-pill q-ml-sm bg-'+(node.status === 'active' ? 'positive': 'inactive')" :title="node.status"></span>
       </q-tooltip>
