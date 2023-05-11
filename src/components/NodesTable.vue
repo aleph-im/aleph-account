@@ -172,8 +172,15 @@
               <div class="row justify-end">
                 <div v-for="dot in props.row.resource_nodes.slice(0, 3)" :key="dot.hash">
                   <q-tooltip>
-                    <div v-if="dot.name"><strong>{{ dot.name }}</strong></div>
-                    <div>{{ dot.hash.slice(-10) }}</div>
+                    <div class="row items-center">
+                      <div v-if="dot.picture">
+                        <img :src="`${api_server}/api/v0/storage/raw/${dot.picture}`" height="24" class="q-mr-sm">
+                      </div>
+                      <div>
+                        <div v-if="dot.name"><strong>{{ dot.name }}</strong></div>
+                        <div>{{ dot.hash.slice(-10) }}</div>
+                      </div>
+                    </div>
                   </q-tooltip>
                   <div class="dot q-mr-sm"
                         :style="'background:' + get_color_from_percentage(dot.score?.total_score)"
