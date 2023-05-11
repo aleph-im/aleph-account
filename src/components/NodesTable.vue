@@ -69,7 +69,7 @@
 
                 <div v-if="props.row?.metrics && props.row?.score" class="q-pt-sm">
                   <div>ASN: <strong>{{ props.row?.metrics?.as_name }}</strong></div>
-                  <div>({{ props.row?.score?.measurements?.nodes_with_identical_asn }} nodes on this ASN)</div>
+                  <div v-if="props.row?.metrics?.asn">({{ nodes_per_asn[props.row?.metrics?.asn] }} nodes on this ASN)</div>
                   <div v-if="coreNodeMode" class="q-pt-sm">
                     <div>Base latency: <strong>{{ display_percentage(props.row.metrics?.base_latency) }}</strong></div>
                     <div>Aggregate latency: <strong>{{ display_percentage(props.row.metrics?.aggregate_latency) }}</strong></div>
@@ -170,9 +170,15 @@
                 {{props.row.resource_nodes.length}} linked
               </div>
               <div class="row justify-end">
-                <span v-for="(_dot, i) in dots"
-                      class="dot q-mr-sm" :class="props.row.resource_nodes.at(i) !== undefined ? 'green' : ''"
-                      :key="i" />
+                <div v-for="dot in props.row.resource_nodes.slice(0, 3)" :key="dot.hash">
+                  <q-tooltip>
+                    <div v-if="dot.name"><strong>{{ dot.name }}</strong></div>
+                    <div>{{ dot.hash.slice(-10) }}</div>
+                  </q-tooltip>
+                  <div class="dot q-mr-sm"
+                        :style="'background:' + get_color_from_percentage(dot.score?.total_score)"
+                         />
+                </div>
               </div>
             </div>
           </q-td>
@@ -336,6 +342,7 @@ export default {
     ...mapState({
       account: (state) => state.account,
       channel: (state) => state.channel,
+      nodes_per_asn: (state) => state.nodes_per_asn,
       api_server: (state) => state.api_server,
       tags: (state) => state.tags,
       node_post_type: (state) => state.node_post_type,

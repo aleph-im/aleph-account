@@ -245,6 +245,21 @@ export default {
         return state.nodes.filter((node) => {
           return (node !== this.user_node) && (this.user_stakes.indexOf(node) < 0) && (!state.account || (node.manager !== state.account.address))
         }).sort((a, b) => (a.total_staked > b.total_staked) ? 1 : -1)
+          .map(node => {
+            const { resource_nodes } = node
+            if (resource_nodes) {
+              const mappedResources = resource_nodes.map(hash => {
+                const resource = state.resource_nodes.find(resource => resource.hash === hash)
+                return resource || { hash, score: { total_score: 0 } }
+              })
+
+              return {
+                ...node,
+                resource_nodes: mappedResources
+              }
+            }
+            return node
+          })
       } else {
         return []
       }

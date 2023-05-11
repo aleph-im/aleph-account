@@ -71,7 +71,8 @@ export default new Vuex.Store({
     github_releases_metadata: {
       crn: { latest: '', prerelease: '', outdated: [] },
       ccn: { latest: '', prerelease: '', outdated: [] }
-    }
+    },
+    nodes_per_asn: {}
   },
   mutations: {
     set_nodes_metadata (state, { ccn_versions, crn_versions, scores, metrics }) {
@@ -83,6 +84,19 @@ export default new Vuex.Store({
 
       state.node_scores = scores
       state.node_metrics = metrics
+
+      try {
+        state.nodes_per_asn = [...metrics.ccn, ...metrics.crn].reduce((acc, cv) => {
+          const asn = cv.asn
+          if (!acc[asn]) {
+            acc[asn] = 0
+          }
+          acc[asn]++
+          return acc
+        }, {})
+      } catch (error) {
+        console.log(`Cannot aggregate nodes per ASN: ${error}`)
+      }
     },
     set_account (state, account) {
       if (state.account !== account) {
