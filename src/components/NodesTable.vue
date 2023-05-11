@@ -274,7 +274,7 @@
             <q-btn size="sm" v-else-if="(!coreNodeMode)&&account&&(account.address == props.row.owner)&&(props.row.parent !== null)" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
 
-            <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
+            <q-btn size="sm" v-if="!coreNodeMode&&account&&is_my_node(props.row)&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
             <q-btn size="sm" :color="is_editable(props.row) ? 'secondary' : 'primary'" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">
@@ -460,7 +460,7 @@ export default {
       return isCCN ? 'ccn' : 'crn'
     },
     is_my_node (node) {
-      return this.account && this.account === node.owner
+      return this.account && this.account.address === node.owner
     },
     is_node_latest (node, nodeType) {
       return node?.metrics?.version === this.latest_releases[this.get_node_type(nodeType)].latest
