@@ -318,7 +318,7 @@ export default {
         {
           label: `${this.active_nodes} active`,
           value: this.active_nodes,
-          color: '#029AFF'
+          color: '#0054FF'
         }
       ]
     },
@@ -333,7 +333,7 @@ export default {
         {
           label: `${this.linked_nodes} linked`,
           value: this.linked_nodes,
-          color: '#029AFF'
+          color: '#0054FF'
         }
       ]
     },
@@ -354,7 +354,7 @@ export default {
         {
           label: `${(total_by_operators / 10 ** 6).toFixed(2)}M by node operators`,
           value: total_by_operators,
-          color: '#029AFF'
+          color: '#0054FF'
         }
       ]
     },
