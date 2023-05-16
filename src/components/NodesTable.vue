@@ -491,7 +491,7 @@ export default {
       return this.is_node_latest(node, nodeType) || this.is_node_prerelease(node, nodeType) || this.is_node_experimental(node, nodeType)
     },
     is_node_outdated (node, nodeType) {
-      return this.latest_releases[this.get_node_type(nodeType)].outdated.includes(node?.metrics?.version)
+      return this.latest_releases[this.get_node_type(nodeType)].outdated === node?.metrics?.version
     },
     is_node_obsolete (node, nodeType) {
       return !this.is_node_latest(node, nodeType) &&

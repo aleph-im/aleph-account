@@ -141,8 +141,10 @@ export function getLatestReleases (payload, outdatedAfter = 1000 * 60 * 60 * 24 
   const versions = {
     latest: null,
     prerelease: null,
-    outdated: []
+    outdated: null
   }
+
+  let latestReleaseDate = null
 
   for (const item of payload) {
     if (item.prerelease && !versions.prerelease) {
@@ -150,9 +152,10 @@ export function getLatestReleases (payload, outdatedAfter = 1000 * 60 * 60 * 24 
     }
     if (!item.prerelease && !versions.latest) {
       versions.latest = item.tag_name
+      latestReleaseDate = new Date(item.published_at).getTime()
     }
-    if (Date.now() - item.published_at > outdatedAfter && versions.latest && versions.prerelease) {
-      versions.outdated.push(item.tag_name)
+    if (versions.latest && versions.prerelease && !versions.outdated && !item.prerelease && Date.now() - latestReleaseDate < outdatedAfter) {
+      versions.outdated = item.tag_name
     }
   }
 
