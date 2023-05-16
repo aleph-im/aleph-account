@@ -1,4 +1,4 @@
-import IPFS from 'ipfs'
+import * as IPFS from 'ipfs'
 import Vue from 'vue'
 
 const plugin = {
