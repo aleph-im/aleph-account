@@ -190,7 +190,7 @@
             </div>
           </q-td>
           <q-td key="decentralization" v-if="!coreNodeMode" :props="props">
-            <span v-for="(_dot, i) in new Array(normalize_decentralization(props.row))"
+            <span v-for="(_dot, i) in normalize_decentralization(props.row)"
                   class="dot q-mr-sm"
                   :key="i" />
           </q-td>
@@ -558,7 +558,7 @@ export default {
       const decentralization = node?.score?.decentralization
       if (!decentralization) return 0
 
-      return [0.3, 0.6, 0.9].findIndex(x => x >= decentralization) + 1
+      return [0.3, 0.6, 0.9].filter(x => decentralization >= x)
     },
     get_color_from_percentage (percent) {
       if (!percent) { return '#FFFFFF77' }
