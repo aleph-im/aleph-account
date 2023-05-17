@@ -69,7 +69,7 @@
 
                 <div v-if="props.row?.metrics && props.row?.score" class="q-pt-sm">
                   <div>ASN: <strong>{{ props.row?.metrics?.as_name }}</strong></div>
-                  <div>({{ props.row?.score?.measurements?.nodes_with_identical_asn }} nodes on this ASN)</div>
+                  <div v-if="props.row?.metrics?.asn">({{ nodes_per_asn[props.row?.metrics?.asn] }} nodes on this ASN)</div>
                   <div v-if="coreNodeMode" class="q-pt-sm">
                     <div>Base latency: <strong>{{ display_percentage(props.row.metrics?.base_latency) }}</strong></div>
                     <div>Aggregate latency: <strong>{{ display_percentage(props.row.metrics?.aggregate_latency) }}</strong></div>
@@ -170,9 +170,22 @@
                 {{props.row.resource_nodes.length}} linked
               </div>
               <div class="row justify-end">
-                <span v-for="(_dot, i) in dots"
-                      class="dot q-mr-sm" :class="props.row.resource_nodes.at(i) !== undefined ? 'green' : ''"
-                      :key="i" />
+                <div v-for="dot in props.row.resource_nodes.slice(0, 3)" :key="dot.hash">
+                  <q-tooltip>
+                    <div class="row items-center">
+                      <div v-if="dot.picture">
+                        <img :src="`${api_server}/api/v0/storage/raw/${dot.picture}`" height="24" class="q-mr-sm">
+                      </div>
+                      <div>
+                        <div v-if="dot.name"><strong>{{ dot.name }}</strong></div>
+                        <div>{{ dot.hash.slice(-10) }}</div>
+                      </div>
+                    </div>
+                  </q-tooltip>
+                  <div class="dot q-mr-sm"
+                        :style="'background:' + get_color_from_percentage(dot.score?.total_score)"
+                         />
+                </div>
               </div>
             </div>
           </q-td>
@@ -203,8 +216,8 @@
               <template v-if="is_my_node(props.row)">
                 <div class="row items-center">
                   <div class="text-bold q-mr-sm">{{ compute_ccn_rewards(props.row) }}</div>
-                  <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
-                  <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
+                  <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
+                  <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
                   &nbsp;/&nbsp;mo
                 </div>
               </template>
@@ -220,8 +233,8 @@
             <template v-else>
               <div class="row items-center justify-end">
                 <div class="text-bold q-mr-sm">{{ compute_crn_rewards(props.row) }}</div>
-                <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="16" class="vertical-middle q-pb-xs">
-                <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="16" class="vertical-middle q-pb-xs">
+                <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
+                <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
                 &nbsp;/&nbsp;mo
               </div>
             </template>
@@ -229,8 +242,8 @@
           <q-td key="actions" :props="props">
             <span class="q-pa-xs block" v-if="user_stakes.indexOf(props.row) >= 0">
               {{ props.row.stakers[account.address].toFixed(2) }}
-              <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="14" class="vertical-middle q-pb-xs">
-              <img v-if="$q.dark.isActive" src="~/assets/logo-white.svg" height="14" class="vertical-middle q-pb-xs">
+              <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="14" class="vertical-middle q-pb-xs">
+              <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="14" class="vertical-middle q-pb-xs">
             </span>
 
             <q-btn size="sm" :loading="loading==props.row.hash" color="warning" text-color="black"
@@ -274,7 +287,7 @@
             <q-btn size="sm" v-else-if="(!coreNodeMode)&&account&&(account.address == props.row.owner)&&(props.row.parent !== null)" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-action', 'unlink', props.row.hash)">Unlink</q-btn>
 
-            <q-btn size="sm" v-if="!coreNodeMode&&account&&user_node&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
+            <q-btn size="sm" v-if="!coreNodeMode&&account&&is_my_node(props.row)&&(props.row.parent===null)" color="primary" outline class="q-ml-sm" type="a"
             @click="$emit('node-action', 'link', props.row.hash)" :disabled="Boolean(props.row.locked|(user_node&&(user_node.resource_nodes.length>=3)))">Link</q-btn>
             <q-btn size="sm" :color="is_editable(props.row) ? 'secondary' : 'primary'" outline class="q-ml-sm" type="a"
             @click="$emit('node-info', props.row)">
@@ -336,6 +349,7 @@ export default {
     ...mapState({
       account: (state) => state.account,
       channel: (state) => state.channel,
+      nodes_per_asn: (state) => state.nodes_per_asn,
       api_server: (state) => state.api_server,
       tags: (state) => state.tags,
       node_post_type: (state) => state.node_post_type,
@@ -460,7 +474,7 @@ export default {
       return isCCN ? 'ccn' : 'crn'
     },
     is_my_node (node) {
-      return this.account && this.account === node.owner
+      return this.account && this.account.address === node.owner
     },
     is_node_latest (node, nodeType) {
       return node?.metrics?.version === this.latest_releases[this.get_node_type(nodeType)].latest
@@ -477,7 +491,7 @@ export default {
       return this.is_node_latest(node, nodeType) || this.is_node_prerelease(node, nodeType) || this.is_node_experimental(node, nodeType)
     },
     is_node_outdated (node, nodeType) {
-      return this.latest_releases[this.get_node_type(nodeType)].outdated.includes(node?.metrics?.version)
+      return this.latest_releases[this.get_node_type(nodeType)].outdated === node?.metrics?.version
     },
     is_node_obsolete (node, nodeType) {
       return !this.is_node_latest(node, nodeType) &&
@@ -507,8 +521,12 @@ export default {
     compute_estimated_stakers_apy (node) {
       let est_apy = 0
       if (node?.score?.total_score) {
+        let linkedCRN = node.resource_nodes.length
+        if (linkedCRN > 3) {
+          linkedCRN = 3
+        }
         const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8, 0, 1)
-        const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
+        const linkedCRNPenalty = (3 - linkedCRN) / 10
 
         est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
       }
@@ -517,9 +535,13 @@ export default {
     compute_ccn_rewards (node) {
       let est_rewards = 0
       if (node?.score?.total_score) {
+        let linkedCRN = node.resource_nodes.length
+        if (linkedCRN > 3) {
+          linkedCRN = 3
+        }
         const pool = 15_000 / this.active_nodes
         const normalizedScore = normalizeValue(node?.score?.total_score, 0.2, 0.8, 0, 1)
-        const linkedCRNPenalty = (3 - node.resource_nodes.length) / 10
+        const linkedCRNPenalty = (3 - linkedCRN) / 10
 
         est_rewards = pool * normalizedScore * (1 - linkedCRNPenalty)
       }

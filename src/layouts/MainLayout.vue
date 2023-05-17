@@ -5,8 +5,8 @@
         <q-btn dense flat round icon="menu" @click="left = !left" v-if="!left" />
 
         <q-toolbar-title class="logo flex">
-          <img v-if="(!left) && (!$q.dark.isActive)" src="~/assets/logo-blue.svg" height="32">
-          <img v-if="(!left) && $q.dark.isActive" src="~/assets/logo-white.svg" height="32">
+          <img v-if="(!left) && (!$q.dark.isActive)" src="~/assets/aleph-logo.svg" height="32">
+          <img v-if="(!left) && $q.dark.isActive" src="~/assets/aleph-logo.svg" height="32">
           <span class="q-ml-sm">
             aleph.im
           </span>
@@ -77,7 +77,7 @@
           </q-dialog>
           <q-btn v-if="account" class="text-white">
             {{ balance_info['ALEPH'].toFixed(2) }}
-            <span v-if="owed_rewards">&nbsp;/ {{ owed_rewards.toFixed(2) }}</span> <img src="~/assets/logo-white.svg"
+            <span v-if="owed_rewards">&nbsp;/ {{ owed_rewards.toFixed(2) }}</span> <img src="~/assets/aleph-logo-white.svg"
               style="height: 1.4em; margin: 0 0 .2em .4em;" />
             <q-tooltip v-if="owed_rewards">
               <strong>Amount staked / pending rewards</strong><br />
@@ -96,8 +96,8 @@
       <div>
         <div style="height:40px" v-if="_scores_grace_period_end - Date.now() > 0"></div>
         <p class="q-px-md q-pb-md">
-          <img v-if="!$q.dark.isActive" src="~/assets/logo-blue.svg" height="32">
-          <img v-else src="~/assets/logo-white.svg" height="32">
+          <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="32">
+          <img v-else src="~/assets/aleph-logo.svg" height="32">
 
         </p>
         <q-list padding class="menu">
