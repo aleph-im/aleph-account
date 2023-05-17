@@ -222,11 +222,11 @@
                 </div>
               </template>
               <template v-else>
-                <q-tooltip v-if="props.row?.resource_nodes.length < 3">
+                <q-tooltip v-if="is_ccn_not_fully_linked(props.row)">
                   <div>{{ 3 - props.row?.resource_nodes.length }} missing CRN</div>
-                  <div>Link 3 CRN to that Node to maximise its rewards</div>
+                  <div>Link 3 functioning CRN to that Node to maximise its rewards</div>
                 </q-tooltip>
-                <q-icon name="warning" style="color: #FD686A" v-if="props.row?.resource_nodes.length < 3" />
+                <q-icon name="warning" style="color: #FD686A" v-if="is_ccn_not_fully_linked(props.row)" />
                 {{ compute_estimated_stakers_apy(props.row) }}
               </template>
             </template>
@@ -498,6 +498,9 @@ export default {
         !this.is_node_prerelease(node, nodeType) &&
         !this.is_node_outdated(node, nodeType)
     },
+    is_ccn_not_fully_linked (node) {
+      return node?.resource_nodes?.length < 3 || node?.resource_nodes?.find(f => f?.score?.total_score < 0.2) !== undefined
+    },
     total_per_day () {
       return 15000 * ((Math.log10(this.active_nodes) + 1) / 3)
     },
@@ -521,7 +524,7 @@ export default {
     compute_estimated_stakers_apy (node) {
       let est_apy = 0
       if (node?.score?.total_score) {
-        let linkedCRN = node.resource_nodes.length
+        let linkedCRN = node.resource_nodes.filter(x => x?.score?.total_score >= 0.2).length
         if (linkedCRN > 3) {
           linkedCRN = 3
         }
