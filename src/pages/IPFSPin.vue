@@ -325,7 +325,7 @@ export default {
         await store.submit(this.account.address, {
           account: this.account,
           api_server: this.api_server,
-          file_hash: result.cid.string,
+          file_hash: result.cid.toString(),
           storage_engine: 'ipfs',
           channel: 'PINNING',
           extra_fields: {
