@@ -2,7 +2,7 @@
   <div id="q-app" style="padding-top:40px">
     <div class="network_errors" v-if="has_network_errors">
       <template v-if="network_errors.github">
-        Cannot reach Github API, CCN and CRN versions check are disabled.
+        Cannot reach Github API, the display of the latest release is disabled (rewards are not affected)
       </template>
       <template v-if="network_errors.scores">
         Cannot get score information
