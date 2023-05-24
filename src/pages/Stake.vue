@@ -451,6 +451,7 @@ export default {
       // Dirty hack to avoid multiple updates on the first rendering
       let lastSocketMessage = Date.now()
       this.statusSocket.onmessage = function (event) {
+        this.$store.commit('unset_network_errors', 'websockets')
         const data = JSON.parse(event.data)
         if ((data.content !== undefined) &&
             (data.content.address === this.monitor_address) &&
@@ -473,6 +474,7 @@ export default {
 
       this.statusSocket.onerror = function (err) {
         console.error('Socket encountered error: ', err.message, 'Closing socket')
+        this.$store.commit('set_network_errors', 'websockets')
         this.statusSocket.close()
       }.bind(this)
     },

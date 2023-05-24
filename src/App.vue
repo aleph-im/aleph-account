@@ -1,7 +1,15 @@
 <template>
   <div id="q-app" style="padding-top:40px">
-    <div class="scores_disclaimer" v-if="_scores_grace_period_end - Date.now() > 0">
-      <a href="https://medium.com/aleph-im/new-nodes-scoring-on-aleph-network-20a0cfc305fa">Starting from May 4th 2023 (23:59 UTC), our new reward system will be in effect, balancing rewards based on nodes scores.</a>
+    <div class="network_errors" v-if="has_network_errors">
+      <template v-if="network_errors.github">
+        Cannot reach Github API, CCN and CRN versions check are disabled.
+      </template>
+      <template v-if="network_errors.scores">
+        Cannot get score information
+      </template>
+      <template v-if="network_errors.websockets">
+        The websocket API is experiencing issues, live status updates are disabled.
+      </template>
     </div>
 
     <router-view />
@@ -12,9 +20,14 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'App',
-  computed: mapState({
-    _scores_grace_period_end: state => state._scores_grace_period_end
-  })
+  computed: {
+    has_network_errors () {
+      return Object.values(this.network_errors).some(v => v)
+    },
+    ...mapState({
+      network_errors: state => state.network_errors
+    })
+  }
 }
 </script>
 <style lang="scss">
@@ -22,13 +35,13 @@ body.body--dark  {
   background:#1d2a31;
 }
 
-.scores_disclaimer{
+.network_errors{
   padding: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFF;
-  background-color: #0055FF;
+  background-color: #fd686a;
   position: fixed;
   top: 0;
   left: 0;
