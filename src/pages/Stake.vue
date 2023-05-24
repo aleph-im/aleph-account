@@ -401,6 +401,12 @@ export default {
         this.getLatestScores(),
         this.getLatestMetrics()
       ])
+      if (!ccn_versions || !crn_versions) {
+        this.$store.commit('set_network_errors', 'github')
+      }
+      if (!scores || !metrics) {
+        this.$store.commit('set_network_errors', 'scores')
+      }
       this.$store.commit('set_nodes_metadata', {
         ccn_versions,
         crn_versions,

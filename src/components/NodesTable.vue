@@ -352,8 +352,7 @@ export default {
       }
     },
     node_versions_unavailable () {
-      return Object.values(this.latest_releases.ccn).some(x => x === null) ||
-        Object.values(this.latest_releases.crn).some(x => x === null)
+      return this.network_errors.github
     },
     ...mapState({
       account: (state) => state.account,
@@ -367,7 +366,8 @@ export default {
       active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
       total_staked_in_active: (state) => state.nodes.reduce(
         (prev, cur) => prev + (cur.status === 'active' ? cur.total_staked : 0), 0
-      )
+      ),
+      network_errors: (state) => state.network_errors
     })
   },
   components: {
