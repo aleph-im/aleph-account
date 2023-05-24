@@ -72,11 +72,20 @@ export default new Vuex.Store({
       crn: { latest: '', prerelease: '', outdated: [] },
       ccn: { latest: '', prerelease: '', outdated: [] }
     },
-    nodes_per_asn: {}
+    nodes_per_asn: {},
+    networkErrors: {
+      github: false,
+      score: false,
+      websocket: false
+    }
   },
   mutations: {
     set_nodes_metadata (state, { ccn_versions, crn_versions, scores, metrics }) {
       // merges all the metadata in a single mutation to avoid multiple re-renders
+      if (!ccn_versions || !crn_versions) {
+        state.networkErrors.github = true
+      }
+
       state.github_releases_metadata = {
         ccn: getLatestReleases(ccn_versions),
         crn: getLatestReleases(crn_versions)
