@@ -107,7 +107,7 @@ export function normalizeValue (input, min, max, floor, ceil) {
  * @param {function} selector A selector function to select a part of the data to cache (defaults to the full payload)
  * @returns
  */
-export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 * 24, defaultValue = null) {
+export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 * 24) {
   const cached = localStorage.getItem(cacheKey)
   const now = Date.now()
   if (cached) {
@@ -118,10 +118,9 @@ export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 *
     }
   }
 
-  let value = defaultValue
   try {
     const data = await fetch(url)
-    value = await data.json()
+    const value = await data.json()
 
     const toCache = JSON.stringify({
       cachedAt: now,
@@ -130,9 +129,8 @@ export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 *
     localStorage.setItem(cacheKey, toCache)
   } catch (error) {
     console.error(`Failed to fetch ${url}`, error)
+    if(cached) return JSON.parse(cached).value
   }
-
-  return value
 }
 
 /**
