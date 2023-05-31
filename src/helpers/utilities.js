@@ -127,6 +127,7 @@ export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 *
       value
     })
     localStorage.setItem(cacheKey, toCache)
+    return value
   } catch (error) {
     console.error(`Failed to fetch ${url}`, error)
     if (cached) return JSON.parse(cached).value
