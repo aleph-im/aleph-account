@@ -137,6 +137,28 @@ export default new Vuex.Store({
     set_resource_nodes (state, nodes) {
       state.resource_nodes = nodes
     },
+    pack_crn_references (state) {
+      const resourceNodesHashMap = new Map()
+      state.resource_nodes.forEach(node => {
+        resourceNodesHashMap.set(node.hash, node)
+      })
+
+      state.nodes = state.nodes.map(node => {
+        const { resource_nodes } = node
+        if (resource_nodes) {
+          const mappedResources = resource_nodes.map(hash => {
+            const resource = resourceNodesHashMap.get(hash)
+            return resource || { hash, score: { total_score: 0 } }
+          })
+
+          return {
+            ...node,
+            resource_nodes: mappedResources
+          }
+        }
+        return node
+      })
+    },
     merge_node_scores (state) {
       [['nodes', 'ccn'], ['resource_nodes', 'crn']]
         .forEach(([stateNodeType, messageNodeType]) => {
@@ -381,6 +403,7 @@ export default new Vuex.Store({
       if (corechannel.resource_nodes !== undefined) { resource_nodes = corechannel.resource_nodes }
       commit('set_nodes', nodes)
       commit('set_resource_nodes', resource_nodes)
+      commit('pack_references')
     },
     async update_stored ({ state, commit }) {
       if (state.account !== null) {
