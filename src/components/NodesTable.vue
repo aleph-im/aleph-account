@@ -114,7 +114,7 @@
                 </q-tooltip>
               </q-badge>
             </div>
-            <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash.slice(-10) }}</strong>
+            <span class="text-grey text-weight-light">{{coreNodeMode ? 'CCN-ID' : 'CRN-ID'}} </span> <strong>{{ props.row.hash?.slice(-10) }}</strong>
             <br />
             <q-icon name="lock" v-if="props.row.locked">
               <q-tooltip>
@@ -170,7 +170,7 @@
                 {{props.row.resource_nodes.length}} linked
               </div>
               <div class="row justify-end">
-                <div v-for="dot in props.row.resource_nodes.slice(0, 3)" :key="dot.hash">
+                <div v-for="dot in props.row.resource_nodes?.slice(0, 3)" :key="dot.hash">
                   <q-tooltip>
                     <div class="row items-center">
                       <div v-if="dot.picture">
@@ -178,7 +178,7 @@
                       </div>
                       <div>
                         <div v-if="dot.name"><strong>{{ dot.name }}</strong></div>
-                        <div>{{ dot.hash.slice(-10) }}</div>
+                        <div>{{ dot.hash?.slice(-10) }}</div>
                       </div>
                     </div>
                   </q-tooltip>
