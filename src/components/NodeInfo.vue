@@ -184,7 +184,7 @@
           </div>
           <q-list v-if="node.resource_nodes.length">
             <q-item v-for="resource_node of node.resource_nodes" :key="resource_node">
-                <resource-node-name :node-hash="resource_node" />
+                <resource-node-name :node-hash="resource_node.hash" />
             </q-item>
           </q-list>
           <div v-else>
