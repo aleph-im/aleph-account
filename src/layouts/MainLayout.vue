@@ -280,6 +280,7 @@ export default {
 
       statusSocket.onmessage = function (event) {
         const data = JSON.parse(event.data)
+        this.$store.commit('unset_network_errors', 'websockets')
 
         if (data.content === undefined || data.content.content === undefined) {
           return
@@ -304,6 +305,7 @@ export default {
       }.bind(this)
 
       statusSocket.onerror = function (err) {
+        this.$store.commit('set_network_errors', 'websockets')
         console.error('Socket encountered error: ', err.message, 'Closing socket')
         statusSocket.close()
       }

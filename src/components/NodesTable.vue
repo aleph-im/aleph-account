@@ -198,18 +198,23 @@
             {{ new Date(props.row.time*1000).toLocaleDateString() }}
           </q-td>
           <q-td key="version" :props="props">
-            <div :style="`color: ${is_node_uptodate(props.row, coreNodeMode) && !is_node_experimental(props.row, coreNodeMode) ? '#1CC272' : is_node_outdated(props.row, coreNodeMode) || is_node_experimental(props.row, coreNodeMode) ? '#FABE23' : '#FD686A'}`">
-              <strong>
+            <template v-if="node_versions_unavailable">
                 {{ props.row?.metrics?.version || '-' }}
-              </strong>
-            </div>
-            <small>
-              <template v-if="is_node_latest(props.row, coreNodeMode)">(latest)</template>
-              <template v-else-if="is_node_prerelease(props.row, coreNodeMode)">(prerelease)</template>
-              <template v-else-if="is_node_experimental(props.row, coreNodeMode)">(experimental)</template>
-              <template v-else-if="is_node_outdated(props.row, coreNodeMode)">(outdated)</template>
-              <template v-else>(obsolete)</template>
-            </small>
+            </template>
+            <template v-else>
+              <div :style="`color: ${is_node_uptodate(props.row, coreNodeMode) && !is_node_experimental(props.row, coreNodeMode) ? '#1CC272' : is_node_outdated(props.row, coreNodeMode) || is_node_experimental(props.row, coreNodeMode) ? '#FABE23' : '#FD686A'}`">
+                <strong>
+                  {{ props.row?.metrics?.version || '-' }}
+                </strong>
+              </div>
+              <small>
+                <template v-if="is_node_latest(props.row, coreNodeMode)">(latest)</template>
+                <template v-else-if="is_node_prerelease(props.row, coreNodeMode)">(prerelease)</template>
+                <template v-else-if="is_node_experimental(props.row, coreNodeMode)">(experimental)</template>
+                <template v-else-if="is_node_outdated(props.row, coreNodeMode)">(outdated)</template>
+                <template v-else>(obsolete)</template>
+              </small>
+            </template>
           </q-td>
           <q-td key="est_apy" :props="props">
             <template v-if="coreNodeMode">
@@ -346,6 +351,9 @@ export default {
         }
       }
     },
+    node_versions_unavailable () {
+      return this.network_errors.github
+    },
     ...mapState({
       account: (state) => state.account,
       channel: (state) => state.channel,
@@ -358,7 +366,8 @@ export default {
       active_nodes: (state) => state.nodes.filter((node) => node.status === 'active').length,
       total_staked_in_active: (state) => state.nodes.reduce(
         (prev, cur) => prev + (cur.status === 'active' ? cur.total_staked : 0), 0
-      )
+      ),
+      network_errors: (state) => state.network_errors
     })
   },
   components: {

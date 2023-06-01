@@ -103,11 +103,10 @@ export function normalizeValue (input, min, max, floor, ceil) {
  *
  * @param {string} url The URL to fetch
  * @param {string} cacheKey The LocalStorage key to use for cachinng (must be unique)
- * @param {number} cacheTime The time in ms to cache the data for (defaults to one hour)
- * @param {function} selector A selector function to select a part of the data to cache (defaults to the full payload)
+ * @param {number} cacheTime The time in ms to cache the data
  * @returns
  */
-export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 * 24, selector = x => x) {
+export async function fetchAndCache (url, cacheKey, cacheTime) {
   const cached = localStorage.getItem(cacheKey)
   const now = Date.now()
   if (cached) {
@@ -118,17 +117,20 @@ export async function fetchAndCache (url, cacheKey, cacheTime = 1000 * 60 * 60 *
     }
   }
 
-  const data = await fetch(url)
-  const value = await data.json()
-  const selectedValue = selector(value)
+  try {
+    const data = await fetch(url)
+    const value = await data.json()
 
-  const toCache = JSON.stringify({
-    cachedAt: now,
-    value: selectedValue
-  })
-  localStorage.setItem(cacheKey, toCache)
-
-  return selectedValue
+    const toCache = JSON.stringify({
+      cachedAt: now,
+      value
+    })
+    localStorage.setItem(cacheKey, toCache)
+    return value
+  } catch (error) {
+    console.error(`Failed to fetch ${url}`, error)
+    if (cached) return JSON.parse(cached).value
+  }
 }
 
 /**
@@ -145,6 +147,8 @@ export function getLatestReleases (payload, outdatedAfter = 1000 * 60 * 60 * 24 
   }
 
   let latestReleaseDate = null
+
+  if (!payload) return versions
 
   for (const item of payload) {
     if (item.prerelease && !versions.prerelease) {
