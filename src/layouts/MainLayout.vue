@@ -274,7 +274,7 @@ export default {
   methods: {
     async prepare_distributions_feed () {
       const statusSocket = new WebSocket(
-        `${this.ws_api_server}/api/ws0/messages?msgType=POST&contentTypes=staking-rewards-distribution&addresses=` +
+        `${this.ws_api_server}/api/ws0/messages?msgType=POST&history=1&contentTypes=staking-rewards-distribution&addresses=` +
         `${this.sender_address},${this.monitor_address}`
       )
 
