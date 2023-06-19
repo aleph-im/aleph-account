@@ -429,21 +429,17 @@ export default {
     },
     async prepare_nodes_feed () {
       this.statusSocket = new WebSocket(
-        `${this.ws_api_server}/api/ws0/messages?msgType=AGGREGATE&addresses=` +
+        `${this.ws_api_server}/api/ws0/messages?msgType=AGGREGATE&history=1&addresses=` +
         `${this.monitor_address}`
       )
 
-      // Dirty hack to avoid multiple updates on the first rendering
-      let lastSocketMessage = Date.now()
       this.statusSocket.onmessage = function (event) {
         this.$store.commit('unset_network_errors', 'websockets')
         const data = JSON.parse(event.data)
         if ((data.content !== undefined) &&
             (data.content.address === this.monitor_address) &&
             (data.content.key === 'corechannel') &&
-            (data.content.content.nodes !== undefined) &&
-            Date.now() - lastSocketMessage > 200) {
-          lastSocketMessage = Date.now()
+            (data.content.content.nodes !== undefined)) {
           this.$store.commit('set_nodes', data.content.content.nodes)
           this.$store.commit('set_resource_nodes', data.content.content.resource_nodes)
           this.$store.commit('merge_node_scores')
