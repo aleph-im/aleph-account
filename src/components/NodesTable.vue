@@ -220,6 +220,7 @@
             <template v-if="coreNodeMode">
               <template v-if="is_my_node(props.row)">
                 <div class="row items-center">
+                  <div class="q-mr-sm text-subtitle1">≃</div>
                   <div class="text-bold q-mr-sm">{{ compute_ccn_rewards(props.row) }}</div>
                   <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
                   <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
@@ -236,12 +237,21 @@
               </template>
             </template>
             <template v-else>
-              <div class="row items-center justify-end">
-                <div class="text-bold q-mr-sm">{{ compute_crn_rewards(props.row) }}</div>
-                <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
-                <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
-                &nbsp;/&nbsp;mo
-              </div>
+              <template v-if="props.row.parent">
+                <div class="row items-center justify-end">
+                  <div class="q-mr-sm text-subtitle1">≃</div>
+                  <div class="text-bold q-mr-sm">{{ compute_crn_rewards(props.row) }}</div>
+                  <img v-if="!$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
+                  <img v-if="$q.dark.isActive" src="~/assets/aleph-logo.svg" height="16" class="vertical-middle q-pb-xs">
+                  &nbsp;/&nbsp;mo
+                </div>
+              </template>
+              <template v-else>
+                <q-tooltip content-style="background-color: #FD686A">
+                  <div>Unlinked CRN do not get rewards</div>
+                </q-tooltip>
+                <strong style="color: #FD686A">No rewards</strong>
+              </template>
             </template>
           </q-td>
           <q-td key="actions" :props="props">
@@ -542,7 +552,7 @@ export default {
 
         est_apy = (this.current_apy() * normalizedScore * (1 - linkedCRNPenalty)) * 100
       }
-      return '~ ' + est_apy.toFixed(2) + '%'
+      return est_apy.toFixed(2) + '%'
     },
     compute_ccn_rewards (node) {
       let est_rewards = 0
@@ -560,11 +570,12 @@ export default {
       return '~ ' + est_rewards.toFixed(2)
     },
     compute_crn_rewards (node) {
+      if (!node.parent) return 0
       if (!node?.score?.total_score || !node?.score?.decentralization) return 0
       const { decentralization, total_score } = node.score
       const maxRewards = 500 + decentralization * 2500
 
-      return '~' + (maxRewards * normalizeValue(total_score, 0.2, 0.8, 0, 1)).toFixed(2)
+      return (maxRewards * normalizeValue(total_score, 0.2, 0.8, 0, 1)).toFixed(2)
     },
     normalize_decentralization (node) {
       const decentralization = node?.score?.decentralization
