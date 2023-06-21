@@ -108,7 +108,7 @@
         <q-btn-dropdown  size="md" class="q-ml-sm" color="aleph-radial" label="Create node" v-if="account">
           <!-- start: dropdown item list  -->
           <q-list>
-            <q-item clickable v-close-popup @click="showCCNDialog(true)" :disabled="!((account && (balance_info.ALEPH >= 200000))&&(user_node===null))">
+            <q-item clickable v-close-popup @click="showCCNDialog(true)" :disabled="!((account && (Math.round(balance_info.ALEPH) >= 200000))&&(user_node===null))">
               <q-item-section>
                 <q-item-label>Core Channel Node</q-item-label>
               </q-item-section>
@@ -491,7 +491,7 @@ export default {
       }
     },
     showCCNDialog (value) {
-      if ((this.account && (this.balance_info.ALEPH >= 200000)) && (this.user_node === null)) {
+      if ((this.account && (Math.round(this.balance_info.ALEPH) >= 200000)) && (this.user_node === null)) {
         this.createNode = value
       }
     }
