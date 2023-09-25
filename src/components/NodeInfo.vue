@@ -196,7 +196,7 @@
           <q-separator class="q-mt-md" />
 
           <div class="text-weight-bold text-h5 q-my-md">Scoring issues</div>
-          <p>Your node is not properly scored because of the following issue. The next scoring message will be issued in approximately {{ next_scoring_message }}</p>
+          <p>Your node is not properly scored because of the following issue(s). The next scoring message will be issued in approximately {{ next_scoring_message }}</p>
           <ul>
             <li v-for="diagnostic in metrics_diagnostic" v-bind:key="diagnostic">
               {{diagnostic}}
