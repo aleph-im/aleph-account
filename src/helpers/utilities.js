@@ -175,3 +175,46 @@ export function getLatestReleases (payload, outdatedAfter = 1000 * 60 * 60 * 24 
 export function stripExtraTagDescription (gitTag) {
   return gitTag.replace(/-\d+-g\w{7}$/gi, '')
 }
+
+/**
+ * Returns a list of issues that might explain why the node is not scored
+ *
+ */
+export function diagnoseMetrics (metrics) {
+  if (metrics.base_latency_ipv4 === undefined) {
+    return ['Your CRN seems unreachable by our metrics. Is it up and running ? Did you configure the domain name correctly ?']
+  }
+  if (!metrics.base_latency || !metrics.diagnostic_vm_latency || !metrics.full_check_latency) {
+    return ['No IPv6 connectivity detected. Please check your configuration.']
+  }
+
+  const issues = []
+  if (metrics.base_latency > 2) {
+    issues.push('Base latency is too high (max 2 seconds)')
+  }
+  if (metrics.diagnostic_vm_latency > 2.5) {
+    issues.push('Diagnostic VM latency is too high (max 2.5 seconds)')
+  }
+  if (metrics.full_check_latency > 100) {
+    issues.push('Full check latency is too high (max 100 seconds)')
+  }
+
+  return issues
+}
+
+/**
+ * Returns the time in ms until the next score message is issued
+ * Takes a unix timestamp as input and returns a string
+ */
+export function timeUntilNextScoreMessage (metrics) {
+  // ! Unix timestamp is in seconds
+  const ONE_DAY = 60 * 60 * 24
+  const offset = metrics.measured_at % ONE_DAY
+  const nextMessage = ONE_DAY - offset
+
+  if (nextMessage < 60 * 60 * 2) {
+    return Math.floor(nextMessage / 60) + ' minutes'
+  }
+
+  return Math.round(nextMessage / 3600) + ' hours'
+}
