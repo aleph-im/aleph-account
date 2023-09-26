@@ -192,6 +192,18 @@
           </div>
         </template>
 
+        <div v-if="metrics_diagnostic.length > 0" style="color:#FD686A">
+          <q-separator class="q-mt-md" />
+
+          <div class="text-weight-bold text-h5 q-my-md">Scoring issues</div>
+          <p>Your node is not properly scored because of the following issue(s). The next scoring message will be issued in approximately {{ next_scoring_message }}</p>
+          <ul>
+            <li v-for="diagnostic in metrics_diagnostic" v-bind:key="diagnostic">
+              {{diagnostic}}
+            </li>
+          </ul>
+        </div>
+
         <template v-if="editing && locked">
 
           <div class="row items-end justify-between q-mt-md q-mb-md">
@@ -223,7 +235,7 @@ import { mapState } from 'vuex'
 import { posts, store } from 'aleph-js'
 import ResourceNodeName from './ResourceNodeName.vue'
 import CoreNodeName from './CoreNodeName.vue'
-import { ellipseAddress } from '../helpers/utilities'
+import { diagnoseMetrics, ellipseAddress, timeUntilNextScoreMessage } from '../helpers/utilities'
 import { copyToClipboard } from 'quasar'
 
 export default {
@@ -263,7 +275,9 @@ export default {
       picture: null,
       banner: null,
       locked: false,
-      authorized: []
+      authorized: [],
+      metrics_diagnostic: [],
+      next_scoring_message: null
     }
   },
   methods: {
@@ -286,6 +300,7 @@ export default {
     async finish () {
     },
     async update () {
+      console.log(this.node)
       this.name = this.node.name
       this.multiaddress = this.node.multiaddress
       this.manager = this.node.manager
@@ -295,6 +310,10 @@ export default {
       this.reward = this.node.reward
       this.locked = this.node.locked
       this.authorized = this.node.authorized
+      if (this.node.parent !== undefined) {
+        this.metrics_diagnostic = diagnoseMetrics(this.node.metrics)
+        this.next_scoring_message = timeUntilNextScoreMessage(this.node.metrics)
+      }
     },
     async save () {
       if (!this.locked) { this.registration_url = '' }
