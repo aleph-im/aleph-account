@@ -99,4 +99,4 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Deployed (not pinned) on https://ipfs-2.aleph.im/ipfs/${{ env.ipfs_cid }}
+            Deployed (not pinned) on ipfs://${{ env.ipfs_cid }}
