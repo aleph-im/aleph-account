@@ -286,13 +286,7 @@ export default {
     copyToClipboard,
     ellipseAddress,
     async upload_file (fileobject) {
-      console.log('fileloaded')
-      const fr = new FileReader()
-      fr.readAsArrayBuffer(fileobject)
-      let ab = await new Promise((resolve, reject) => {
-        fr.onload = () => resolve(fr.result)
-        fr.onerror = reject
-      })
+      let ab = await fileobject.arrayBuffer()
       let message = await store.submit(
         this.account.address,
         {
