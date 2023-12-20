@@ -244,13 +244,14 @@ export default {
   name: 'node-info',
   computed: {
     editing () {
-      return (
-        this.account &&
-        (
-          this.node.owner === this.account.address ||
-          this.node.manager === this.account.address
-        )
-      )
+      return true
+      // return (
+      //   this.account &&
+      //   (
+      //     this.node.owner === this.account.address ||
+      //     this.node.manager === this.account.address
+      //   )
+      // )
     },
     ...mapState([
       'account',
@@ -285,10 +286,17 @@ export default {
     copyToClipboard,
     ellipseAddress,
     async upload_file (fileobject) {
+      console.log('fileloaded')
+      const fr = new FileReader()
+      fr.readAsArrayBuffer(fileobject)
+      let ab = await new Promise((resolve, reject) => {
+        fr.onload = () => resolve(fr.result)
+        fr.onerror = reject
+      })
       let message = await store.submit(
         this.account.address,
         {
-          fileobject: Buffer.from(fileobject),
+          fileobject: Buffer.from(ab),
           channel: this.channel,
           api_server: this.api_server,
           account: this.account
