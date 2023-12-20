@@ -237,6 +237,7 @@ import ResourceNodeName from './ResourceNodeName.vue'
 import CoreNodeName from './CoreNodeName.vue'
 import { diagnoseMetrics, ellipseAddress, timeUntilNextScoreMessage } from '../helpers/utilities'
 import { copyToClipboard } from 'quasar'
+import { Buffer } from 'buffer'
 
 export default {
   components: { ResourceNodeName, CoreNodeName },
@@ -287,7 +288,7 @@ export default {
       let message = await store.submit(
         this.account.address,
         {
-          fileobject: fileobject,
+          fileobject: Buffer.from(fileobject),
           channel: this.channel,
           api_server: this.api_server,
           account: this.account
